@@ -1,8 +1,11 @@
+// postcss.config.mjs
 /** @type {import('postcss-load-config').Config} */
-const config = {
+import { defineConfig } from 'postcss-load-config';
+
+const config = defineConfig({
   plugins: {
     tailwindcss: {},
   },
-};
+});
 
 export default config;
