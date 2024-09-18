@@ -2,11 +2,12 @@ version: '3.8'
 
 services:
   nextjs:
-    image: my-nextjs-app
     build:
       context: .
     ports:
-      - "3000:3000"
+      - "3000:3000" 
     volumes:
-      - .:/app
-    command: npm run dev
+      - .:/app  # live reload
+    environment:
+      NODE_ENV: development  
+    command: npm run dev 

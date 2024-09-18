@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "node server.mjs",
+    "start": "NODE_ENV=production node server.mjs",
     "build": "next build",
-    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
