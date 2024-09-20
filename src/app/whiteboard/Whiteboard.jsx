@@ -219,7 +219,7 @@ const Whiteboard = () => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <div className="w-44 bg-gray-200 p-4 border-r border-gray-300">
+      <div className="w-44 bg-gray-200 p-2 border-r border-gray-300">
         <DrawingTools
           onToolChange={handleToolChange}
           onClear={handleClear}
@@ -227,10 +227,10 @@ const Whiteboard = () => {
           onFillToggle={handleFillToggle}
         />
       </div>
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto p-2">
         <canvas
           ref={canvasRef}
-          width={800}
+          width={900}
           height={600}
           className="border bg-white"
         ></canvas>

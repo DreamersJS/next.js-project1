@@ -1,7 +1,5 @@
 // layout.js
 import "./globals.css";
-
-import DrawingTools from "@/components/DrawingTools";
 import Chat from "@/components/Chat";
 
 
@@ -13,20 +11,20 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="h-screen bg-gray-100 ">
-        <div className="flex h-full">
-
+      <body className="h-screen bg-gray-100 relative p-2">
+        <div className="flex h-full overflow-hidden absolute">
           {/* Main Content - Whiteboard */}
-          <main className="bg-white p-6 flex-grow flex items-center justify-center">
+          <main className="flex-grow bg-white p-0 flex items-center justify-center">
             {children} {/* Render whiteboard content here */}
           </main>
 
           {/* Right Rail - Chat */}
-          <aside className="bg-gray-200 p-4 border-l border-gray-300 flex-shrink-0 w-44">
+          <aside className=" bg-gray-200 p-2 mx-2 top-0 right-0 border-l border-gray-300 w-56 flex-shrink-0">
             <Chat />
           </aside>
         </div>
       </body>
+
     </html>
   );
 }
