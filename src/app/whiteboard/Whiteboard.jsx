@@ -16,6 +16,14 @@ const Whiteboard = () => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
+
+  // Set canvas dimensions
+  const resizeCanvas = () => {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+    redrawAllShapes(); // Redraw shapes if needed
+  };
+  
     // Function to redraw all shapes and pen strokes
     const redrawAllShapes = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -190,11 +198,15 @@ const Whiteboard = () => {
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas(); // Initial size
+
 
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('resize', resizeCanvas);
     };
   }, [tool, isDrawing, startPosition, currentPosition, drawnShapes, color, fillMode]);
 
@@ -227,14 +239,22 @@ const Whiteboard = () => {
           onFillToggle={handleFillToggle}
         />
       </div>
-      <div className="flex-1 overflow-auto p-2">
+      {/* <div className="flex overflow-auto p-2">
         <canvas
           ref={canvasRef}
           width={900}
           height={600}
           className="border bg-white"
         ></canvas>
+      </div> */}
+
+      <div className="flex grow h-full overflow-hidden p-2 items-center justify-center">
+        <canvas
+          ref={canvasRef}
+          className="border bg-white w-full h-full"
+        ></canvas>
       </div>
+      
     </div>
   );
 };
