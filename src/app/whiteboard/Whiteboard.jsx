@@ -248,7 +248,7 @@ const Whiteboard = () => {
         ></canvas>
       </div> */}
 
-      <div className="flex grow h-full overflow-hidden p-2 items-center justify-center">
+      <div className="flex grow  w-full h-full overflow-hidden p-2 items-center justify-center">
         <canvas
           ref={canvasRef}
           className="border bg-white w-full h-full"
