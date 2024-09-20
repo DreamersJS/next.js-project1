@@ -1,6 +1,8 @@
 
 docker-compose up --build
 
+node server.mjs
+
 docker-compose down
 
 docker-compose logs

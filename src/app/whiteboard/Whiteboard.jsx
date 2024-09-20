@@ -1,6 +1,10 @@
 "use client";
 import { useRef, useEffect, useState } from 'react';
+import io from 'socket.io-client';
 import DrawingTools from '../../components/DrawingTools';
+
+// Initialize the Socket.IO client
+const socket = io();
 
 const Whiteboard = () => {
   const canvasRef = useRef(null);
@@ -16,14 +20,23 @@ const Whiteboard = () => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
+  // Listen for the initial drawing state from the server
+  socket.on('initDrawings', (shapes) => {
+    setDrawnShapes(shapes);
+  });
 
-  // Set canvas dimensions
-  const resizeCanvas = () => {
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
-    redrawAllShapes(); // Redraw shapes if needed
-  };
-  
+  // Listen for drawing events from other clients
+  socket.on('draw', (shape) => {
+    setDrawnShapes((prevShapes) => [...prevShapes, shape]);
+  });
+
+    // Set canvas dimensions
+    const resizeCanvas = () => {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      redrawAllShapes(); // Redraw shapes if needed
+    };
+
     // Function to redraw all shapes and pen strokes
     const redrawAllShapes = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -118,9 +131,14 @@ const Whiteboard = () => {
       if (tool === 'pen' || tool === 'eraser') {
         context.lineTo(x, y);
         context.stroke();
+
+        // Emit ongoing drawing for pen/eraser
+        const shapeData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
+        socket.emit('draw', shapeData);
+
         setDrawnShapes((prevShapes) => [
           ...prevShapes,
-          { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y },
+          shapeData,
         ]);
         setStartPosition({ x, y });
       } else {
@@ -186,11 +204,12 @@ const Whiteboard = () => {
       const x = currentPosition.x;
       const y = currentPosition.y;
 
-      // Add the shape/line to drawnShapes
-      setDrawnShapes((prevShapes) => [
-        ...prevShapes,
-        { tool, color, fill: fillMode, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y },
-      ]);
+      // Add the shape/line to drawnShapes and emit to server
+      const shapeData = { tool, color, fill: fillMode, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
+      setDrawnShapes((prevShapes) => [...prevShapes, shapeData]);
+
+      // Emit final shape data to the server after drawing is finished
+      socket.emit('draw', shapeData);
 
       setIsDrawing(false);
     };
@@ -198,9 +217,8 @@ const Whiteboard = () => {
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas(); // Initial size
-
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas(); // Initial size
 
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
@@ -239,14 +257,6 @@ const Whiteboard = () => {
           onFillToggle={handleFillToggle}
         />
       </div>
-      {/* <div className="flex overflow-auto p-2">
-        <canvas
-          ref={canvasRef}
-          width={900}
-          height={600}
-          className="border bg-white"
-        ></canvas>
-      </div> */}
 
       <div className="flex grow  w-full h-full overflow-hidden p-2 items-center justify-center">
         <canvas
@@ -254,7 +264,6 @@ const Whiteboard = () => {
           className="border bg-white w-full h-full"
         ></canvas>
       </div>
-      
     </div>
   );
 };
