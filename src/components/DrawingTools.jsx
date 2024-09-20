@@ -28,6 +28,30 @@ const DrawingTools = ({ onToolChange, onClear }) => {
         Eraser
       </button>
       <button
+        onClick={() => handleToolChange('line')}
+        className={`px-4 py-2 border rounded ${selectedTool === 'line' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+      >
+        Line
+      </button>
+      <button
+        onClick={() => handleToolChange('rectangle')}
+        className={`px-4 py-2 border rounded ${selectedTool === 'rectangle' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+      >
+        Rectangle
+      </button>
+      <button
+        onClick={() => handleToolChange('triangle')}
+        className={`px-4 py-2 border rounded ${selectedTool === 'triangle' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+      >
+        Triangle
+      </button>
+      <button
+        onClick={() => handleToolChange('circle')}
+        className={`px-4 py-2 border rounded ${selectedTool === 'circle' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+      >
+        Circle
+      </button>
+      <button
         onClick={handleClear}
         className="px-4 py-2 border rounded bg-red-500 text-white"
       >
