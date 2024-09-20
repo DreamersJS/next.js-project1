@@ -1,8 +1,10 @@
 
 docker-compose up --build
 
+node server.mjs
+
 docker-compose down
 
 docker-compose logs
 
-volumes allows live changes
+docker-compose run nextjs npm install
