@@ -14,7 +14,7 @@ const DrawingTools = ({ onToolChange, onClear }) => {
   };
 
   return (
-    <div className="flex space-x-2">
+    <div className="flex flex-col space-x-2">
       <button
         onClick={() => handleToolChange('pen')}
         className={`px-4 py-2 border rounded ${selectedTool === 'pen' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}

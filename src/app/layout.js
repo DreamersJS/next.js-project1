@@ -13,22 +13,16 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-       <body className="h-screen bg-gray-100">
-        <div className="grid grid-cols-[1fr_3fr_1fr] h-full">
-          {/* Left Rail - Drawing Tools */}
-          <aside className="bg-gray-200 p-4 border-r border-gray-300">
-            <h2 className="text-lg font-semibold mb-4">Drawing Tools</h2>
-            <DrawingTools/>
-          </aside>
+      <body className="h-screen bg-gray-100 ">
+        <div className="flex h-full">
 
           {/* Main Content - Whiteboard */}
-          <main className="bg-white p-6 flex items-center justify-center">
+          <main className="bg-white p-6 flex-grow flex items-center justify-center">
             {children} {/* Render whiteboard content here */}
           </main>
 
           {/* Right Rail - Chat */}
-          <aside className="bg-gray-200 p-4 border-l border-gray-300">
-          <h2 className="text-lg font-semibold mb-4">Chat</h2>
+          <aside className="bg-gray-200 p-4 border-l border-gray-300 flex-shrink-0 w-44">
             <Chat />
           </aside>
         </div>
