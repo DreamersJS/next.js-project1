@@ -1,14 +1,57 @@
-// page.js
-import dynamic from 'next/dynamic';
-// Dynamically import the Canvas to prevent issues with SSR (since window isn't available during server-side rendering)
-const Whiteboard = dynamic(() => import('./whiteboard/Whiteboard'), { ssr: false });
+// app/page.js
+//  introduction, links to join or create a whiteboard session, or perhaps show recent or available whiteboards.
+'use client'; 
 
-export default function Home() {
+import Link from 'next/link';
+import { useState } from 'react';
+
+export default function HomePage() {
+  const [newBoardId, setNewBoardId] = useState('');
+
+  const handleCreateNewBoard = () => {
+    const id = Math.random().toString(36).substring(2, 10); // Generate a random ID
+    setNewBoardId(id);
+  };
+
   return (
-    <>
-    <div>
-      <Whiteboard />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+      <h1 className="text-4xl font-bold mb-4">Welcome to the Whiteboard App</h1>
+      <p className="text-lg text-gray-700 mb-8">
+        Create a new whiteboard session or join an existing one.
+      </p>
+
+      {/* Create a New Whiteboard */}
+      <div className="mb-6">
+        <button
+          onClick={handleCreateNewBoard}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        >
+          Create New Whiteboard
+        </button>
+
+        {/* Display the link to the new whiteboard once created */}
+        {newBoardId && (
+          <div className="mt-4">
+            <Link href={`/whiteboard/${newBoardId}`}>
+              <button className="text-blue-500 underline">Go to your new whiteboard session: {newBoardId}</button>
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Join an Existing Whiteboard */}
+      <div>
+        <input
+          type="text"
+          placeholder="Enter Whiteboard ID"
+          className="px-3 py-2 border rounded mr-2"
+        />
+        <Link href={`/whiteboard/[id]`} as={`/whiteboard/${newBoardId || 'existing-id'}`}>
+          <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+            Join Whiteboard
+          </button>
+        </Link>
+      </div>
     </div>
-    </>
   );
 }
