@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState } from 'react';
 import io from 'socket.io-client';
-import DrawingTools from '../../components/DrawingTools';
+import DrawingTools from './DrawingTools';
 
 // Initialize the Socket.IO client
 const socket = io();
