@@ -10,7 +10,7 @@ const WhiteboardPage = ({ params }) => {
 
   return (
     <div>
-      {/* <h3>Whiteboard Session: {id}</h3> */}
+      <h3 className='mt-4'>Whiteboard Session: {id}</h3>
       <Whiteboard id={id} /> {/* Passing the ID to the Whiteboard component */}
     </div>
   );
