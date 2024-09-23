@@ -3,7 +3,10 @@ import { createServer } from 'http';
 import { parse } from 'url';
 import next from 'next';
 import { Server as socketIo } from 'socket.io';
+// import dotenv from 'dotenv';
+// dotenv.config(); // Load environment variables from a .env file
 
+// const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
@@ -39,6 +42,6 @@ app.prepare().then(() => {
 
   server.listen(3000, (err) => {
     if (err) throw err;
-    console.log('Ready on http://localhost:3000');
+    console.log(`Ready on http://localhost:3000`);
   });
 });
