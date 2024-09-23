@@ -44,3 +44,5 @@ next-env.d.ts
 # Operating system files
 .DS_Store
 Thumbs.db
+
+helpers.md
