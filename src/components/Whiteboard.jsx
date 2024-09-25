@@ -6,7 +6,8 @@ import DrawingTools from './DrawingTools';
 // Initialize the Socket.IO client
 const socket = io();
 
-const Whiteboard = () => {
+const Whiteboard = ({id}) => {
+  const whiteboardId = id;
   const canvasRef = useRef(null);
   const [tool, setTool] = useState('pen');
   const [isDrawing, setIsDrawing] = useState(false);
@@ -20,15 +21,22 @@ const Whiteboard = () => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
-  // Listen for the initial drawing state from the server
-  socket.on('initDrawings', (shapes) => {
-    setDrawnShapes(shapes);
-  });
+    // Listen for the initial drawing state from the server
+    socket.on('initDrawings', (shapes) => {
+      setDrawnShapes(shapes);
+    });
 
-  // Listen for drawing events from other clients
-  socket.on('draw', (shape) => {
-    setDrawnShapes((prevShapes) => [...prevShapes, shape]);
-  });
+    // Listen for drawing events from other clients
+    socket.on('draw', (shape) => {
+      setDrawnShapes((prevShapes) => [...prevShapes, shape]);
+    });
+
+    socket.on('clear', () => {
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      setDrawnShapes([]); // Clear local state
+    });
 
     // Set canvas dimensions
     const resizeCanvas = () => {
@@ -218,7 +226,7 @@ const Whiteboard = () => {
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('resize', resizeCanvas);
-    resizeCanvas(); // Initial size
+    resizeCanvas(); 
 
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
@@ -241,10 +249,56 @@ const Whiteboard = () => {
   };
 
   const handleClear = () => {
-    const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    setDrawnShapes([]);
+    const confirmClear = window.confirm("Are you sure you want to clear the board? This will clear the board for everyone!");
+
+    if (confirmClear) {
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      setDrawnShapes([]);
+
+      socket.emit('clear');
+    }
+  };
+
+  const handleSave = async () => {
+    if (!whiteboardId) {
+      console.error("Whiteboard ID is not defined.");
+      return;
+    }
+    try {
+      const response = await fetch('/api/whiteboards/saveWhiteboard', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: whiteboardId, content: drawnShapes }),
+      });
+
+      if (response.ok) {
+        alert('Whiteboard saved successfully!');
+      } else {
+        alert('Failed to save the whiteboard.');
+      }
+    } catch (error) {
+      console.error('Error saving whiteboard:', error);
+    }
+  };
+
+  const handleLoad = async () => {
+    try {
+      const response = await fetch(`/api/whiteboards/loadWhiteboard?id=${whiteboardId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDrawnShapes(data.content);
+        redrawAllShapes();
+        alert('Whiteboard loaded successfully!');
+      } else {
+        alert('Failed to load the whiteboard.');
+      }
+    } catch (error) {
+      console.error('Error loading whiteboard:', error);
+    }
   };
 
   return (
@@ -256,6 +310,20 @@ const Whiteboard = () => {
           onColorChange={handleColorChange}
           onFillToggle={handleFillToggle}
         />
+        <div className='flex flex-row'>
+        <button
+          onClick={handleSave}
+          className="px-4 py-2 mt-2 border rounded bg-green-500 text-white"
+        >
+          Save
+        </button>
+        <button
+          onClick={handleLoad}
+          className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white"
+        >
+          Load
+        </button>
+        </div>
       </div>
 
       <div className="flex grow  w-full h-full overflow-hidden p-2 items-center justify-center">

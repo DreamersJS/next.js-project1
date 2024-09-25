@@ -23,18 +23,22 @@ app.prepare().then(() => {
 
   io.on('connection', (socket) => {
     console.log('New client connected');
-  
+
     // Send all previously drawn shapes to the new client
     socket.emit('initDrawings', drawnShapes);
-  
+
     socket.on('draw', (data) => {
       // Save the new shape
       drawnShapes.push(data);
-      
+
       // Broadcast the drawing event to all clients, including the sender
       io.emit('draw', data);
     });
-  
+
+    socket.on('clear', () => {
+      socket.broadcast.emit('clear'); 
+    });
+
     socket.on('disconnect', () => {
       console.log('Client disconnected');
     });
