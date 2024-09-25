@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useEffect, useState } from 'react';
 import io from 'socket.io-client';
+import { useRouter } from 'next/navigation'
 import DrawingTools from './DrawingTools';
 
 const socket = io();
@@ -8,6 +9,7 @@ const socket = io();
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
   const canvasRef = useRef(null);
+  const router = useRouter()
   const [tool, setTool] = useState('pen');
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
@@ -313,6 +315,7 @@ const Whiteboard = ({ id }) => {
           const data = await response.json();
           console.log('Deleted whiteboard:', data);
           // Handle the UI updates, e.g., remove the whiteboard from the list
+          router.push(`/`);
         } else {
           alert('Failed to delete the whiteboard.');
         }
