@@ -1,17 +1,34 @@
 // app/page.js
-//  introduction, links to join or create a whiteboard session, or perhaps show recent or available whiteboards.
-'use client'; 
+//  introduction(?maybe pics,text or interactive tutorial?), links to join or create a whiteboard session, or perhaps show recent or available whiteboards.
+'use client';
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { createNewWhiteboard } from '../app/services/whiteboardService';
+import  WhiteboardList  from '@/components/WhiteboardList';
+// import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
+  // const router = useRouter();
   const [newBoardId, setNewBoardId] = useState('');
 
-  const handleCreateNewBoard = () => {
-    const id = Math.random().toString(36).substring(2, 10); // Generate a random ID
-    setNewBoardId(id);
-  };
+const handleCreateNewBoard = async () => {
+  try {
+    const data = await createNewWhiteboard(); // Directly await the obj
+    setNewBoardId(data.id);
+    console.log('New Whiteboard Created:', data.id);
+  } catch (error) {
+    console.error('Error creating whiteboard:', error);
+  }
+};
+
+  // const handleNavigation = (e) => {
+  //   e.preventDefault(); // Prevent the default link behavior
+  //   // Add logic before navigating
+  //   if (confirm('Are you sure you want to navigate?')) {
+  //     router.push(`/whiteboard/${newBoardId}`);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
@@ -32,7 +49,7 @@ export default function HomePage() {
         {/* Display the link to the new whiteboard once created */}
         {newBoardId && (
           <div className="mt-4">
-            <Link href={`/whiteboard/${newBoardId}`}>
+            <Link href={`/whiteboard/${newBoardId}`} passHref>
               <button className="text-blue-500 underline">Go to your new whiteboard session: {newBoardId}</button>
             </Link>
           </div>
@@ -45,13 +62,17 @@ export default function HomePage() {
           type="text"
           placeholder="Enter Whiteboard ID"
           className="px-3 py-2 border rounded mr-2"
+          onChange={(e) => setNewBoardId(e.target.value)}
         />
-        <Link href={`/whiteboard/[id]`} as={`/whiteboard/${newBoardId || 'existing-id'}`}>
+        <Link href={`/whiteboard/[id]`} as={`/whiteboard/${newBoardId}`} passHref>
           <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
             Join Whiteboard
           </button>
         </Link>
       </div>
+
+      {/* Recent Whiteboards */}
+      <WhiteboardList />
     </div>
   );
 }
