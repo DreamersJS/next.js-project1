@@ -56,7 +56,7 @@ export default function WhiteboardList() {
         {whiteboards.map((whiteboard) => (
           <li className="bg-white p-4 rounded shadow-md" key={whiteboard.id}>
             <Link href={`/whiteboard/[id]`} as={`/whiteboard/${whiteboard.id}`} passHref>
-            Whiteboard ID: {whiteboard.id}, Content: {JSON.stringify(whiteboard.content)}
+            Whiteboard ID: {whiteboard.id}
             </Link>
           </li>
         ))}

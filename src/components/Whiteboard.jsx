@@ -12,9 +12,9 @@ const Whiteboard = ({ id }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
   const [currentPosition, setCurrentPosition] = useState({ x: 0, y: 0 });
-  const [drawnShapes, setDrawnShapes] = useState([]); 
-  const [color, setColor] = useState('#000000'); 
-  const [fillMode, setFillMode] = useState(false); 
+  const [drawnShapes, setDrawnShapes] = useState([]);
+  const [color, setColor] = useState('#000000');
+  const [fillMode, setFillMode] = useState(false);
   let previewCounter = 0;
   const granularity = 5;
 
@@ -154,7 +154,7 @@ const Whiteboard = ({ id }) => {
           context.stroke();
 
           const previewData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
-          socket.emit('previewDraw', previewData); 
+          socket.emit('previewDraw', previewData);
 
           setStartPosition({ x, y });
         }
@@ -164,7 +164,7 @@ const Whiteboard = ({ id }) => {
 
         const shapeData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
         setDrawnShapes((prevShapes) => [...prevShapes, shapeData]);
-        setStartPosition({ x, y }); 
+        setStartPosition({ x, y });
       } else {
         redrawAllShapes();
         drawShape(context, {
@@ -237,38 +237,62 @@ const Whiteboard = ({ id }) => {
     }
   };
 
-  const handleSave = async () => {
+  // Save/update the existing blank whiteboard as an image to db
+  const handleSaveAsImage = async () => {
     if (!whiteboardId) {
       console.error("Whiteboard ID is not defined.");
       return;
     }
+    const canvas = canvasRef.current;
+    const dataURL = canvas.toDataURL('image/png'); // Convert to PNG image format
+
     try {
-      const response = await fetch('/api/whiteboards/saveWhiteboard', {
-        method: 'POST',
+      const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: whiteboardId, content: drawnShapes }),
+        body: JSON.stringify({ id: whiteboardId, content: dataURL }), // Sending image data
       });
 
       if (response.ok) {
-        alert('Whiteboard saved successfully!');
+        alert('Whiteboard image saved successfully!');
       } else {
-        alert('Failed to save the whiteboard.');
+        alert('Failed to save the whiteboard image.');
       }
     } catch (error) {
-      console.error('Error saving whiteboard:', error);
+      console.error('Error saving whiteboard image:', error);
     }
   };
 
-  const handleLoad = async () => {
+  // Load like a quick load in game for now
+  const handleLoad = async (whiteboardId) => {
     try {
-      const response = await fetch(`/api/whiteboards/loadWhiteboard?id=${whiteboardId}`);
+      const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
+        method: 'GET',
+      });
+
       if (response.ok) {
         const data = await response.json();
-        setDrawnShapes(data.content);
-        redrawAllShapes();
-        alert('Whiteboard loaded successfully!');
+
+        if (data.content) {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = canvasRef.current;
+            const context = canvas.getContext('2d');
+
+            // Clear the canvas before drawing the loaded image
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the loaded image onto the canvas
+            context.drawImage(img, 0, 0, canvas.width, canvas.height);
+          };
+
+          img.src = data.content; // Set the source of the image to the base64 data
+          alert('Whiteboard loaded successfully!');
+        } else {
+          alert('No whiteboard data found.');
+        }
       } else {
         alert('Failed to load the whiteboard.');
       }
@@ -277,8 +301,30 @@ const Whiteboard = ({ id }) => {
     }
   };
 
+  // Delete 
+  const deleteWhiteboard = async (whiteboardId) => {
+    if (confirm('Are you sure you want to delete this whiteboard?')) {
+      try {
+        const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Deleted whiteboard:', data);
+          // Handle the UI updates, e.g., remove the whiteboard from the list
+        } else {
+          alert('Failed to delete the whiteboard.');
+        }
+      } catch (error) {
+        console.error('Error deleting whiteboard:', error);
+      }
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* Drawing tools and Save, Load, Delete buttons */}
       <div className="w-44 bg-gray-200 p-2 border-r border-gray-300">
         <DrawingTools
           onToolChange={handleToolChange}
@@ -287,15 +333,20 @@ const Whiteboard = ({ id }) => {
           onFillToggle={handleFillToggle}
         />
         <div className='flex flex-row'>
-          <button onClick={handleSave} className="px-4 py-2 mt-2 border rounded bg-green-500 text-white">
+          <button onClick={handleSaveAsImage} className="px-4 py-2 mt-2 border rounded bg-green-500 text-white">
             Save
           </button>
-          <button onClick={handleLoad} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
+          <button onClick={() => handleLoad(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
             Load
           </button>
         </div>
+        <div className='flex'>
+          <button onClick={() => deleteWhiteboard(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-red-500 text-white">
+            Delete
+          </button>
+        </div>
       </div>
-
+      {/* Canvas */}
       <div className="flex grow w-full h-full overflow-hidden p-2 items-center justify-center">
         <canvas ref={canvasRef} className="border bg-white w-full h-full"></canvas>
       </div>
