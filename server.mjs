@@ -27,6 +27,11 @@ app.prepare().then(() => {
     // Send all previously drawn shapes to the new client
     socket.emit('initDrawings', drawnShapes);
 
+    socket.on('previewDraw', (data) => {
+      // Broadcast the preview to other clients but do not store it
+      socket.broadcast.emit('previewDraw', data);
+    });
+
     socket.on('draw', (data) => {
       // Save the new shape
       drawnShapes.push(data);
@@ -36,7 +41,7 @@ app.prepare().then(() => {
     });
 
     socket.on('clear', () => {
-      socket.broadcast.emit('clear'); 
+      socket.broadcast.emit('clear');
     });
 
     socket.on('disconnect', () => {

@@ -3,19 +3,20 @@ import { useRef, useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import DrawingTools from './DrawingTools';
 
-// Initialize the Socket.IO client
 const socket = io();
 
-const Whiteboard = ({id}) => {
+const Whiteboard = ({ id }) => {
   const whiteboardId = id;
   const canvasRef = useRef(null);
   const [tool, setTool] = useState('pen');
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
   const [currentPosition, setCurrentPosition] = useState({ x: 0, y: 0 });
-  const [drawnShapes, setDrawnShapes] = useState([]); // Store all drawn shapes
-  const [color, setColor] = useState('#000000'); // Color for shapes
-  const [fillMode, setFillMode] = useState(false); // Track fill vs stroke
+  const [drawnShapes, setDrawnShapes] = useState([]); 
+  const [color, setColor] = useState('#000000'); 
+  const [fillMode, setFillMode] = useState(false); 
+  let previewCounter = 0;
+  const granularity = 5;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -31,9 +32,11 @@ const Whiteboard = ({id}) => {
       setDrawnShapes((prevShapes) => [...prevShapes, shape]);
     });
 
+    socket.on('previewDraw', (shape) => {
+      drawShape(context, shape, true); // Preview draw without finalizing
+    });
+
     socket.on('clear', () => {
-      const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
       setDrawnShapes([]); // Clear local state
     });
@@ -50,68 +53,77 @@ const Whiteboard = ({id}) => {
       context.clearRect(0, 0, canvas.width, canvas.height);
 
       drawnShapes.forEach((shape) => {
-        context.beginPath();
-        context.strokeStyle = shape.color;
-        context.fillStyle = shape.color;
-        context.lineWidth = shape.tool === 'pen' || shape.tool === 'line' ? 2 : 1;
-
-        switch (shape.tool) {
-          case 'line':
-            context.moveTo(shape.startX, shape.startY);
-            context.lineTo(shape.endX, shape.endY);
-            context.stroke();
-            break;
-          case 'rectangle':
-            if (shape.fill) {
-              context.fillRect(
-                shape.startX,
-                shape.startY,
-                shape.endX - shape.startX,
-                shape.endY - shape.startY
-              );
-            } else {
-              context.strokeRect(
-                shape.startX,
-                shape.startY,
-                shape.endX - shape.startX,
-                shape.endY - shape.startY
-              );
-            }
-            break;
-          case 'circle':
-            const radius = Math.sqrt(
-              Math.pow(shape.endX - shape.startX, 2) + Math.pow(shape.endY - shape.startY, 2)
-            );
-            context.arc(shape.startX, shape.startY, radius, 0, 2 * Math.PI);
-            if (shape.fill) {
-              context.fill();
-            } else {
-              context.stroke();
-            }
-            break;
-          case 'triangle':
-            context.moveTo(shape.startX, shape.startY);
-            context.lineTo(shape.endX, shape.endY);
-            context.lineTo(shape.startX, shape.endY);
-            context.closePath();
-            if (shape.fill) {
-              context.fill();
-            } else {
-              context.stroke();
-            }
-            break;
-          case 'pen': // Handle pen as multiple line segments
-          case 'eraser':
-            context.lineWidth = shape.tool === 'eraser' ? 10 : 2;
-            context.strokeStyle = shape.tool === 'eraser' ? '#FFFFFF' : shape.color;
-            context.moveTo(shape.startX, shape.startY);
-            context.lineTo(shape.endX, shape.endY);
-            context.stroke();
-            break;
-          default:
-            break;
-        }
+        drawShape(context, shape);
       });
+    };
+
+    // Function to draw shapes
+    const drawShape = (ctx, shape, preview = false) => {
+      ctx.beginPath();
+      ctx.strokeStyle = shape.color;
+      ctx.fillStyle = shape.color;
+      ctx.lineWidth = shape.tool === 'pen' || shape.tool === 'line' ? 2 : 1;
+
+      switch (shape.tool) {
+        case 'line':
+          ctx.moveTo(shape.startX, shape.startY);
+          ctx.lineTo(shape.endX, shape.endY);
+          ctx.stroke();
+          break;
+        case 'rectangle':
+          if (shape.fill) {
+            ctx.fillRect(
+              shape.startX,
+              shape.startY,
+              shape.endX - shape.startX,
+              shape.endY - shape.startY
+            );
+          } else {
+            ctx.strokeRect(
+              shape.startX,
+              shape.startY,
+              shape.endX - shape.startX,
+              shape.endY - shape.startY
+            );
+          }
+          break;
+        case 'circle':
+          const radius = Math.sqrt(
+            Math.pow(shape.endX - shape.startX, 2) + Math.pow(shape.endY - shape.startY, 2)
+          );
+          ctx.arc(shape.startX, shape.startY, radius, 0, 2 * Math.PI);
+          if (shape.fill) {
+            ctx.fill();
+          } else {
+            ctx.stroke();
+          }
+          break;
+        case 'triangle':
+          ctx.moveTo(shape.startX, shape.startY);
+          ctx.lineTo(shape.endX, shape.endY);
+          ctx.lineTo(shape.startX, shape.endY);
+          ctx.closePath();
+          if (shape.fill) {
+            ctx.fill();
+          } else {
+            ctx.stroke();
+          }
+          break;
+        case 'pen':
+        case 'eraser':
+          ctx.lineWidth = shape.tool === 'eraser' ? 10 : 2;
+          ctx.strokeStyle = shape.tool === 'eraser' ? '#FFFFFF' : shape.color;
+          ctx.moveTo(shape.startX, shape.startY);
+          ctx.lineTo(shape.endX, shape.endY);
+          ctx.stroke();
+          break;
+        default:
+          break;
+      }
+
+      if (!preview) {
+        ctx.closePath();
+      }
     };
 
     const handleMouseDown = (e) => {
@@ -137,72 +149,33 @@ const Whiteboard = ({id}) => {
       setCurrentPosition({ x, y });
 
       if (tool === 'pen' || tool === 'eraser') {
+        if (previewCounter % granularity === 0) {
+          context.lineTo(x, y);
+          context.stroke();
+
+          const previewData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
+          socket.emit('previewDraw', previewData); 
+
+          setStartPosition({ x, y });
+        }
+        previewCounter++;
         context.lineTo(x, y);
         context.stroke();
 
-        // Emit ongoing drawing for pen/eraser
         const shapeData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
-        socket.emit('draw', shapeData);
-
-        setDrawnShapes((prevShapes) => [
-          ...prevShapes,
-          shapeData,
-        ]);
-        setStartPosition({ x, y });
+        setDrawnShapes((prevShapes) => [...prevShapes, shapeData]);
+        setStartPosition({ x, y }); 
       } else {
         redrawAllShapes();
-        context.beginPath();
-        context.strokeStyle = color;
-        context.fillStyle = color;
-
-        switch (tool) {
-          case 'line':
-            context.moveTo(startPosition.x, startPosition.y);
-            context.lineTo(x, y);
-            context.stroke();
-            break;
-          case 'rectangle':
-            if (fillMode) {
-              context.fillRect(
-                startPosition.x,
-                startPosition.y,
-                x - startPosition.x,
-                y - startPosition.y
-              );
-            } else {
-              context.strokeRect(
-                startPosition.x,
-                startPosition.y,
-                x - startPosition.x,
-                y - startPosition.y
-              );
-            }
-            break;
-          case 'circle':
-            const radius = Math.sqrt(
-              Math.pow(x - startPosition.x, 2) + Math.pow(y - startPosition.y, 2)
-            );
-            context.arc(startPosition.x, startPosition.y, radius, 0, 2 * Math.PI);
-            if (fillMode) {
-              context.fill();
-            } else {
-              context.stroke();
-            }
-            break;
-          case 'triangle':
-            context.moveTo(startPosition.x, startPosition.y);
-            context.lineTo(x, y);
-            context.lineTo(startPosition.x, y);
-            context.closePath();
-            if (fillMode) {
-              context.fill();
-            } else {
-              context.stroke();
-            }
-            break;
-          default:
-            break;
-        }
+        drawShape(context, {
+          tool,
+          color,
+          fill: fillMode,
+          startX: startPosition.x,
+          startY: startPosition.y,
+          endX: x,
+          endY: y,
+        }, true);
       }
     };
 
@@ -212,13 +185,18 @@ const Whiteboard = ({id}) => {
       const x = currentPosition.x;
       const y = currentPosition.y;
 
-      // Add the shape/line to drawnShapes and emit to server
-      const shapeData = { tool, color, fill: fillMode, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
+      const shapeData = {
+        tool,
+        color,
+        fill: fillMode,
+        startX: startPosition.x,
+        startY: startPosition.y,
+        endX: x,
+        endY: y,
+      };
+
       setDrawnShapes((prevShapes) => [...prevShapes, shapeData]);
-
-      // Emit final shape data to the server after drawing is finished
       socket.emit('draw', shapeData);
-
       setIsDrawing(false);
     };
 
@@ -226,7 +204,7 @@ const Whiteboard = ({id}) => {
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('resize', resizeCanvas);
-    resizeCanvas(); 
+    resizeCanvas();
 
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
@@ -250,13 +228,11 @@ const Whiteboard = ({id}) => {
 
   const handleClear = () => {
     const confirmClear = window.confirm("Are you sure you want to clear the board? This will clear the board for everyone!");
-
     if (confirmClear) {
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
       setDrawnShapes([]);
-
       socket.emit('clear');
     }
   };
@@ -311,26 +287,17 @@ const Whiteboard = ({id}) => {
           onFillToggle={handleFillToggle}
         />
         <div className='flex flex-row'>
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 mt-2 border rounded bg-green-500 text-white"
-        >
-          Save
-        </button>
-        <button
-          onClick={handleLoad}
-          className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white"
-        >
-          Load
-        </button>
+          <button onClick={handleSave} className="px-4 py-2 mt-2 border rounded bg-green-500 text-white">
+            Save
+          </button>
+          <button onClick={handleLoad} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
+            Load
+          </button>
         </div>
       </div>
 
-      <div className="flex grow  w-full h-full overflow-hidden p-2 items-center justify-center">
-        <canvas
-          ref={canvasRef}
-          className="border bg-white w-full h-full"
-        ></canvas>
+      <div className="flex grow w-full h-full overflow-hidden p-2 items-center justify-center">
+        <canvas ref={canvasRef} className="border bg-white w-full h-full"></canvas>
       </div>
     </div>
   );
