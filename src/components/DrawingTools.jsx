@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from 'react';
+import { FaPen, FaEraser, FaSquare, FaUndo, FaRedo, FaCircle, FaSlash, FaPlay } from 'react-icons/fa'; 
 
-const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle }) => {
+const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUndo, onRedo }) => {
   const [selectedTool, setSelectedTool] = useState('pen');
   const [fillMode, setFillMode] = useState(false); // To toggle between fill and stroke mode
   const [color, setColor] = useState('#000000'); // Default color
@@ -28,6 +29,8 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle }) =>
 
   return (
     <div className="flex flex-col space-y-2">
+      {/* Drawing Tools */}
+      <div className="flex flex-wrap">
       <button
         onClick={() => handleToolChange('pen')}
         className={`px-4 py-2 border rounded ${selectedTool === 'pen' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
@@ -35,7 +38,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle }) =>
         aria-label="Pen Tool"
         title="Pen Tool"
       >
-        Pen
+        <FaPen className="mr-2" /> 
       </button>
       <button
         onClick={() => handleToolChange('eraser')}
@@ -44,7 +47,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle }) =>
         aria-label="Eraser Tool"
         title="Eraser Tool"
       >
-        Eraser
+         <FaEraser className="mr-2" />
       </button>
       <button
         onClick={() => handleToolChange('rectangle')}
@@ -53,7 +56,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle }) =>
         aria-label="Rectangle Tool"
         title="Rectangle Tool"
       >
-        Rectangle
+                <FaSquare className="mr-2" />
       </button>
       <button
         onClick={() => handleToolChange('circle')}
@@ -62,7 +65,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle }) =>
         aria-label="Circle Tool"
         title="Circle Tool"
       >
-        Circle
+        <FaCircle className="mr-2" /> 
       </button>
       <button
         onClick={() => handleToolChange('line')}
@@ -71,7 +74,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle }) =>
         aria-label="Line Tool"
         title="Line Tool"
       >
-        Line
+        <FaSlash className="mr-2" />
       </button>
       <button
         onClick={() => handleToolChange('triangle')}
@@ -80,8 +83,15 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle }) =>
         aria-label="Triangle Tool"
         title="Triangle Tool"
       >
-        Triangle
+        <FaPlay className="mr-2" />
       </button>
+      </div>
+
+      {/* Undo & Redo Buttons */}
+      <div className='flex flex-row'>
+      <button onClick={onUndo} className="px-4 py-2 border rounded bg-green-400 text-black" aria-label="Undo" title="Undo"><FaUndo className="mr-2" /></button>
+      <button onClick={onRedo} className="px-4 py-2 border rounded bg-green-400 text-black" aria-label="Redo" title="Redo"><FaRedo className="mr-2" /></button>
+      </div>
 
       {/* Color Picker */}
       <label htmlFor="color-picker" className="sr-only">
