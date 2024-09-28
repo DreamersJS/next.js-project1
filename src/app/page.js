@@ -6,11 +6,10 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { createNewWhiteboard } from '../app/services/whiteboardService';
 import  WhiteboardList  from '@/components/WhiteboardList';
-// import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
-  // const router = useRouter();
   const [newBoardId, setNewBoardId] = useState('');
+  const [oldBoardId, setOldBoardId] = useState('');
 
 const handleCreateNewBoard = async () => {
   try {
@@ -22,13 +21,6 @@ const handleCreateNewBoard = async () => {
   }
 };
 
-  // const handleNavigation = (e) => {
-  //   e.preventDefault(); // Prevent the default link behavior
-  //   // Add logic before navigating
-  //   if (confirm('Are you sure you want to navigate?')) {
-  //     router.push(`/whiteboard/${newBoardId}`);
-  //   }
-  // };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
@@ -62,9 +54,9 @@ const handleCreateNewBoard = async () => {
           type="text"
           placeholder="Enter Whiteboard ID"
           className="px-3 py-2 border rounded mr-2"
-          onChange={(e) => setNewBoardId(e.target.value)}
+          onChange={(e) => setOldBoardId(e.target.value)}
         />
-        <Link href={`/whiteboard/[id]`} as={`/whiteboard/${newBoardId}`} passHref>
+        <Link href={`/whiteboard/[id]`} as={`/whiteboard/${oldBoardId}`} passHref>
           <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
             Join Whiteboard
           </button>
