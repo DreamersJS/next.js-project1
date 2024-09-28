@@ -24,6 +24,10 @@ const Whiteboard = ({ id }) => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
+    // Set ARIA attributes on canvas for accessibility
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', `Interactive whiteboard session ID: ${whiteboardId}`);
+
     // Listen for the initial drawing state from the server
     socket.on('initDrawings', (shapes) => {
       setDrawnShapes(shapes);
@@ -231,7 +235,7 @@ const Whiteboard = ({ id }) => {
 
   const handleUndo = () => socket.emit('undo');
   const handleRedo = () => socket.emit('redo');
-  
+
   const handleClear = () => {
     const confirmClear = window.confirm("Are you sure you want to clear the board? This will clear the board for everyone!");
     if (confirmClear) {
