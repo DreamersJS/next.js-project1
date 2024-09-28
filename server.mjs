@@ -1,4 +1,3 @@
-// server.mjs
 import { createServer } from 'http';
 import { parse } from 'url';
 import next from 'next';
@@ -20,6 +19,8 @@ app.prepare().then(() => {
   const io = new socketIo(server);
 
   let drawnShapes = [];
+  let undoStack = [];
+  let redoStack = [];
 
   io.on('connection', (socket) => {
     console.log('New client connected');
@@ -35,13 +36,38 @@ app.prepare().then(() => {
     socket.on('draw', (data) => {
       // Save the new shape
       drawnShapes.push(data);
+      undoStack.push(data); // Add to the undo stack
+      redoStack = []; // Clear the redo stack as the new action invalidates future redos
 
       // Broadcast the drawing event to all clients, including the sender
       io.emit('draw', data);
     });
 
     socket.on('clear', () => {
-      socket.broadcast.emit('clear');
+      drawnShapes = [];
+      undoStack = [];
+      redoStack = [];
+      io.emit('clear');
+    });
+
+    socket.on('undo', () => {
+      if (undoStack.length > 0) {
+        const shape = undoStack.pop();
+        redoStack.push(shape);
+        drawnShapes = undoStack.slice(); // Update drawnShapes to reflect the undo action
+
+        io.emit('initDrawings', drawnShapes); // Send updated shapes to all clients
+      }
+    });
+
+    socket.on('redo', () => {
+      if (redoStack.length > 0) {
+        const shape = redoStack.pop();
+        undoStack.push(shape);
+        drawnShapes.push(shape);
+
+        io.emit('draw', shape); // Send the redone shape to all clients
+      }
     });
 
     socket.on('disconnect', () => {

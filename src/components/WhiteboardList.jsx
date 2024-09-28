@@ -1,4 +1,4 @@
-// app/page.js or any other component file
+// components/WhiteboardList.jsx
 'use client';
 
 import Link from 'next/link';
@@ -54,9 +54,9 @@ export default function WhiteboardList() {
       <h2 className="text-2xl font-bold mb-4">Available Whiteboards</h2>
       <ul>
         {whiteboards.map((whiteboard) => (
-          <li className="bg-white p-4 rounded shadow-md" key={whiteboard.id}>
-            <Link href={`/whiteboard/[id]`} as={`/whiteboard/${whiteboard.id}`} passHref>
-            Whiteboard ID: {whiteboard.id}
+          <li className="bg-white p-4 rounded shadow-md hover:bg-gray-100 transition-colors" key={whiteboard.id}>
+            <Link href={`/whiteboard/[id]`} as={`/whiteboard/${whiteboard.id}`} passHref className="text-blue-500 hover:underline" aria-label={`Go to whiteboard ${whiteboard.id}`}>
+              Whiteboard ID: {whiteboard.id}
             </Link>
           </li>
         ))}
