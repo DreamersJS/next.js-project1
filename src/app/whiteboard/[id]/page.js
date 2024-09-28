@@ -9,8 +9,10 @@ const WhiteboardPage = ({ params }) => {
   const { id } = params; // Access the dynamic ID from the URL
 
   return (
-    <div>
-      <h3 className='mt-4'>Whiteboard Session: {id}</h3>
+    <div aria-labelledby="whiteboard-session-heading" role="main" className="p-4">
+      <h3 id="whiteboard-session-heading" className="mt-4 text-xl font-semibold" aria-label={`Whiteboard Session ID: ${id}`}>
+        Whiteboard Session: {id}
+      </h3>
       <Whiteboard id={id} /> {/* Passing the ID to the Whiteboard component */}
     </div>
   );

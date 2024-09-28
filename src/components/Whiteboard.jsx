@@ -24,6 +24,10 @@ const Whiteboard = ({ id }) => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
+    // Set ARIA attributes on canvas for accessibility
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', `Interactive whiteboard session ID: ${whiteboardId}`);
+
     // Listen for the initial drawing state from the server
     socket.on('initDrawings', (shapes) => {
       setDrawnShapes(shapes);
@@ -336,15 +340,24 @@ const Whiteboard = ({ id }) => {
           onFillToggle={handleFillToggle}
         />
         <div className='flex flex-row'>
-          <button onClick={handleSaveAsImage} className="px-4 py-2 mt-2 border rounded bg-green-500 text-white">
+          <button
+            onClick={handleSaveAsImage}
+            aria-label="Save the current whiteboard as an image"
+            className="px-4 py-2 mt-2 border rounded bg-green-500 text-white">
             Save
           </button>
-          <button onClick={() => handleLoad(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
+          <button
+            onClick={() => handleLoad(whiteboardId)}
+            aria-label="Load the whiteboard session"
+            className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
             Load
           </button>
         </div>
         <div className='flex'>
-          <button onClick={() => deleteWhiteboard(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-red-500 text-white">
+          <button
+            onClick={() => deleteWhiteboard(whiteboardId)}
+            aria-label="Delete this whiteboard session"
+            className="px-4 py-2 mt-2 border rounded bg-red-500 text-white">
             Delete
           </button>
         </div>
