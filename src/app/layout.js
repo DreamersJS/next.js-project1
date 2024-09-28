@@ -10,7 +10,7 @@ export default function RootLayout({ children }) {
         <meta name="description" content="Collaborate on a whiteboard in real-time" />
         <meta property="og:title" content="Whiteboard App" />
         <meta property="og:description" content="Collaborate on a whiteboard in real-time" />
-        <meta property="og:image" content="/thumbnail.jpg" />
+        {/* <meta property="og:image" content="/thumbnail.jpg" /> */}
       </Head>
       <body>
         {/* <header>My Whiteboard App</header> */}

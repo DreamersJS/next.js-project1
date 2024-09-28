@@ -89,8 +89,8 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
 
       {/* Undo & Redo Buttons */}
       <div className='flex flex-row'>
-      <button onClick={onUndo} className="px-4 py-2 border rounded bg-green-400 text-black" aria-label="Undo" title="Undo"><FaUndo className="mr-2" /></button>
-      <button onClick={onRedo} className="px-4 py-2 border rounded bg-green-400 text-black" aria-label="Redo" title="Redo"><FaRedo className="mr-2" /></button>
+      <button onClick={onUndo} className="px-4 py-2 border rounded bg-blue-400 text-black" aria-label="Undo" title="Undo"><FaUndo className="mr-2" /></button>
+      <button onClick={onRedo} className="px-4 py-2 border rounded bg-blue-400 text-black" aria-label="Redo" title="Redo"><FaRedo className="mr-2" /></button>
       </div>
 
       {/* Color Picker */}

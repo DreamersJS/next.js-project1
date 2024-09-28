@@ -346,7 +346,7 @@ const Whiteboard = ({ id }) => {
           onRedo={handleRedo}
         />
         <div className='flex flex-row'>
-          <button onClick={handleSaveAsImage} className="px-4 py-2 mt-2 border rounded bg-green-500 text-white">
+          <button onClick={handleSaveAsImage} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
             Save
           </button>
           <button onClick={() => handleLoad(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
@@ -360,7 +360,7 @@ const Whiteboard = ({ id }) => {
         </div>
       </div>
       {/* Canvas */}
-      <div className="flex grow w-full h-full overflow-hidden p-2 items-center justify-center">
+      <div className="flex grow w-full h-full overflow-hidden p-0 pl-2 items-center justify-center">
         <canvas ref={canvasRef} className="border bg-white w-full h-full"></canvas>
       </div>
     </div>
