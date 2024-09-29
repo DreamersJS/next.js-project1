@@ -6,7 +6,6 @@
 import Link from 'next/link';
 import { useState, Suspense, lazy } from 'react';
 import { createNewWhiteboard } from '../app/services/whiteboardService';
-// import  WhiteboardList  from '@/components/WhiteboardList';
 const WhiteboardList = lazy(() => import('@/components/WhiteboardList'));
 
 export default function HomePage() {
@@ -15,7 +14,7 @@ export default function HomePage() {
 
   const handleCreateNewBoard = async () => {
     try {
-      const data = await createNewWhiteboard(); // Directly await the obj
+      const data = await createNewWhiteboard();
       setNewBoardId(data.id);
       console.log('New Whiteboard Created:', data.id);
     } catch (error) {

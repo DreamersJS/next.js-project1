@@ -2,18 +2,14 @@
 import Chat from "@/components/Chat";
 import { AuthProvider } from "@/components/AuthProvider";
 
-export const metadata = {
-  title: "Online Drawing Whiteboard App",
-  description: "The Online Whiteboard with Real-Time Collaboration project is a fantastic way for users to draw and collaborate in real-time. Multiple users should be able to draw on the board simultaneously, with freehand drawing (pen, pencil), shapes (rectangle, circle, lines). Users can select different colors and brush sizes for drawing. The app should also have an eraser tool to erase the drawings. The app should have a chat feature where users can chat with each other while drawing. The app should have a feature to clear the board. The app should have a feature to undo the last action.",
-};
-
 export default function WhiteboardLayout({ children }) {
   return (
     <div className="flex m-1 p-0 h-full overflow-hidden absolute">
+
       {/* Main Content - Whiteboard */}
       <main className="flex-grow bg-white p-0 flex items-center justify-center">
         <AuthProvider>
-          {children} {/* Render whiteboard content here */}
+          {children}
         </AuthProvider>
       </main>
 
