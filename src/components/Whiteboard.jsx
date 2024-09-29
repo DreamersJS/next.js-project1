@@ -3,6 +3,9 @@ import { useRef, useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import { useRouter } from 'next/navigation'
 import DrawingTools from './DrawingTools';
+import { useRecoilValue } from "recoil";
+import { userState } from "@/recoil/atoms/userAtom";
+import UserAvatar from './UserAvatar';
 
 const socket = io();
 
@@ -17,6 +20,10 @@ const Whiteboard = ({ id }) => {
   const [drawnShapes, setDrawnShapes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
+  const [mousePositions, setMousePositions] = useState({});
+  // Get the current user from Recoil
+  const user = useRecoilValue(userState);
+  const username = user.username;
   let previewCounter = 0;
   const granularity = 5;
 
@@ -40,6 +47,13 @@ const Whiteboard = ({ id }) => {
 
     socket.on('previewDraw', (shape) => {
       drawShape(context, shape, true); // Preview draw without finalizing
+    });
+
+    socket.on('mousemove', (data) => {
+      setMousePositions((prevPositions) => ({
+        ...prevPositions,
+        [data.username]: data,
+      }));
     });
 
     socket.on('clear', () => {
@@ -148,6 +162,14 @@ const Whiteboard = ({ id }) => {
     };
 
     const handleMouseMove = (e) => {
+      const mouseData = {
+        username,
+        x: e.clientX,
+        y: e.clientY,
+        avatar: user.avatar
+      };
+      socket.emit('mousemove', mouseData);
+
       if (!isDrawing) return;
 
       const x = e.clientX - canvas.offsetLeft;
@@ -334,36 +356,57 @@ const Whiteboard = ({ id }) => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Drawing tools and Save, Load, Delete buttons */}
-      <div className="w-44 bg-gray-200 p-2 border-r border-gray-300">
-        <DrawingTools
-          onToolChange={handleToolChange}
-          onClear={handleClear}
-          onColorChange={handleColorChange}
-          onFillToggle={handleFillToggle}
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-        />
-        <div className='flex flex-row'>
-          <button onClick={handleSaveAsImage} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
-            Save
-          </button>
-          <button onClick={() => handleLoad(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
-            Load
-          </button>
+    <>
+      <div className="flex h-screen overflow-hidden">
+        {/* Drawing tools and Save, Load, Delete buttons */}
+        <div className="w-44 bg-gray-200 p-2 border-r border-gray-300">
+          <DrawingTools
+            onToolChange={handleToolChange}
+            onClear={handleClear}
+            onColorChange={handleColorChange}
+            onFillToggle={handleFillToggle}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+          />
+          <div className='flex flex-row'>
+            <button onClick={handleSaveAsImage} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
+              Save
+            </button>
+            <button onClick={() => handleLoad(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
+              Load
+            </button>
+          </div>
+          <div className='flex'>
+            <button onClick={() => deleteWhiteboard(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-red-500 text-white">
+              Delete
+            </button>
+          </div>
         </div>
-        <div className='flex'>
-          <button onClick={() => deleteWhiteboard(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-red-500 text-white">
-            Delete
-          </button>
+        {/* Canvas */}
+        <div className="flex grow w-full h-full overflow-hidden p-0 pl-2 items-center justify-center">
+          <canvas ref={canvasRef} className="border bg-white w-full h-full"></canvas>
         </div>
+
+
       </div>
-      {/* Canvas */}
-      <div className="flex grow w-full h-full overflow-hidden p-0 pl-2 items-center justify-center">
-        <canvas ref={canvasRef} className="border bg-white w-full h-full"></canvas>
+      <div className="relative w-full h-full bg-white">
+        {Object.values(mousePositions).map((user) => (
+          <div
+            key={user.username}
+            style={{
+              position: 'absolute',
+              top: user.y,
+              left: user.x,
+              pointerEvents: 'none', // Prevent interfering with drawing
+              transform: 'translate(-50%, -50%)', // Center the avatar on the cursor
+            }}
+          >
+            <UserAvatar username={user.username} avatar={user.avatar} />
+          </div>
+        ))}
       </div>
-    </div>
+
+    </>
   );
 };
 

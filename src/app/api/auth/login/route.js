@@ -4,8 +4,8 @@ import { database } from '@/lib/firebase';
 import { get, ref } from 'firebase/database';
 
 export async function POST(req) {
-  const { username, password } = await req.json();
-  const userRef = ref(database, `users/${username}`);
+  const { email, password } = await req.json();
+  const userRef = ref(database, `users/${email}`);
 
   try {
     const snapshot = await get(userRef);

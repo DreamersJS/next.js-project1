@@ -1,10 +1,10 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getDatabase } from 'firebase/database';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-// https://whiteboard-4bb76-default-rtdb.europe-west1.firebasedatabase.app/
-// Your web app's Firebase configuration
+import { getAuth } from 'firebase/auth';
+
+import dotenv from 'dotenv';
+dotenv.config(); 
+
 const firebaseConfig = {
   apiKey: "AIzaSyD4WKVJHyacrwtjJ8YtJzE1Z14ozGlnq84",
   authDomain: "whiteboard-4bb76.firebaseapp.com",
@@ -15,8 +15,19 @@ const firebaseConfig = {
   databaseURL:"https://whiteboard-4bb76-default-rtdb.europe-west1.firebasedatabase.app/"
 };
 
+// const firebaseConfig = {
+//   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+//   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+//   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+//   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+//   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+//   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+//   databaseURL:NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+// };
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+const auth = getAuth(app);
 
-export { database };
+export { database, auth };
