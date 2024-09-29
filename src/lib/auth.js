@@ -7,7 +7,7 @@ import {
   signOut,
   updateProfile,
 } from 'firebase/auth';
-import { ref, set } from "firebase/database";
+import { ref, set, get } from "firebase/database";
 
 /**
  * Register a new user
@@ -35,7 +35,8 @@ export const registerUser = async (email, password) => {
 export const loginUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
+    const user = userCredential.user;
+    return user;
   } catch (error) {
     console.error('Error logging in user:', error);
     throw error;
@@ -53,10 +54,11 @@ export const loginAsGuest = async () => {
     const username = `guest${Math.floor(Math.random() * 10000)}`;
     const avatarUrl = `https://api.adorable.io/avatars/285/${username}.png`;
 
-    await updateProfile(userCredential.user, { username });
+    await updateProfile(userCredential.user, { displayName: username  });
       // Save guest user data to the database
       const userData = {
-        username,
+        uid: userCredential.user.uid,
+        username: userCredential.user.displayName,
         avatar: avatarUrl,
         listOfWhiteboardIds: [],
       };
@@ -73,5 +75,27 @@ export const logoutUser = async () => {
     await signOut(auth);
   } catch (error) {
     console.error('Error logging out:', error);
+  }
+};
+
+/**
+ * 
+ * @param {string} uid 
+ * @returns  snapshot.val()
+ */
+export const getUserByUid = async (uid) => {
+  try {
+    const userRef = ref(database, `users/${uid}`);
+    const snapshot = await get(userRef);
+
+    if (snapshot.exists()) {
+      const userData = snapshot.val();
+      return userData;
+    } else {
+      throw new Error('User not found');
+    }
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    throw error;
   }
 };

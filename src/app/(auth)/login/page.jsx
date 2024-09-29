@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { loginUser, loginAsGuest } from "@/lib/auth";
+import { loginUser, loginAsGuest, getUserByUid } from "@/lib/auth";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
@@ -16,24 +16,19 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       const user = await loginUser(email, password);
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-    });
-    if (response.ok) {
-      // Update the user state in Recoil
-      setUser({
-        uid: user.uid,
-        email: user.email,
-        username: user.username || "Unknown",
-        avatar: user.avatar || null,
-        listOfWhiteboardIds: user.listOfWhiteboardIds || [],
-      });
+      console.log(`user.uid: ${user.uid}`);
+
+        const userData = await getUserByUid(user.uid);
+        console.log('userData:', userData);
+        // Update the user state in Recoil
+        setUser({
+          uid: user.uid,
+          email: user.email,
+          username: userData.username || "Unknown",
+          avatar: userData.avatar || null,
+          listOfWhiteboardIds: userData.listOfWhiteboardIds || [],
+        });
         router.push("/");
-    }
     } catch (error) {
       setError(error.message);
     }
