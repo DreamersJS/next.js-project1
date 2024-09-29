@@ -4,6 +4,8 @@ import "@/app/globals.css";
 import Head from 'next/head';
 import { RecoilRoot } from "recoil";
 import Logout  from "@/components/Logout";
+import { AuthProvider } from "@/components/AuthProvider";
+
 
 export default function RootLayout({ children }) {
   return (

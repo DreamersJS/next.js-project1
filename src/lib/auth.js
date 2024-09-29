@@ -48,26 +48,34 @@ export const loginUser = async (email, password) => {
  * @returns userCredential.user
  */
 export const loginAsGuest = async () => {
+  try {
     const userCredential = await signInAnonymously(auth);
 
     // Set a username for the guest (e.g., guest123) and avatar
     const username = `guest${Math.floor(Math.random() * 10000)}`;
-    const avatarUrl = `https://api.adorable.io/avatars/285/${username}.png`;
+    const avatarUrl = `https://ui-avatars.com/api/?name=${username}&background=random&size=128`;
 
-    await updateProfile(userCredential.user, { displayName: username  });
-      // Save guest user data to the database
-      const userData = {
-        uid: userCredential.user.uid,
-        username: userCredential.user.displayName,
-        avatar: avatarUrl,
-        listOfWhiteboardIds: [],
-      };
-  
-      const userRef = ref(database, `users/${user.uid}`);
-      await set(userRef, userData);
-  
-    return userCredential.user;
-  };
+    // Update the guest user's profile with a username
+    await updateProfile(userCredential.user, { displayName: username });
+
+    // Save guest user data to the database
+    const userData = {
+      uid: userCredential.user.uid,
+      username: username, // Use the generated username
+      avatar: avatarUrl,
+      listOfWhiteboardIds: [],
+    };
+
+    const userRef = ref(database, `users/${userCredential.user.uid}`);
+    await set(userRef, userData);
+
+    return userCredential.user; 
+  } catch (error) {
+    console.error('Error logging in as guest:', error);
+    throw error; 
+  }
+};
+
 
 // Logout the current user
 export const logoutUser = async () => {
