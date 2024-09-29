@@ -4,8 +4,6 @@ import "@/app/globals.css";
 import Head from 'next/head';
 import { RecoilRoot } from "recoil";
 import Logout  from "@/components/Logout";
-import { AuthProvider } from "@/components/AuthProvider";
-
 
 export default function RootLayout({ children }) {
   return (
@@ -18,9 +16,12 @@ export default function RootLayout({ children }) {
       </Head>
       <body>
         <RecoilRoot>
-        <header>My Whiteboard App <Logout/> </header>
-          <main>{children}</main>
-        {/* <footer>© 2024 Whiteboard Inc.</footer> */}
+        <header
+        className="bg-blue-600 text-white py-2 px-8 flex justify-between items-center shadow-md">
+          My Whiteboard App <Logout/> 
+          </header>
+          <main className="container mx-auto p-4">{children}</main>
+        <footer className="bg-gray-800 text-white text-center py-4 mt-8">© 2024 Whiteboard Inc.</footer>
         </RecoilRoot>
       </body>
     </html>
