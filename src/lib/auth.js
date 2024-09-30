@@ -37,10 +37,15 @@ export const loginUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-     
-    // Set the authenticated cookie
-    Cookies.set('auth', 'true', { expires: 1 }); // Expires in 1 day
-   
+
+    // Set the authenticated cookie with the correct attributes
+    Cookies.set('auth', 'true', {
+      expires: 1,        // 1 day
+      path: '/',         // Available across all routes
+      sameSite: 'Lax',   // Ensure it’s sent with requests
+      secure: process.env.NODE_ENV === 'production', // Only set 'secure' in production
+    });
+
     return user;
   } catch (error) {
     console.error('Error logging in user:', error);
@@ -56,17 +61,15 @@ export const loginAsGuest = async () => {
   try {
     const userCredential = await signInAnonymously(auth);
 
-    // Set a username for the guest (e.g., guest123) and avatar
+    // Set up guest user profile
     const username = `guest${Math.floor(Math.random() * 10000)}`;
     const avatarUrl = `https://ui-avatars.com/api/?name=${username}&background=random&size=128`;
 
-    // Update the guest user's profile with a username
     await updateProfile(userCredential.user, { displayName: username });
 
-    // Save guest user data to the database
     const userData = {
       uid: userCredential.user.uid,
-      username: username, // Use the generated username
+      username: username,
       avatar: avatarUrl,
       listOfWhiteboardIds: [],
     };
@@ -75,7 +78,12 @@ export const loginAsGuest = async () => {
     await set(userRef, userData);
 
     // Set the authenticated cookie
-    Cookies.set('auth', 'true', { expires: 1 }); // Expires in 1 day
+    Cookies.set('auth', 'true', {
+      expires: 1,
+      path: '/',
+      sameSite: 'Lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
 
     return userCredential.user; 
   } catch (error) {
@@ -83,6 +91,7 @@ export const loginAsGuest = async () => {
     throw error; 
   }
 };
+
 
 
 // Logout the current user
