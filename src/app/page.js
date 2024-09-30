@@ -1,25 +1,32 @@
 // app/page.js
-// introduction(?maybe pics,text or interactive tutorial?), links to join or create a whiteboard session, or perhaps show recent or available whiteboards.
-// WhiteboardList is for registered users, not for guests.
 'use client';
 
-import Link from 'next/link';
 import { useState, Suspense, lazy } from 'react';
+import { useRouter } from 'next/navigation';
 import { createNewWhiteboard } from '../app/services/whiteboardService';
-// import  WhiteboardList  from '@/components/WhiteboardList';
 const WhiteboardList = lazy(() => import('@/components/WhiteboardList'));
 
 export default function HomePage() {
   const [newBoardId, setNewBoardId] = useState('');
   const [oldBoardId, setOldBoardId] = useState('');
+  const router = useRouter();
 
   const handleCreateNewBoard = async () => {
     try {
-      const data = await createNewWhiteboard(); // Directly await the obj
+      const data = await createNewWhiteboard();
       setNewBoardId(data.id);
       console.log('New Whiteboard Created:', data.id);
+      // Programmatically navigate to the new whiteboard page
+      router.push(`/whiteboard/${data.id}`);
     } catch (error) {
       console.error('Error creating whiteboard:', error);
+    }
+  };
+
+  const handleJoinBoard = () => {
+    if (oldBoardId) {
+      // Programmatically navigate to the existing whiteboard page
+      router.push(`/whiteboard/${oldBoardId}`);
     }
   };
 
@@ -45,11 +52,13 @@ export default function HomePage() {
         {/* Display the link to the new whiteboard once created */}
         {newBoardId && (
           <div className="mt-4" aria-live="polite" aria-atomic="true">
-            <Link href={`/whiteboard/${newBoardId}`} passHref>
-              <button className="text-blue-500 underline" aria-label={`Go to your new whiteboard session with ID ${newBoardId}`}>
-                Go to your new whiteboard session: {newBoardId}
-              </button>
-            </Link>
+            <button
+              onClick={() => router.push(`/whiteboard/${newBoardId}`)}
+              className="text-blue-500 underline"
+              aria-label={`Go to your new whiteboard session with ID ${newBoardId}`}
+            >
+              Go to your new whiteboard session: {newBoardId}
+            </button>
           </div>
         )}
       </div>
@@ -68,15 +77,14 @@ export default function HomePage() {
           value={oldBoardId}
           onChange={(e) => setOldBoardId(e.target.value)}
         />
-        <Link href={`/whiteboard/[id]`} as={`/whiteboard/${oldBoardId}`} passHref>
-          <button 
-            disabled={!oldBoardId} 
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-            aria-label="Join the whiteboard session"
-          >
-            Join Whiteboard
-          </button>
-        </Link>
+        <button
+          onClick={handleJoinBoard}
+          disabled={!oldBoardId}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          aria-label="Join the whiteboard session"
+        >
+          Join Whiteboard
+        </button>
       </div>
 
       {/* Recent Whiteboards */}

@@ -33,6 +33,11 @@ app.prepare().then(() => {
       socket.broadcast.emit('previewDraw', data);
     });
 
+    // Broadcast mouse movement to other clients
+    socket.on('mousemove', (data) => {
+      socket.broadcast.emit('mousemove', data);
+    });
+
     socket.on('draw', (data) => {
       // Save the new shape
       drawnShapes.push(data);
