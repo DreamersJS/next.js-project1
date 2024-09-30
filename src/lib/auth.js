@@ -72,7 +72,6 @@ export const loginAsGuest = async () => {
       uid: userCredential.user.uid,
       username: username,
       avatar: avatarUrl,
-      listOfWhiteboardIds: [],
       role: 'guest',
     };
 
