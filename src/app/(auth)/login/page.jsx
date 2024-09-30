@@ -1,12 +1,15 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { loginUser, loginAsGuest, getUserByUid } from "@/lib/auth";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
 const LoginPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get("redirect"); // Retrieve the 'redirect' query parameter
+console.log('redirectPath:', redirectPath);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,17 +21,22 @@ const LoginPage = () => {
       const user = await loginUser(email, password);
       console.log(`user.uid: ${user.uid}`);
 
-        const userData = await getUserByUid(user.uid);
-        console.log('userData:', userData);
-        // Update the user state in Recoil
-        setUser({
-          uid: user.uid,
-          email: user.email,
-          username: userData.username || "Unknown",
-          avatar: userData.avatar || null,
-          listOfWhiteboardIds: userData.listOfWhiteboardIds || [],
-        });
+      const userData = await getUserByUid(user.uid);
+      console.log('userData:', userData);
+      // Update the user state in Recoil
+      setUser({
+        uid: user.uid,
+        email: user.email,
+        username: userData.username || "Unknown",
+        avatar: userData.avatar || null,
+        listOfWhiteboardIds: userData.listOfWhiteboardIds || [],
+      });
+      // Redirect to the original path if available or to the home page
+      if (redirectPath) {
+        router.push(redirectPath);
+      } else {
         router.push("/");
+      }
     } catch (error) {
       setError(error.message);
     }
@@ -45,7 +53,12 @@ const LoginPage = () => {
         avatar: user.avatar,
         listOfWhiteboardIds: user.listOfWhiteboardIds,
       });
-      router.push("/");
+
+      if (redirectPath) {
+        router.push(redirectPath);
+      } else {
+        router.push("/");
+      }
     } catch (error) {
       setError(error.message);
     }

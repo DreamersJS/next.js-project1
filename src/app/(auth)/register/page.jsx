@@ -1,13 +1,16 @@
 // app/(auth)/register/page.jsx
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { registerUser } from "@/lib/auth";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
 const RegisterPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get("redirect"); 
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -21,28 +24,33 @@ const RegisterPage = () => {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, email, password }),
-    });
-
-    console.log('response:', response);
-    if (response.ok) {
-      const data = await response.json();
-      const user = data.user;
-      console.log('User registered:', user);
-      setUser({
-        uid: user.uid,
-        email: user.email,
-        username: user.username || "Unknown",
-        avatar: user.avatar || null,
-        listOfWhiteboardIds: user.listOfWhiteboardIds || [],
       });
-        router.push("/");
-    }else {
-      const errorData = await response.json();
-      setError(errorData.error || "Registration failed");
-    }
+
+      console.log('response:', response);
+      if (response.ok) {
+        const data = await response.json();
+        const user = data.user;
+        console.log('User registered:', user);
+        setUser({
+          uid: user.uid,
+          email: user.email,
+          username: user.username || "Unknown",
+          avatar: user.avatar || null,
+          listOfWhiteboardIds: user.listOfWhiteboardIds || [],
+        });
+
+        if (redirectPath) {
+          router.push(redirectPath);
+        } else {
+          router.push("/login");
+        }
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || "Registration failed");
+      }
     } catch (error) {
       setError(error.message);
     }

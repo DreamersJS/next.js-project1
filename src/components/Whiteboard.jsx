@@ -1,3 +1,4 @@
+// components/Whiteboard.jsx
 "use client";
 import { useRef, useEffect, useState } from 'react';
 import io from 'socket.io-client';
@@ -5,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
-import UserAvatar from './UserAvatar';
 
 const socket = io();
 
@@ -20,7 +20,6 @@ const Whiteboard = ({ id }) => {
   const [drawnShapes, setDrawnShapes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
-  const [mousePositions, setMousePositions] = useState({});
   // Get the current user from Recoil
   const user = useRecoilValue(userState);
   const username = user.username;
@@ -147,8 +146,10 @@ const Whiteboard = ({ id }) => {
     };
 
     const handleMouseDown = (e) => {
-      const x = e.clientX - canvas.offsetLeft;
-      const y = e.clientY - canvas.offsetTop;
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
       setStartPosition({ x, y });
       setCurrentPosition({ x, y });
       setIsDrawing(true);
@@ -161,19 +162,14 @@ const Whiteboard = ({ id }) => {
       }
     };
 
-    const handleMouseMove = (e) => {
-      const mouseData = {
-        username,
-        x: e.clientX,
-        y: e.clientY,
-        avatar: user.avatar
-      };
-      socket.emit('mousemove', mouseData);
 
+    const handleMouseMove = (e) => {
       if (!isDrawing) return;
 
-      const x = e.clientX - canvas.offsetLeft;
-      const y = e.clientY - canvas.offsetTop;
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
       setCurrentPosition({ x, y });
 
       if (tool === 'pen' || tool === 'eraser') {
@@ -387,23 +383,6 @@ const Whiteboard = ({ id }) => {
           <canvas ref={canvasRef} className="border bg-white w-full h-full"></canvas>
         </div>
 
-
-      </div>
-      <div className="relative w-full h-full bg-white">
-        {Object.values(mousePositions).map((user) => (
-          <div
-            key={user.username}
-            style={{
-              position: 'absolute',
-              top: user.y,
-              left: user.x,
-              pointerEvents: 'none', // Prevent interfering with drawing
-              transform: 'translate(-50%, -50%)', // Center the avatar on the cursor
-            }}
-          >
-            <UserAvatar username={user.username} avatar={user.avatar} />
-          </div>
-        ))}
       </div>
 
     </>

@@ -8,6 +8,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { ref, set, get } from "firebase/database";
+import Cookies from 'js-cookie'; // Import js-cookie
 
 /**
  * Register a new user
@@ -36,6 +37,10 @@ export const loginUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+     
+    // Set the authenticated cookie
+    Cookies.set('auth', 'true', { expires: 1 }); // Expires in 1 day
+   
     return user;
   } catch (error) {
     console.error('Error logging in user:', error);
@@ -69,6 +74,9 @@ export const loginAsGuest = async () => {
     const userRef = ref(database, `users/${userCredential.user.uid}`);
     await set(userRef, userData);
 
+    // Set the authenticated cookie
+    Cookies.set('auth', 'true', { expires: 1 }); // Expires in 1 day
+
     return userCredential.user; 
   } catch (error) {
     console.error('Error logging in as guest:', error);
@@ -81,6 +89,7 @@ export const loginAsGuest = async () => {
 export const logoutUser = async () => {
   try {
     await signOut(auth);
+    Cookies.remove('auth'); // Remove the auth cookie
   } catch (error) {
     console.error('Error logging out:', error);
   }
