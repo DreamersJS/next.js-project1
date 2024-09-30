@@ -45,6 +45,7 @@ export const loginUser = async (email, password) => {
       sameSite: 'Lax',   // Ensure it’s sent with requests
       secure: process.env.NODE_ENV === 'production', // Only set 'secure' in production
     });
+    console.log('Cookie set:', Cookies.get('auth')); 
 
     return user;
   } catch (error) {
@@ -72,6 +73,7 @@ export const loginAsGuest = async () => {
       username: username,
       avatar: avatarUrl,
       listOfWhiteboardIds: [],
+      role: 'guest',
     };
 
     const userRef = ref(database, `users/${userCredential.user.uid}`);
@@ -84,6 +86,7 @@ export const loginAsGuest = async () => {
       sameSite: 'Lax',
       secure: process.env.NODE_ENV === 'production',
     });
+    console.log('Cookie set:', Cookies.get('auth')); 
 
     return userCredential.user; 
   } catch (error) {

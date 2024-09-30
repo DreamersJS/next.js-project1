@@ -9,17 +9,22 @@ const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect"); // Retrieve the 'redirect' query parameter
-console.log('redirectPath:', redirectPath);
+  console.log('redirectPath:', redirectPath);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const setUser = useSetRecoilState(userState);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const user = await loginUser(email, password);
       console.log(`user.uid: ${user.uid}`);
+
+      // Set a short delay or confirm cookie is set
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const userData = await getUserByUid(user.uid);
       console.log('userData:', userData);
@@ -39,6 +44,8 @@ console.log('redirectPath:', redirectPath);
       }
     } catch (error) {
       setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -81,7 +88,9 @@ console.log('redirectPath:', redirectPath);
           onChange={(e) => setPassword(e.target.value)}
           className="border p-2"
         />
-        <button type="submit" className="bg-blue-500 text-white p-2">Login</button>
+        <button type="submit" className="bg-blue-500 text-white p-2" disabled={isLoading}>
+          {isLoading ? 'Logging in...' : 'Login'} {/* Disable and show loading text */}
+        </button>
       </form>
       <br />or<br />
       <button onClick={handleGuestLogin} className="bg-green-500 text-white p-2 mt-4">

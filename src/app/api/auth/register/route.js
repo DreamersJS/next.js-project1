@@ -30,6 +30,7 @@ export async function POST(req) {
       username: user.displayName,
       avatar: avatarUrl,
       listOfWhiteboardIds: [],
+      role: 'user',
     };
 
     const userRef = ref(database, `users/${user.uid}`); // add IndexOn rule in firebase console
