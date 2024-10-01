@@ -364,14 +364,14 @@ const Whiteboard = ({ id }) => {
             onUndo={handleUndo}
             onRedo={handleRedo}
           />
-          <div className='flex flex-row'>
+          {user?.role === 'registered' && (<div className='flex flex-row'>
             <button onClick={handleSaveAsImage} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
               Save
             </button>
             <button onClick={() => handleLoad(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
               Load
             </button>
-          </div>
+          </div>)}
           <div className='flex'>
             <button onClick={() => deleteWhiteboard(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-red-500 text-white">
               Delete
