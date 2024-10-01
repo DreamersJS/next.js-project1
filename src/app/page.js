@@ -24,7 +24,7 @@ export default function HomePage() {
 
   const handleCreateNewBoard = async () => {
     try {
-      const data = await createNewWhiteboard();
+      const data = await createNewWhiteboard(user.uid);
       setNewBoardId(data.id);
       console.log('New Whiteboard Created:', data.id);
       router.push(`/whiteboard/${data.id}`);
