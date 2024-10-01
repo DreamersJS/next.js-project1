@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import { userState } from '@/recoil/atoms/userAtom';
+import { deleteWhiteboard } from '@/app/services/whiteboardService';
 
 export default function WhiteboardList() {
   const user = useRecoilValue(userState); 
@@ -64,24 +65,50 @@ export default function WhiteboardList() {
     return <div className="mt-8">No whiteboards available</div>;
   }
 
+  // Function to handle the deletion of a whiteboard
+  const handleDeleteWhiteboard = async (event, whiteboardId) => {
+    event.stopPropagation(); // Prevents the event from bubbling up to parent elements
+
+    try {
+      await deleteWhiteboard(user.uid, whiteboardId);
+
+      // Remove the whiteboard from the local state
+      setWhiteboards((prevWhiteboards) =>
+        prevWhiteboards.filter((whiteboard) => whiteboard.id !== whiteboardId)
+      );
+    } catch (error) {
+      console.error('Error deleting whiteboard:', error);
+    }
+  };
+
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Your Whiteboards</h2>
       <ul>
         {whiteboards.map((whiteboard) => (
           <li
-            className="bg-white p-4 rounded shadow-md hover:bg-gray-100 transition-colors"
+            className="bg-white p-4 rounded shadow-md hover:bg-gray-100 transition-colors flex justify-between items-center"
             key={whiteboard.id}
           >
+            {/* Whiteboard Link */}
             <Link
               href={`/whiteboard/[id]`}
               as={`/whiteboard/${whiteboard.id}`}
               passHref
-              className="text-blue-500 hover:underline"
+              className="text-blue-500 hover:underline flex-grow"
               aria-label={`Go to whiteboard ${whiteboard.id}`}
             >
               Whiteboard ID: {whiteboard.id}
             </Link>
+            
+            {/* Delete Button */}
+            <button
+              className="text-red-500 hover:text-red-700 ml-4"
+              onClick={(event) => handleDeleteWhiteboard(event, whiteboard.id)}
+              aria-label={`Delete whiteboard ${whiteboard.id}`}
+            >
+              x
+            </button>
           </li>
         ))}
       </ul>
