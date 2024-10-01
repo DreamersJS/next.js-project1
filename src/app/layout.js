@@ -4,8 +4,13 @@ import "@/app/globals.css";
 import Head from 'next/head';
 import { RecoilRoot } from "recoil";
 import Logout from "@/components/Logout";
+import  UserAvatar  from "@/components/UserAvatar";
+import { useRouter } from 'next/navigation';
+
 
 export default function RootLayout({ children }) {
+  const router = useRouter();
+
   return (
     <html lang="en" className="h-full">
       <Head>
@@ -17,7 +22,11 @@ export default function RootLayout({ children }) {
       <body className="bg-gray-100 min-h-screen flex flex-col">
         <RecoilRoot>
           <header className="bg-blue-600 text-white py-2 px-8 flex justify-between items-center shadow-md">
-          My Whiteboard App
+            <button onClick={() => router.push(`/`)}
+            >
+              My Whiteboard App
+            </button>
+            <UserAvatar />
             <Logout />
           </header>
           <main className="flex-grow container mx-auto p-2">{children}</main>

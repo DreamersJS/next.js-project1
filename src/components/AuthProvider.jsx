@@ -1,7 +1,7 @@
 // components/AuthProvider.jsx
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "@/lib/firebase";
+import { auth } from "@/app/services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 

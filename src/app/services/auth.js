@@ -64,7 +64,7 @@ export const loginAsGuest = async () => {
 
     // Set up guest user profile
     const username = `guest${Math.floor(Math.random() * 10000)}`;
-    const avatarUrl = `https://ui-avatars.com/api/?name=${username}&background=random&size=128`;
+    const avatarUrl = `https://avatars.dicebear.com/api/identicon/${username}.svg`;
 
     await updateProfile(userCredential.user, { displayName: username });
 
@@ -82,7 +82,7 @@ export const loginAsGuest = async () => {
     Cookies.set('auth', 'true', {
       expires: 1,
       path: '/',
-      sameSite: 'Lax',
+      sameSite: 'None',
       secure: process.env.NODE_ENV === 'production',
     });
     console.log('Cookie set:', Cookies.get('auth')); 

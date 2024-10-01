@@ -1,5 +1,5 @@
 // src/app/api/whiteboards/saveWhiteboard/route.js
-import { database } from '@/lib/firebase'; 
+import { database } from '@/app/services/firebase'; 
 import { ref, set } from 'firebase/database';
 
 export async function POST(req) {

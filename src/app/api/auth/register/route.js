@@ -1,8 +1,8 @@
 // api/auth/register/route.js
 import { NextResponse } from 'next/server';
-import { database, auth } from '@/lib/firebase';
+import { database, auth } from '@/app/services/firebase';
 import { ref, set } from 'firebase/database';
-import { registerUser } from '@/lib/auth';
+import { registerUser } from '@/app/services/auth';
 import {
   createUserWithEmailAndPassword,
   updateProfile,

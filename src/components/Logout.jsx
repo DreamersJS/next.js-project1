@@ -1,5 +1,5 @@
 "use client"
-import {logoutUser} from '@/lib/auth'
+import {logoutUser} from '@/app/services/auth'
 import {useRouter} from 'next/navigation'
 
 export default function Logout() {

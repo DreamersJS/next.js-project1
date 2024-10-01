@@ -1,15 +1,15 @@
 // components/Whiteboard.jsx
 "use client";
 import { useRef, useEffect, useState } from 'react';
-import io from 'socket.io-client';
+import { useSocket } from "@/app/services/useSocket"; 
 import { useRouter } from 'next/navigation'
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
-const socket = io();
 
 const Whiteboard = ({ id }) => {
+  const socket = useSocket();
   const whiteboardId = id;
   const canvasRef = useRef(null);
   const router = useRouter()

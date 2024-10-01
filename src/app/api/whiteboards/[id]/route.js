@@ -1,5 +1,5 @@
 // src/app/api/whiteboards/[id]/route.js
-import { database } from '@/lib/firebase'; 
+import { database } from '@/app/services/firebase'; 
 import { ref, remove, set, get } from 'firebase/database';
 
 export async function GET(req, { params }) {

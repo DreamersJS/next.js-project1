@@ -24,6 +24,7 @@ app.prepare().then(() => {
 
   io.on('connection', (socket) => {
     console.log('New client connected');
+    // const username = socket.handshake.query.username; // Retrieve username from query params
 
     // Send all previously drawn shapes to the new client
     socket.emit('initDrawings', drawnShapes);
@@ -40,12 +41,19 @@ app.prepare().then(() => {
 
     socket.on('draw', (data) => {
       // Save the new shape
+      // socket.broadcast.emit('draw', data);
       drawnShapes.push(data);
       undoStack.push(data); // Add to the undo stack
       redoStack = []; // Clear the redo stack as the new action invalidates future redos
 
       // Broadcast the drawing event to all clients, including the sender
       io.emit('draw', data);
+    });
+
+    socket.on('message', (data) => {
+      const { message, username } = data;
+      const messageWithUsername = { username: username || 'Anonymous', message };
+      io.emit('message', messageWithUsername);
     });
 
     socket.on('clear', () => {
@@ -59,9 +67,10 @@ app.prepare().then(() => {
       if (undoStack.length > 0) {
         const shape = undoStack.pop();
         redoStack.push(shape);
-        drawnShapes = undoStack.slice(); // Update drawnShapes to reflect the undo action
+        drawnShapes = undoStack.slice(); // Reflect the change in drawnShapes
 
-        io.emit('initDrawings', drawnShapes); // Send updated shapes to all clients
+        // Broadcast the updated state to all clients
+        io.emit('initDrawings', drawnShapes); // This ensures all clients get the same, updated state
       }
     });
 
@@ -74,6 +83,7 @@ app.prepare().then(() => {
         io.emit('draw', shape); // Send the redone shape to all clients
       }
     });
+
 
     socket.on('disconnect', () => {
       console.log('Client disconnected');

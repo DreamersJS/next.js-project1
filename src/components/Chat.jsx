@@ -1,13 +1,28 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function Chat() {
+export default function Chat({socket, username}) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
 
+  useEffect(() => {
+    if (socket) {
+      socket.on('message', (data) => {
+        setMessages((prevMessages) => [...prevMessages, data]);
+      });
+    }
+  
+    return () => {
+      if (socket) {
+        socket.off('message');
+      }
+    };
+  }, [socket]);
+  
   const handleSend = () => {
     if (newMessage.trim()) {
       setMessages([...messages, newMessage]);
+      socket.emit('message', { newMessage, username });
       setNewMessage("");
     }
   };
@@ -19,7 +34,7 @@ export default function Chat() {
         <div className="space-y-2 overflow-scroll">
           {messages.map((message, index) => (
             <div key={index} className="bg-white p-2 rounded shadow-sm">
-              {message}
+              {username || 'Unknown'}:{message}
             </div>
           ))}
         </div>

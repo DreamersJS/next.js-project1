@@ -29,7 +29,7 @@ const WhiteboardPage = ({ params }) => {
 
   return (
     <div aria-labelledby="whiteboard-session-heading" role="main" className="p-0">
-      <Whiteboard id={id} />
+      <Whiteboard id={id} socket={ socket } />
     </div>
   );
 };
