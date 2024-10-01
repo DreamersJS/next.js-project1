@@ -35,6 +35,7 @@ const LoginPage = () => {
         username: userData.username || "Unknown",
         avatar: userData.avatar || null,
         listOfWhiteboardIds: userData.listOfWhiteboardIds || [],
+        role: userData.role || "registered",
       });
       // Redirect to the original path if available or to the home page
       if (redirectPath) {
@@ -58,7 +59,8 @@ const LoginPage = () => {
         email: null,
         username: user.username,
         avatar: user.avatar,
-        listOfWhiteboardIds: user.listOfWhiteboardIds,
+        listOfWhiteboardIds: null,
+        role: user.role || "guest",
       });
 
       if (redirectPath) {

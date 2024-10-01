@@ -1,22 +1,32 @@
 // app/page.js
 'use client';
 
-import { useState, Suspense, lazy } from 'react';
+import { useState, Suspense, lazy, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createNewWhiteboard } from '../app/services/whiteboardService';
+import { useRecoilValue } from "recoil";
+import { userState } from "@/recoil/atoms/userAtom";
+
 const WhiteboardList = lazy(() => import('@/components/WhiteboardList'));
 
 export default function HomePage() {
   const [newBoardId, setNewBoardId] = useState('');
   const [oldBoardId, setOldBoardId] = useState('');
   const router = useRouter();
+  const user = useRecoilValue(userState);
+
+  // Redirect to login if neither registered nor guest user
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+    }
+  }, [user, router]);
 
   const handleCreateNewBoard = async () => {
     try {
       const data = await createNewWhiteboard();
       setNewBoardId(data.id);
       console.log('New Whiteboard Created:', data.id);
-      // Programmatically navigate to the new whiteboard page
       router.push(`/whiteboard/${data.id}`);
     } catch (error) {
       console.error('Error creating whiteboard:', error);
@@ -25,7 +35,6 @@ export default function HomePage() {
 
   const handleJoinBoard = () => {
     if (oldBoardId) {
-      // Programmatically navigate to the existing whiteboard page
       router.push(`/whiteboard/${oldBoardId}`);
     }
   };
@@ -87,12 +96,15 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* Recent Whiteboards */}
-      <div className="mt-8" aria-label="Recent whiteboards section">
-        <Suspense fallback={<p className="mt-8" aria-live="polite">Loading recent whiteboards...</p>}>
-          <WhiteboardList />
-        </Suspense>
-      </div>
+      {/* Show Recent Whiteboards only for Registered Users */}
+      {user?.role === 'registered' && (
+        <div className="mt-8" aria-label="Recent whiteboards section">
+          <h2 className="text-2xl font-semibold mb-4">Your Recent Whiteboards</h2>
+          <Suspense fallback={<p className="mt-8" aria-live="polite">Loading recent whiteboards...</p>}>
+            <WhiteboardList />
+          </Suspense>
+        </div>
+      )}
     </div>
   );
 }

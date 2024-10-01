@@ -9,5 +9,6 @@ export const userState = atom({
     username: null,
     avatar: null,
     listOfWhiteboardIds: [],
+    role: null,
   },
 });
