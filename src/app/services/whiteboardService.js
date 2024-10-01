@@ -49,7 +49,7 @@ export const createNewWhiteboard = async (userId) => {
  * @param {string} whiteboardId 
  * @returns {Promise<{ id: string, content: string}>} - An object containing the whiteboard ID, content: photo URL.
  */
-const loadWhiteboardById = async (whiteboardId) => {
+export const loadWhiteboardById = async (whiteboardId) => {
   try {
     const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
       method: 'GET',
@@ -70,7 +70,7 @@ return data;
  * @param {string} whiteboardId - The ID of the whiteboard to delete.
  * @param {string} userId - The ID of the current user.
  */
-const deleteWhiteboard = async (whiteboardId, userId) => {
+export const deleteWhiteboard = async (whiteboardId, userId) => {
   if (confirm('Are you sure you want to delete this whiteboard?')) {
     try {
       // Delete the whiteboard from the database
