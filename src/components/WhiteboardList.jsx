@@ -3,16 +3,18 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRecoilValue } from 'recoil';
+import { useSetRecoilState } from "recoil";
 import { userState } from '@/recoil/atoms/userAtom';
 import { deleteWhiteboard } from '@/app/services/whiteboardService';
 
 export default function WhiteboardList() {
-  const user = useRecoilValue(userState); 
+  const user = useRecoilValue(userState);
+  const setUser = useSetRecoilState(userState);
   const [whiteboards, setWhiteboards] = useState([]);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !user.listOfWhiteboardIds) return; 
+    if (!user || !user.listOfWhiteboardIds) return;
 
     const fetchUserWhiteboards = async () => {
       try {
@@ -50,7 +52,7 @@ export default function WhiteboardList() {
         console.error('Error fetching whiteboards:', error);
         setWhiteboards([]);
       } finally {
-        setLoading(false); 
+        setLoading(false);
       }
     };
 
@@ -76,6 +78,12 @@ export default function WhiteboardList() {
       setWhiteboards((prevWhiteboards) =>
         prevWhiteboards.filter((whiteboard) => whiteboard.id !== whiteboardId)
       );
+      // Update the Recoil state for the user
+      setUser((prevUser) => ({
+        ...prevUser,
+        listOfWhiteboardIds: whiteboards,
+      }));
+
     } catch (error) {
       console.error('Error deleting whiteboard:', error);
     }
@@ -100,7 +108,7 @@ export default function WhiteboardList() {
             >
               Whiteboard ID: {whiteboard.id}
             </Link>
-            
+
             {/* Delete Button */}
             <button
               className="text-red-500 hover:text-red-700 ml-4"
