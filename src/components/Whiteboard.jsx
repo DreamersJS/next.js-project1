@@ -2,7 +2,7 @@
 "use client";
 import { useRef, useEffect, useState } from 'react';
 // import { useSocket } from "@/app/services/SocketContext"; 
-// import { useSocket } from './SocketContext';
+import { useSocket } from '@/app/services/SocketContext';
 import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
@@ -32,6 +32,22 @@ const Whiteboard = ({ id, socket }) => {
     // Set ARIA attributes on canvas for accessibility
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', `Interactive whiteboard session ID: ${whiteboardId}`);
+
+    if (!socket) {
+      console.error("Socket is not defined.");
+      return; // Prevent further execution
+    }
+
+    console.log('Socket instance in Whiteboard:', socket);
+
+    // // Listen for connection and disconnection
+    // socket.on('connect', () => {
+    //   console.log('Socket connected:', socket.id); // You can log the socket ID
+    // });
+
+    // socket.on('disconnect', () => {
+    //   console.log('Socket disconnected');
+    // });
 
     // Listen for the initial drawing state from the server
     socket.on('initDrawings', (shapes) => {
@@ -228,7 +244,7 @@ const Whiteboard = ({ id, socket }) => {
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('resize', resizeCanvas);
-      
+
       // Remove socket listeners
       socket.off('initDrawings');
       socket.off('draw');

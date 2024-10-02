@@ -2,21 +2,37 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
-// Create a context for the socket
 const SocketContext = createContext(null);
 
-// SocketProvider component to manage socket connection
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
-  
+
   useEffect(() => {
-    // Initialize socket using the environment variable
-    const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL); 
+    const socketURL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
+
+    if (!socketURL) {
+      console.error('Socket URL is not defined. Please set NEXT_PUBLIC_SOCKET_URL in your .env file.');
+      return;
+    }
+
+    const newSocket = io(socketURL, {
+      // Add any options you need, like reconnection, transports, etc.
+      reconnection: true,  // Enable reconnection
+    });
+
+    newSocket.on('connect', () => {
+      console.log('Socket connected:', newSocket.id);
+    });
+
+    newSocket.on('disconnect', () => {
+      console.log('Socket disconnected');
+    });
+
     setSocket(newSocket);
 
-    // Clean up the socket connection on unmount
     return () => {
       newSocket.disconnect();
+      console.log('Socket disconnected on cleanup');
     };
   }, []);
 
@@ -27,7 +43,6 @@ export const SocketProvider = ({ children }) => {
   );
 };
 
-// Hook to use the socket context
 export const useSocket = () => {
   const context = useContext(SocketContext);
   if (!context) {

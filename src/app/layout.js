@@ -8,8 +8,6 @@ import  UserAvatar  from "@/components/UserAvatar";
 import { useRouter } from 'next/navigation';
 import { SocketProvider } from '@/app/services/SocketContext';
 
-
-
 export default function RootLayout({ children }) {
   const router = useRouter();
 
