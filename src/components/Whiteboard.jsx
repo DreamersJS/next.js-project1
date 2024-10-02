@@ -1,18 +1,18 @@
 // components/Whiteboard.jsx
 "use client";
 import { useRef, useEffect, useState } from 'react';
-import { useSocket } from "@/app/services/useSocket"; 
-import { useRouter } from 'next/navigation'
+// import { useSocket } from "@/app/services/SocketContext"; 
+// import { useSocket } from './SocketContext';
+import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
-
 const Whiteboard = ({ id, socket }) => {
-  // const socket = useSocket();
+  // const socket = useSocket(); 
   const whiteboardId = id;
   const canvasRef = useRef(null);
-  const router = useRouter()
+  const router = useRouter();
   const [tool, setTool] = useState('pen');
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
@@ -20,7 +20,6 @@ const Whiteboard = ({ id, socket }) => {
   const [drawnShapes, setDrawnShapes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
-  // Get the current user from Recoil
   const user = useRecoilValue(userState);
   const username = user.username;
   let previewCounter = 0;
@@ -37,22 +36,17 @@ const Whiteboard = ({ id, socket }) => {
     // Listen for the initial drawing state from the server
     socket.on('initDrawings', (shapes) => {
       setDrawnShapes(shapes);
+      redrawAllShapes(); // Redraw shapes when initialized
     });
 
     // Listen for drawing events from other clients
     socket.on('draw', (shape) => {
       setDrawnShapes((prevShapes) => [...prevShapes, shape]);
+      drawShape(context, shape); // Draw the shape on the canvas
     });
 
     socket.on('previewDraw', (shape) => {
       drawShape(context, shape, true); // Preview draw without finalizing
-    });
-
-    socket.on('mousemove', (data) => {
-      setMousePositions((prevPositions) => ({
-        ...prevPositions,
-        [data.username]: data,
-      }));
     });
 
     socket.on('clear', () => {
@@ -70,7 +64,6 @@ const Whiteboard = ({ id, socket }) => {
     // Function to redraw all shapes and pen strokes
     const redrawAllShapes = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
-
       drawnShapes.forEach((shape) => {
         drawShape(context, shape);
       });
@@ -162,7 +155,6 @@ const Whiteboard = ({ id, socket }) => {
       }
     };
 
-
     const handleMouseMove = (e) => {
       if (!isDrawing) return;
 
@@ -230,13 +222,20 @@ const Whiteboard = ({ id, socket }) => {
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
+    // Cleanup on component unmount
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('resize', resizeCanvas);
+      
+      // Remove socket listeners
+      socket.off('initDrawings');
+      socket.off('draw');
+      socket.off('previewDraw');
+      socket.off('clear');
     };
-  }, [tool, isDrawing, startPosition, currentPosition, drawnShapes, color, fillMode]);
+  }, [tool, isDrawing, startPosition, currentPosition, drawnShapes, color, fillMode, socket]);
 
   const handleToolChange = (newTool) => {
     setTool(newTool);
@@ -250,7 +249,6 @@ const Whiteboard = ({ id, socket }) => {
     setFillMode(fillStatus);
   };
 
-
   const handleUndo = () => socket.emit('undo');
   const handleRedo = () => socket.emit('redo');
 
@@ -260,8 +258,8 @@ const Whiteboard = ({ id, socket }) => {
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
-      setDrawnShapes([]);
-      socket.emit('clear');
+      setDrawnShapes([]); // Clear local shapes state
+      socket.emit('clear'); // Notify others
     }
   };
 

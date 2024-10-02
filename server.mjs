@@ -18,6 +18,13 @@ app.prepare().then(() => {
 
   const io = new socketIo(server);
 
+  // const io = new socketIo(server, {
+  //   cors: {
+  //     origin: process.env.FRONTEND_URL || "*", 
+  //     methods: ["GET", "POST"]
+  //   }
+  // });
+
   let drawnShapes = [];
   let undoStack = [];
   let redoStack = [];

@@ -1,9 +1,10 @@
 'use client';
 import Chat from "@/components/Chat";
-import { AuthProvider } from "@/components/AuthProvider";
+import { AuthProvider } from "@/app/services/AuthProvider";
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
-import { useSocket } from "@/app/services/useSocket"; 
+// import { useSocket } from "@/app/services/useSocket"; 
+import { useSocket } from '../../services/SocketContext';
 import React, { useEffect, useState } from "react";
 
 export default function WhiteboardLayout({ children }) {
