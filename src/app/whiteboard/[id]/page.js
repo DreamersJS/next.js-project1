@@ -11,7 +11,7 @@ import { userState } from '@/recoil/atoms/userAtom';
 const Whiteboard = dynamic(() => import('@/components/Whiteboard'), { ssr: false });
 
 const WhiteboardPage = ({ params }) => {
-  const { id } = params;
+  const { id, socket } = params;
   const router = useRouter();
   const user = useRecoilValue(userState);
 

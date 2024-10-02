@@ -5,6 +5,7 @@ import { useState, Suspense, lazy, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createNewWhiteboard } from '../app/services/whiteboardService';
 import { useRecoilValue } from "recoil";
+import { useRecoilState } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
 
 const WhiteboardList = lazy(() => import('@/components/WhiteboardList'));
@@ -13,7 +14,8 @@ export default function HomePage() {
   const [newBoardId, setNewBoardId] = useState('');
   const [oldBoardId, setOldBoardId] = useState('');
   const router = useRouter();
-  const user = useRecoilValue(userState);
+  // const user = useRecoilValue(userState);
+  const [user, setUser] = useRecoilState(userState);
 
   // Redirect to login if neither registered nor guest user
   useEffect(() => {
@@ -24,9 +26,18 @@ export default function HomePage() {
 
   const handleCreateNewBoard = async () => {
     try {
+      if (!user) {
+        return;
+      }
       const data = await createNewWhiteboard(user.uid);
       setNewBoardId(data.id);
       console.log('New Whiteboard Created:', data.id);
+
+      // Update the Recoil state for the user
+      setUser((prevUser) => ({
+        ...prevUser,
+        listOfWhiteboardIds: newBoardId,
+      }));
       router.push(`/whiteboard/${data.id}`);
     } catch (error) {
       console.error('Error creating whiteboard:', error);
@@ -44,6 +55,15 @@ export default function HomePage() {
       <h1 className="text-4xl font-bold mb-4" aria-label="Welcome to the Whiteboard App">
         Welcome to the Whiteboard App
       </h1>
+      {!user && (
+        <button
+          onClick={() => router.push('/login')}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          aria-label="Login to create or join whiteboard sessions"
+        >
+          Login
+        </button>
+      )}
       <p className="text-lg text-gray-700 mb-8" aria-label="Introduction to whiteboard sessions">
         Create a new whiteboard session or join an existing one.
       </p>
@@ -54,6 +74,7 @@ export default function HomePage() {
           aria-label="Create a new whiteboard session"
           onClick={handleCreateNewBoard}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          disabled={!user}
         >
           Create New Whiteboard
         </button>

@@ -1,7 +1,5 @@
 import { database } from '@/app/services/firebase';
-import { ref, push, set, update } from 'firebase/database';
-import { useRecoilState } from 'recoil';
-import { userState } from '@/recoil/atoms/userAtom';
+import { ref, push, set, get,update } from 'firebase/database';
 
 /**
  * Creates a new blank whiteboard in the Firebase database.
@@ -15,16 +13,17 @@ export const createNewWhiteboard = async (userId) => {
     // Set the initial whiteboard data
     await set(newWhiteboardRef, {
       id: newWhiteboardId,
-      content: '', 
-      photo: '', 
+      content: '',
+      photo: '',
     });
 
     console.log('New Whiteboard Created:', newWhiteboardId);
 
     // Add the new whiteboard ID to the user's listOfWhiteboardIds
     const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
-    const updatedUserWhiteboards = (await (await userWhiteboardsRef).once('value')).val() || [];
-    
+    const snapshot = await get(userWhiteboardsRef);
+    const updatedUserWhiteboards = snapshot.val() || [];
+
     // Add the new whiteboard ID to the list
     updatedUserWhiteboards.push(newWhiteboardId);
 
@@ -32,10 +31,10 @@ export const createNewWhiteboard = async (userId) => {
     await set(userWhiteboardsRef, updatedUserWhiteboards);
 
     // Update the Recoil state for the user
-    setUser((prevUser) => ({
-      ...prevUser,
-      listOfWhiteboardIds: [...prevUser.listOfWhiteboardIds, newWhiteboardId],
-    }));
+    // setUser((prevUser) => ({
+    //   ...prevUser,
+    //   listOfWhiteboardIds: [...prevUser.listOfWhiteboardIds, newWhiteboardId],
+    // }));
 
     return { id: newWhiteboardId, content: '', photo: '' };
   } catch (error) {
@@ -58,7 +57,7 @@ export const loadWhiteboardById = async (whiteboardId) => {
     if (response.ok) {
       const data = await response.json();
 
-return data;
+      return data;
     }
   } catch (error) {
     console.error('Error loading whiteboard:', error);
@@ -80,11 +79,16 @@ export const deleteWhiteboard = async (whiteboardId, userId) => {
         method: 'DELETE',
       });
 
-      // Remove the whiteboard ID from the user's list in the database
-      const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
-      const userWhiteboards = (await userWhiteboardsRef.once('value')).val() || [];
 
+      // Get the user's current list of whiteboards
+      const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
+      const snapshot = await get(userWhiteboardsRef);
+      const userWhiteboards = snapshot.val() || [];
+
+      // Remove the whiteboard ID from the user's list
       const updatedWhiteboardList = userWhiteboards.filter((id) => id !== whiteboardId);
+
+      // Update the user's whiteboard list in the database
       await set(userWhiteboardsRef, updatedWhiteboardList);
 
       // Update the Recoil state for the user
