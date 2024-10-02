@@ -1,4 +1,3 @@
-// whiteboard/[id]/layout.js
 'use client';
 import Chat from "@/components/Chat";
 import { AuthProvider } from "@/components/AuthProvider";
@@ -9,7 +8,7 @@ import React, { useEffect, useState } from "react";
 
 export default function WhiteboardLayout({ children }) {
   const user = useRecoilValue(userState);
-  const username = user.username;
+  const username = user?.username; // Ensure username exists before usage
 
   // Use the custom hook to get the socket instance
   const socket = useSocket();

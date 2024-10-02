@@ -8,8 +8,8 @@ import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
 
-const Whiteboard = ({ id }) => {
-  const socket = useSocket();
+const Whiteboard = ({ id, socket }) => {
+  // const socket = useSocket();
   const whiteboardId = id;
   const canvasRef = useRef(null);
   const router = useRouter()

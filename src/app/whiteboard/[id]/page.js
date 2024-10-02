@@ -1,4 +1,3 @@
-// app/whiteboard/[id]/page.js
 'use client';
 
 import { useEffect } from 'react';
@@ -11,7 +10,7 @@ import { userState } from '@/recoil/atoms/userAtom';
 const Whiteboard = dynamic(() => import('@/components/Whiteboard'), { ssr: false });
 
 const WhiteboardPage = ({ params }) => {
-  const { id, socket } = params;
+  const { id } = params; // Remove socket from params
   const router = useRouter();
   const user = useRecoilValue(userState);
 
@@ -29,7 +28,7 @@ const WhiteboardPage = ({ params }) => {
 
   return (
     <div aria-labelledby="whiteboard-session-heading" role="main" className="p-0">
-      <Whiteboard id={id} socket={ socket } />
+      <Whiteboard id={id} />
     </div>
   );
 };
