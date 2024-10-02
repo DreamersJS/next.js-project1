@@ -19,26 +19,24 @@ export default function Chat() {
 
   // Listen for incoming chat messages
   useEffect(() => {
-    const socket = socketRef.current;
 
-    if (socket) {
-      socket.on('message', (data) => {
+    if (socketRef.current) {
+      socketRef.current.on('message', (data) => {
         setMessages((prevMessages) => [...prevMessages, data]);
       });
     }
 
     return () => {
-      if (socket) {
-        socket.off('message');
+      if (socketRef.current) {
+        socketRef.current.off('message');
       }
     };
-  }, [socket]);
+  }, [socketRef.current]);
 
   const handleSend = () => {
-    const socket = socketRef.current;
-    if (socket && newMessage.trim()){
+    if (socketRef.current && newMessage.trim()){
       setMessages([...messages, newMessage]);
-      socket.emit('message', { newMessage, username });
+      socketRef.current.emit('message', { newMessage, username });
       setNewMessage("");
     }
   };
