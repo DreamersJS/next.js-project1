@@ -1,15 +1,13 @@
 // components/Whiteboard.jsx
 "use client";
 import { useRef, useEffect, useState } from 'react';
-// import { useSocket } from "@/app/services/SocketContext"; 
-import { useSocket } from '@/app/services/SocketContext';
+import { useSocketConnection } from '@/app/services/useSocket';
 import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
-const Whiteboard = ({ id, socket }) => {
-  // const socket = useSocket(); 
+const Whiteboard = ({ id }) => {
   const whiteboardId = id;
   const canvasRef = useRef(null);
   const router = useRouter();
@@ -21,9 +19,15 @@ const Whiteboard = ({ id, socket }) => {
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
   const user = useRecoilValue(userState);
-  const username = user.username;
   let previewCounter = 0;
   const granularity = 5;
+  const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
+  if (!socketUrl) {
+    console.error('Socket URL is undefined');
+    return;
+  }
+  const socketRef = useSocketConnection(socketUrl, user);
+  const socket = socketRef.current;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -251,7 +255,7 @@ const Whiteboard = ({ id, socket }) => {
       socket.off('previewDraw');
       socket.off('clear');
     };
-  }, [tool, isDrawing, startPosition, currentPosition, drawnShapes, color, fillMode, socket]);
+  }, [tool, isDrawing, startPosition, currentPosition, drawnShapes, color, fillMode, socketRef]);
 
   const handleToolChange = (newTool) => {
     setTool(newTool);

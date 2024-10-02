@@ -6,7 +6,6 @@ import { RecoilRoot } from "recoil";
 import Logout from "@/components/Logout";
 import  UserAvatar  from "@/components/UserAvatar";
 import { useRouter } from 'next/navigation';
-import { SocketProvider } from '@/app/services/SocketContext';
 
 export default function RootLayout({ children }) {
   const router = useRouter();
@@ -21,7 +20,6 @@ export default function RootLayout({ children }) {
       </Head>
       <body className="bg-gray-100 min-h-screen flex flex-col">
         <RecoilRoot>
-        <SocketProvider>
           <header className="bg-blue-600 text-white py-2 px-8 flex justify-between items-center shadow-md">
             <button onClick={() => router.push(`/`)}
             >
@@ -34,7 +32,6 @@ export default function RootLayout({ children }) {
           <footer className="bg-gray-800 text-white text-center py-4">
             © 2024 Whiteboard Inc.
           </footer>
-          </SocketProvider>
         </RecoilRoot>
       </body>
     </html>
