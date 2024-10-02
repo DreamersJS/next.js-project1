@@ -27,22 +27,23 @@ const Whiteboard = ({ id }) => {
     return;
   }
   const socketRef = useSocketConnection(socketUrl, user);
-  const socket = socketRef.current;
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
+    // const socket = socketRef.current;
+
     // Set ARIA attributes on canvas for accessibility
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', `Interactive whiteboard session ID: ${whiteboardId}`);
 
-    if (!socket) {
+    if (!socketRef.current) {
       console.error("Socket is not defined.");
       return; // Prevent further execution
     }
 
-    console.log('Socket instance in Whiteboard:', socket);
+    console.log('Socket instance in Whiteboard:', socketRef.current);
 
     // // Listen for connection and disconnection
     // socket.on('connect', () => {
@@ -54,22 +55,22 @@ const Whiteboard = ({ id }) => {
     // });
 
     // Listen for the initial drawing state from the server
-    socket.on('initDrawings', (shapes) => {
+    socketRef.current.on('initDrawings', (shapes) => {
       setDrawnShapes(shapes);
       redrawAllShapes(); // Redraw shapes when initialized
     });
 
     // Listen for drawing events from other clients
-    socket.on('draw', (shape) => {
+    socketRef.current.on('draw', (shape) => {
       setDrawnShapes((prevShapes) => [...prevShapes, shape]);
       drawShape(context, shape); // Draw the shape on the canvas
     });
 
-    socket.on('previewDraw', (shape) => {
+    socketRef.current.on('previewDraw', (shape) => {
       drawShape(context, shape, true); // Preview draw without finalizing
     });
 
-    socket.on('clear', () => {
+    socketRef.current.on('clear', () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
       setDrawnShapes([]); // Clear local state
     });
@@ -190,7 +191,7 @@ const Whiteboard = ({ id }) => {
           context.stroke();
 
           const previewData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
-          socket.emit('previewDraw', previewData);
+          socketRef.current.emit('previewDraw', previewData);
 
           setStartPosition({ x, y });
         }
@@ -232,7 +233,7 @@ const Whiteboard = ({ id }) => {
       };
 
       setDrawnShapes((prevShapes) => [...prevShapes, shapeData]);
-      socket.emit('draw', shapeData);
+      socketRef.current.emit('draw', shapeData);
       setIsDrawing(false);
     };
 
@@ -250,10 +251,10 @@ const Whiteboard = ({ id }) => {
       window.removeEventListener('resize', resizeCanvas);
 
       // Remove socket listeners
-      socket.off('initDrawings');
-      socket.off('draw');
-      socket.off('previewDraw');
-      socket.off('clear');
+      socketRef.current.off('initDrawings');
+      socketRef.current.off('draw');
+      socketRef.current.off('previewDraw');
+      socketRef.current.off('clear');
     };
   }, [tool, isDrawing, startPosition, currentPosition, drawnShapes, color, fillMode, socketRef]);
 
@@ -269,9 +270,21 @@ const Whiteboard = ({ id }) => {
     setFillMode(fillStatus);
   };
 
-  const handleUndo = () => socket.emit('undo');
-  const handleRedo = () => socket.emit('redo');
-
+  const handleUndo = () => {
+    if (socketRef.current) {
+      socketRef.current.emit('undo');
+    } else {
+      console.error("Socket is not connected yet.");
+    }
+  };
+  
+  const handleRedo = () => {
+    if (socketRef.current) {
+      socketRef.current.emit('redo');
+    } else {
+      console.error("Socket is not connected yet.");
+    }
+  };
   const handleClear = () => {
     const confirmClear = window.confirm("Are you sure you want to clear the board? This will clear the board for everyone!");
     if (confirmClear) {
@@ -279,7 +292,11 @@ const Whiteboard = ({ id }) => {
       const context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
       setDrawnShapes([]); // Clear local shapes state
-      socket.emit('clear'); // Notify others
+      if (socketRef.current) {
+        socketRef.current.emit('clear');
+      } else {
+        console.error("Socket is not connected yet.");
+      }
     }
   };
 
