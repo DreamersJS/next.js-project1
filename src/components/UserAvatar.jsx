@@ -10,10 +10,14 @@ const UserAvatar = () => {
   const username = user.username;
   const avatar = user.avatar;
 
+  if (!user || !username) {
+    return null; 
+  }
+
   return (
     <div className="flex items-center space-x-2">
-      <img src={avatar} className="w-10 h-10 rounded-full" />
-      <span>{username}</span>
+      <img src={user?.avatar} className="w-10 h-10 rounded-full" />
+      <span>{user?.username}</span>
     </div>
   );
 };

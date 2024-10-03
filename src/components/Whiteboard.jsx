@@ -297,12 +297,12 @@ const Whiteboard = ({ id }) => {
     const dataURL = canvas.toDataURL('image/png'); // Convert to PNG image format
 
     try {
-      const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
+      const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${user.uid}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: whiteboardId, content: dataURL }), // Sending image data
+        body: JSON.stringify({ id: whiteboardId, content: dataURL,  userId: user.uid }), // Sending image data
       });
 
       if (response.ok) {
@@ -355,7 +355,7 @@ const Whiteboard = ({ id }) => {
   const deleteWhiteboard = async (whiteboardId) => {
     if (confirm('Are you sure you want to delete this whiteboard?')) {
       try {
-        const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
+        const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${user.uid}`, {
           method: 'DELETE',
         });
 
