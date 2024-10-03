@@ -1,5 +1,5 @@
 // app/api/whiteboards/route.js
-import { database } from '@/lib/firebase';
+import { database } from '@/app/services/firebase';
 import { ref, push, get, set } from 'firebase/database';
 import { NextResponse } from 'next/server';
 

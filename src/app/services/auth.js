@@ -45,6 +45,7 @@ export const loginUser = async (email, password) => {
       sameSite: 'Lax',   // Ensure it’s sent with requests
       secure: process.env.NODE_ENV === 'production', // Only set 'secure' in production
     });
+    console.log('Cookie set:', Cookies.get('auth')); 
 
     return user;
   } catch (error) {
@@ -63,7 +64,7 @@ export const loginAsGuest = async () => {
 
     // Set up guest user profile
     const username = `guest${Math.floor(Math.random() * 10000)}`;
-    const avatarUrl = `https://ui-avatars.com/api/?name=${username}&background=random&size=128`;
+    const avatarUrl = `https://avatars.dicebear.com/api/identicon/${username}.svg`;
 
     await updateProfile(userCredential.user, { displayName: username });
 
@@ -71,7 +72,7 @@ export const loginAsGuest = async () => {
       uid: userCredential.user.uid,
       username: username,
       avatar: avatarUrl,
-      listOfWhiteboardIds: [],
+      role: 'guest',
     };
 
     const userRef = ref(database, `users/${userCredential.user.uid}`);
@@ -81,9 +82,10 @@ export const loginAsGuest = async () => {
     Cookies.set('auth', 'true', {
       expires: 1,
       path: '/',
-      sameSite: 'Lax',
+      sameSite: 'None',
       secure: process.env.NODE_ENV === 'production',
     });
+    console.log('Cookie set:', Cookies.get('auth')); 
 
     return userCredential.user; 
   } catch (error) {

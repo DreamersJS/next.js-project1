@@ -1,4 +1,3 @@
-// app/whiteboard/[id]/page.js
 'use client';
 
 import { useEffect } from 'react';
@@ -15,10 +14,8 @@ const WhiteboardPage = ({ params }) => {
   const router = useRouter();
   const user = useRecoilValue(userState);
 
-  // Check if the user is logged in
   useEffect(() => {
     if (!user) {
-      // If not logged in, redirect to login page and include the current path
       router.push(`/login?redirect=/whiteboard/${id}`);
     }
   }, [user, id, router]);
@@ -29,7 +26,7 @@ const WhiteboardPage = ({ params }) => {
 
   return (
     <div aria-labelledby="whiteboard-session-heading" role="main" className="p-0">
-      <Whiteboard id={id} />
+      <Whiteboard id={id}/>
     </div>
   );
 };

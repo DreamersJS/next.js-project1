@@ -1,8 +1,8 @@
 // api/auth/register/route.js
 import { NextResponse } from 'next/server';
-import { database, auth } from '@/lib/firebase';
+import { database, auth } from '@/app/services/firebase';
 import { ref, set } from 'firebase/database';
-import { registerUser } from '@/lib/auth';
+import { registerUser } from '@/app/services/auth';
 import {
   createUserWithEmailAndPassword,
   updateProfile,
@@ -23,13 +23,14 @@ export async function POST(req) {
     await updateProfile(user, { displayName: username });
     console.log(`user.username: ${user.username}`);
 
-    const avatarUrl = `https://api.adorable.io/avatars/285/${username}.png`;
+    const avatarUrl = `https://avatars.dicebear.com/api/identicon/${username}.svg`;
     const userData = {
       uid: user.uid,
       email: user.email,
       username: user.displayName,
       avatar: avatarUrl,
-      listOfWhiteboardIds: [],
+      listOfWhiteboardIds: {}, // key-value pairs (id:true)
+      role: 'registered',
     };
 
     const userRef = ref(database, `users/${user.uid}`); // add IndexOn rule in firebase console

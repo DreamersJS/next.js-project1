@@ -1,18 +1,16 @@
 // components/Whiteboard.jsx
 "use client";
 import { useRef, useEffect, useState } from 'react';
-import io from 'socket.io-client';
-import { useRouter } from 'next/navigation'
+import { useSocketConnection } from '@/app/services/useSocket';
+import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
-const socket = io();
-
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
   const canvasRef = useRef(null);
-  const router = useRouter()
+  const router = useRouter();
   const [tool, setTool] = useState('pen');
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
@@ -20,11 +18,15 @@ const Whiteboard = ({ id }) => {
   const [drawnShapes, setDrawnShapes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
-  // Get the current user from Recoil
   const user = useRecoilValue(userState);
-  const username = user.username;
   let previewCounter = 0;
   const granularity = 5;
+  const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
+  if (!socketUrl) {
+    console.error('Socket URL is undefined');
+    return;
+  }
+  const socketRef = useSocketConnection(socketUrl, user);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -34,28 +36,28 @@ const Whiteboard = ({ id }) => {
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', `Interactive whiteboard session ID: ${whiteboardId}`);
 
+    if (!socketRef.current) {
+      console.error("Socket is not defined.");
+      return;
+    }
+
     // Listen for the initial drawing state from the server
-    socket.on('initDrawings', (shapes) => {
+    socketRef.current.on('initDrawings', (shapes) => {
       setDrawnShapes(shapes);
+      redrawAllShapes(); // Redraw shapes when initialized
     });
 
     // Listen for drawing events from other clients
-    socket.on('draw', (shape) => {
+    socketRef.current.on('draw', (shape) => {
       setDrawnShapes((prevShapes) => [...prevShapes, shape]);
+      drawShape(context, shape); // Draw the shape on the canvas
     });
 
-    socket.on('previewDraw', (shape) => {
+    socketRef.current.on('previewDraw', (shape) => {
       drawShape(context, shape, true); // Preview draw without finalizing
     });
 
-    socket.on('mousemove', (data) => {
-      setMousePositions((prevPositions) => ({
-        ...prevPositions,
-        [data.username]: data,
-      }));
-    });
-
-    socket.on('clear', () => {
+    socketRef.current.on('clear', () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
       setDrawnShapes([]); // Clear local state
     });
@@ -70,7 +72,6 @@ const Whiteboard = ({ id }) => {
     // Function to redraw all shapes and pen strokes
     const redrawAllShapes = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
-
       drawnShapes.forEach((shape) => {
         drawShape(context, shape);
       });
@@ -162,7 +163,6 @@ const Whiteboard = ({ id }) => {
       }
     };
 
-
     const handleMouseMove = (e) => {
       if (!isDrawing) return;
 
@@ -178,7 +178,7 @@ const Whiteboard = ({ id }) => {
           context.stroke();
 
           const previewData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
-          socket.emit('previewDraw', previewData);
+          socketRef.current.emit('previewDraw', previewData);
 
           setStartPosition({ x, y });
         }
@@ -220,7 +220,7 @@ const Whiteboard = ({ id }) => {
       };
 
       setDrawnShapes((prevShapes) => [...prevShapes, shapeData]);
-      socket.emit('draw', shapeData);
+      socketRef.current.emit('draw', shapeData);
       setIsDrawing(false);
     };
 
@@ -230,13 +230,20 @@ const Whiteboard = ({ id }) => {
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
+    // Cleanup on component unmount
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('resize', resizeCanvas);
+
+      // Remove socket listeners
+      socketRef.current.off('initDrawings');
+      socketRef.current.off('draw');
+      socketRef.current.off('previewDraw');
+      socketRef.current.off('clear');
     };
-  }, [tool, isDrawing, startPosition, currentPosition, drawnShapes, color, fillMode]);
+  }, [tool, isDrawing, startPosition, currentPosition, drawnShapes, color, fillMode, socketRef]);
 
   const handleToolChange = (newTool) => {
     setTool(newTool);
@@ -250,18 +257,33 @@ const Whiteboard = ({ id }) => {
     setFillMode(fillStatus);
   };
 
-
-  const handleUndo = () => socket.emit('undo');
-  const handleRedo = () => socket.emit('redo');
-
+  const handleUndo = () => {
+    if (socketRef.current) {
+      socketRef.current.emit('undo');
+    } else {
+      console.error("Socket is not connected yet.");
+    }
+  };
+  
+  const handleRedo = () => {
+    if (socketRef.current) {
+      socketRef.current.emit('redo');
+    } else {
+      console.error("Socket is not connected yet.");
+    }
+  };
   const handleClear = () => {
     const confirmClear = window.confirm("Are you sure you want to clear the board? This will clear the board for everyone!");
     if (confirmClear) {
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
-      setDrawnShapes([]);
-      socket.emit('clear');
+      setDrawnShapes([]); // Clear local shapes state
+      if (socketRef.current) {
+        socketRef.current.emit('clear');
+      } else {
+        console.error("Socket is not connected yet.");
+      }
     }
   };
 
@@ -275,12 +297,12 @@ const Whiteboard = ({ id }) => {
     const dataURL = canvas.toDataURL('image/png'); // Convert to PNG image format
 
     try {
-      const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
+      const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${user.uid}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: whiteboardId, content: dataURL }), // Sending image data
+        body: JSON.stringify({ id: whiteboardId, content: dataURL,  userId: user.uid }), // Sending image data
       });
 
       if (response.ok) {
@@ -333,7 +355,7 @@ const Whiteboard = ({ id }) => {
   const deleteWhiteboard = async (whiteboardId) => {
     if (confirm('Are you sure you want to delete this whiteboard?')) {
       try {
-        const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
+        const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${user.uid}`, {
           method: 'DELETE',
         });
 
@@ -364,14 +386,14 @@ const Whiteboard = ({ id }) => {
             onUndo={handleUndo}
             onRedo={handleRedo}
           />
-          <div className='flex flex-row'>
+          {user?.role === 'registered' && (<div className='flex flex-row'>
             <button onClick={handleSaveAsImage} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
               Save
             </button>
             <button onClick={() => handleLoad(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-blue-500 text-white">
               Load
             </button>
-          </div>
+          </div>)}
           <div className='flex'>
             <button onClick={() => deleteWhiteboard(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-red-500 text-white">
               Delete
@@ -382,9 +404,7 @@ const Whiteboard = ({ id }) => {
         <div className="flex grow w-full h-full overflow-hidden p-0 pl-2 items-center justify-center">
           <canvas ref={canvasRef} className="border bg-white w-full h-full"></canvas>
         </div>
-
       </div>
-
     </>
   );
 };

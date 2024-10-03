@@ -1,13 +1,42 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSocketConnection } from '@/app/services/useSocket';
+import { useRecoilValue } from "recoil";
+import { userState } from "@/recoil/atoms/userAtom";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const user = useRecoilValue(userState);
+  const username = user?.username;
+
+  const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
+  if (!socketUrl) {
+    console.error('Socket URL is undefined');
+    return;
+  }
+  const socketRef = useSocketConnection(socketUrl, user);
+
+  // Listen for incoming chat messages
+  useEffect(() => {
+
+    if (socketRef.current) {
+      socketRef.current.on('message', (data) => {
+        setMessages((prevMessages) => [...prevMessages, data]);
+      });
+    }
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.off('message');
+      }
+    };
+  }, [socketRef.current]);
 
   const handleSend = () => {
-    if (newMessage.trim()) {
+    if (socketRef.current && newMessage.trim()){
       setMessages([...messages, newMessage]);
+      socketRef.current.emit('message', newMessage);
       setNewMessage("");
     }
   };
@@ -19,7 +48,7 @@ export default function Chat() {
         <div className="space-y-2 overflow-scroll">
           {messages.map((message, index) => (
             <div key={index} className="bg-white p-2 rounded shadow-sm">
-              {message}
+              {username || 'Unknown'}:{message}
             </div>
           ))}
         </div>
