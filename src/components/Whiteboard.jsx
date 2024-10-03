@@ -32,27 +32,14 @@ const Whiteboard = ({ id }) => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
-    // const socket = socketRef.current;
-
     // Set ARIA attributes on canvas for accessibility
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', `Interactive whiteboard session ID: ${whiteboardId}`);
 
     if (!socketRef.current) {
       console.error("Socket is not defined.");
-      return; // Prevent further execution
+      return;
     }
-
-    console.log('Socket instance in Whiteboard:', socketRef.current);
-
-    // // Listen for connection and disconnection
-    // socket.on('connect', () => {
-    //   console.log('Socket connected:', socket.id); // You can log the socket ID
-    // });
-
-    // socket.on('disconnect', () => {
-    //   console.log('Socket disconnected');
-    // });
 
     // Listen for the initial drawing state from the server
     socketRef.current.on('initDrawings', (shapes) => {
@@ -417,9 +404,7 @@ const Whiteboard = ({ id }) => {
         <div className="flex grow w-full h-full overflow-hidden p-0 pl-2 items-center justify-center">
           <canvas ref={canvasRef} className="border bg-white w-full h-full"></canvas>
         </div>
-
       </div>
-
     </>
   );
 };

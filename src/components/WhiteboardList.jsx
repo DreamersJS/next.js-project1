@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import { useSetRecoilState } from "recoil";
 import { userState } from '@/recoil/atoms/userAtom';
-import { deleteWhiteboard } from '@/app/services/whiteboardService';
+import { deleteWhiteboard, getUserWhiteboards, loadWhiteboardById } from '@/app/services/whiteboardService';
 
 export default function WhiteboardList() {
   const user = useRecoilValue(userState);
@@ -14,80 +14,54 @@ export default function WhiteboardList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !user.listOfWhiteboardIds) return;
-
-    const fetchUserWhiteboards = async () => {
-      try {
-        const response = await fetch('/api/whiteboards', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data && typeof data === 'object') {
-            // Convert the object to an array
-            const whiteboardsArray = Object.keys(data).map((key) => ({
-              id: key,
-              ...data[key],
-            }));
-
-            // Filter whiteboards that match the user's listOfWhiteboardIds
-            const filteredWhiteboards = whiteboardsArray.filter((whiteboard) =>
-              user.listOfWhiteboardIds.includes(whiteboard.id)
-            );
-
-            setWhiteboards(filteredWhiteboards);
-          } else {
-            console.error('Unexpected data format:', data);
-            setWhiteboards([]);
-          }
-        } else {
-          console.error('Failed to fetch whiteboards:', response.statusText);
-          setWhiteboards([]);
-        }
-      } catch (error) {
-        console.error('Error fetching whiteboards:', error);
-        setWhiteboards([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserWhiteboards();
-  }, [user]); // Re-run this effect when the user data changes
-
+    if (!user.uid || !user.listOfWhiteboardIds) return;
+  
+    loadUserWhiteboards(user.uid);
+  }, [user.uid]);
+  
+  const loadUserWhiteboards = async (userId) => {
+    setLoading(true); 
+    try {
+      const whiteboardIds = await getUserWhiteboards(userId);
+      const whiteboardData = await Promise.all(
+        whiteboardIds.map(async (whiteboardId) => await loadWhiteboardById(whiteboardId))
+      );
+      setWhiteboards(whiteboardData);
+    } catch (error) {
+      console.error('Error loading user whiteboards:', error);
+    } finally {
+      setLoading(false); 
+    }
+  };
+  
   if (loading) {
-    return <div className="mt-8">Loading...</div>;
+    return <div className="mt-8">Loading whiteboards...</div>;
   }
-
+  
   if (!Array.isArray(whiteboards) || whiteboards.length === 0) {
     return <div className="mt-8">No whiteboards available</div>;
   }
 
   // Function to handle the deletion of a whiteboard
   const handleDeleteWhiteboard = async (event, whiteboardId) => {
-    event.stopPropagation(); // Prevents the event from bubbling up to parent elements
-
+    event.stopPropagation();
+    
+    // Optimistically remove the whiteboard from the UI
+    setWhiteboards((prevWhiteboards) =>
+      prevWhiteboards.filter((whiteboard) => whiteboard.id !== whiteboardId)
+    );
+    
     try {
       await deleteWhiteboard(user.uid, whiteboardId);
-
-      // Remove the whiteboard from the local state
-      setWhiteboards((prevWhiteboards) =>
-        prevWhiteboards.filter((whiteboard) => whiteboard.id !== whiteboardId)
-      );
-      // Update the Recoil state for the user
+  
       setUser((prevUser) => ({
         ...prevUser,
-        listOfWhiteboardIds: whiteboards,
+        listOfWhiteboardIds: prevUser.listOfWhiteboardIds.filter(id => id !== whiteboardId),
       }));
-
     } catch (error) {
       console.error('Error deleting whiteboard:', error);
     }
-  };
+  };  
 
   return (
     <div className="mt-8">

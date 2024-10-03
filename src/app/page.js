@@ -15,25 +15,26 @@ export default function HomePage() {
   const [oldBoardId, setOldBoardId] = useState('');
   const router = useRouter();
   // const user = useRecoilValue(userState);
-  const [user, setUser] = useRecoilState(userState);
+  const [user,  setUser] = useRecoilState(userState);
 
-  // Redirect to login if neither registered nor guest user
   useEffect(() => {
-    if (!user) {
+
+console.log('user', user);
+    
+    if (!user.uid) {
       router.push('/login');
     }
   }, [user, router]);
 
   const handleCreateNewBoard = async () => {
     try {
-      if (!user) {
+      if (!user.uid) {
         return;
       }
       const data = await createNewWhiteboard(user.uid);
       setNewBoardId(data.id);
       console.log('New Whiteboard Created:', data.id);
 
-      // Update the Recoil state for the user
       setUser((prevUser) => ({
         ...prevUser,
         listOfWhiteboardIds: newBoardId,
@@ -59,7 +60,7 @@ export default function HomePage() {
         <button
           onClick={() => router.push('/login')}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-          aria-label="Login to create or join whiteboard sessions"
+          aria-label="Login"
         >
           Login
         </button>

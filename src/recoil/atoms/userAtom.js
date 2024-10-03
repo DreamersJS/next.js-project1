@@ -8,7 +8,7 @@ export const userState = atom({
     email: null,
     username: null,
     avatar: null,
-    listOfWhiteboardIds: [],
+    listOfWhiteboardIds: [], // in firebase this will be an object of key-value pairs (id:true), here an array
     role: null,
   },
 });

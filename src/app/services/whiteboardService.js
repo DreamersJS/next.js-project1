@@ -1,5 +1,5 @@
 import { database } from '@/app/services/firebase';
-import { ref, push, set, get,update } from 'firebase/database';
+import { ref, push, set, get, update } from 'firebase/database';
 
 /**
  * Creates a new blank whiteboard in the Firebase database.
@@ -19,22 +19,16 @@ export const createNewWhiteboard = async (userId) => {
 
     console.log('New Whiteboard Created:', newWhiteboardId);
 
-    // Add the new whiteboard ID to the user's listOfWhiteboardIds
+    // Reference to the user's whiteboards
     const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
     const snapshot = await get(userWhiteboardsRef);
-    const updatedUserWhiteboards = snapshot.val() || [];
+    const updatedUserWhiteboards = snapshot.val() || {};
 
-    // Add the new whiteboard ID to the list
-    updatedUserWhiteboards.push(newWhiteboardId);
+    // Add the new whiteboard ID as a key-value pair (whiteboardId: true)
+    updatedUserWhiteboards[newWhiteboardId] = true;
 
     // Update the user's whiteboard list in the database
     await set(userWhiteboardsRef, updatedUserWhiteboards);
-
-    // Update the Recoil state for the user
-    // setUser((prevUser) => ({
-    //   ...prevUser,
-    //   listOfWhiteboardIds: [...prevUser.listOfWhiteboardIds, newWhiteboardId],
-    // }));
 
     return { id: newWhiteboardId, content: '', photo: '' };
   } catch (error) {
@@ -72,34 +66,48 @@ export const loadWhiteboardById = async (whiteboardId) => {
 export const deleteWhiteboard = async (whiteboardId, userId) => {
   if (confirm('Are you sure you want to delete this whiteboard?')) {
     try {
-      // Delete the whiteboard from the database
-      // const whiteboardRef = ref(database, `whiteboards/${whiteboardId}`);
-      // await remove(whiteboardRef);
+      // Delete the whiteboard from the database (this part is still using fetch)
       const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
         method: 'DELETE',
       });
 
-
-      // Get the user's current list of whiteboards
+      // Reference to the user's whiteboards
       const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
       const snapshot = await get(userWhiteboardsRef);
-      const userWhiteboards = snapshot.val() || [];
+      const userWhiteboards = snapshot.val() || {};
 
-      // Remove the whiteboard ID from the user's list
-      const updatedWhiteboardList = userWhiteboards.filter((id) => id !== whiteboardId);
+      // Remove the whiteboard ID from the user's list by deleting the key
+      delete userWhiteboards[whiteboardId];
 
       // Update the user's whiteboard list in the database
-      await set(userWhiteboardsRef, updatedWhiteboardList);
-
-      // Update the Recoil state for the user
-      // setUser((prevUser) => ({
-      //   ...prevUser,
-      //   listOfWhiteboardIds: updatedWhiteboardList,
-      // }));
+      await set(userWhiteboardsRef, userWhiteboards);
 
       console.log('Deleted whiteboard:', whiteboardId);
     } catch (error) {
       console.error('Error deleting whiteboard:', error);
     }
+  }
+};
+
+/**
+ * Function to get user's whiteboard IDs
+ * @param {string} userId 
+ * @returns array of whiteboard IDs
+ */
+export const getUserWhiteboards = async (userId) => {
+  try {
+    const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
+    
+    // Fetch user's whiteboards (as key-value pairs)
+    const snapshot = await get(userWhiteboardsRef);
+    
+    const whiteboardObject = snapshot.val() || {};
+
+    const whiteboardIds = Object.keys(whiteboardObject);
+
+    return whiteboardIds;
+  } catch (error) {
+    console.error('Error fetching user whiteboards:', error);
+    throw error;
   }
 };

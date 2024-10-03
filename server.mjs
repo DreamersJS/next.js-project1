@@ -31,7 +31,7 @@ app.prepare().then(() => {
 
   io.on('connection', (socket) => {
     console.log('New client connected');
-    // const username = socket.handshake.query.username; // Retrieve username from query params
+    const username = socket.handshake.query.username; // Retrieve username from query params
 
     // Send all previously drawn shapes to the new client
     socket.emit('initDrawings', drawnShapes);
@@ -58,9 +58,7 @@ app.prepare().then(() => {
     });
 
     socket.on('message', (data) => {
-      const { message, username } = data;
-      const messageWithUsername = { username: username || 'Anonymous', message };
-      io.emit('message', messageWithUsername);
+      io.emit('message', data);
     });
 
     socket.on('clear', () => {

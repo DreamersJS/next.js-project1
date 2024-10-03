@@ -36,7 +36,7 @@ export default function Chat() {
   const handleSend = () => {
     if (socketRef.current && newMessage.trim()){
       setMessages([...messages, newMessage]);
-      socketRef.current.emit('message', { newMessage, username });
+      socketRef.current.emit('message', newMessage);
       setNewMessage("");
     }
   };
