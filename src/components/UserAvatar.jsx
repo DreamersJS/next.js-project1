@@ -9,7 +9,7 @@ const UserAvatar = () => {
   const user = useRecoilValue(userState);
   const username = user.username;
   const avatar = user.avatar;
-
+console.log('user', user);
   if (!user || !username) {
     return null; 
   }

@@ -57,7 +57,7 @@ export default function WhiteboardList() {
       await deleteWhiteboard(user.uid, whiteboardId);
   
       setUser((prevUser) => {
-        const whiteboardIdsArray = Object.keys(prevUser.listOfWhiteboardIds); // Convert to array
+        const whiteboardIdsArray = Object.keys(prevUser.listOfWhiteboardIds);
         return {
           ...prevUser,
           listOfWhiteboardIds: whiteboardIdsArray.filter(id => id !== whiteboardId),

@@ -34,10 +34,13 @@ export default function HomePage() {
       const data = await createNewWhiteboard(user.uid);
       setNewBoardId(data.id);
       console.log('New Whiteboard Created:', data.id);
+      console.log('user', user);
+
+      // const arrayOfWhiteboardIds = Object.keys(userData.listOfWhiteboardIds);
 
       setUser((prevUser) => ({
         ...prevUser,
-        arrayOfWhiteboardIds: [...prevUser.arrayOfWhiteboardIds, data.id], 
+        listOfWhiteboardIds: [...(prevUser.listOfWhiteboardIds || []), data.id], 
       }));
       router.push(`/whiteboard/${data.id}`);
     } catch (error) {

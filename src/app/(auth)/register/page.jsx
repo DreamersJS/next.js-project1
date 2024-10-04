@@ -34,12 +34,13 @@ const RegisterPage = () => {
         const data = await response.json();
         const user = data.user;
         console.log('User registered:', user);
+        const arrayOfWhiteboardIds = Object.keys(user.listOfWhiteboardIds);
         setUser({
           uid: user.uid,
           email: user.email,
           username: user.username || "Unknown",
           avatar: user.avatar || null,
-          listOfWhiteboardIds: user.listOfWhiteboardIds || [],
+          listOfWhiteboardIds: arrayOfWhiteboardIds || [],
         });
 
         if (redirectPath) {
