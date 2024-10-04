@@ -1,37 +1,44 @@
-// app/api/whiteboards/route.js
 import { database } from '@/app/services/firebase';
-import { ref, push, get, set } from 'firebase/database';
+import { ref, get } from 'firebase/database';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
-  const dbRef = ref(database, 'whiteboards');
+/**
+ * const response = await fetch(`/api/whiteboards?userId=${user.uid}`, {
+        method: 'GET',
+  });
+      if (response.ok) {
+        const data = await response.json();
+ * @param {*} request  This is the incoming HTTP request object. It contains details about the request, such as headers, query parameters, and the request body (if applicable). In this context, we specifically use it to access the query parameters (userId).
+ * @returns returns an array of whiteboard objects containing the id, content, and photo 
+ */
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get('userId');
+
+  if (!userId) {
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+  }
+
   try {
-    const snapshot = await get(dbRef);
-    if (!snapshot.exists()) {
-      console.log('No whiteboards available');
+    // Reference to the user's whiteboards
+    const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
+    const snapshot = await get(userWhiteboardsRef);
+    
+    const whiteboardIds = snapshot.val() || {};
+    const whiteboards = [];
+
+    // Iterate through whiteboard IDs to fetch each whiteboard's data
+    for (const whiteboardId in whiteboardIds) {
+      const whiteboardRef = ref(database, `whiteboards/${whiteboardId}`);
+      const whiteboardSnapshot = await get(whiteboardRef);
+      if (whiteboardSnapshot.exists()) {
+        whiteboards.push({ id: whiteboardId, ...whiteboardSnapshot.val() });
+      }
     }
-    const whiteboards = snapshot.exists() ? snapshot.val() : [];
+
     return NextResponse.json(whiteboards);
   } catch (error) {
+    console.error("Error fetching user's whiteboards:", error);
     return NextResponse.json({ error: 'Failed to fetch whiteboards' }, { status: 500 });
   }
 }
-
-export async function POST(request) {
-  console.log(`POST(request): ${JSON.stringify(request)}`);
-  const newWhiteboard = await request.json();
-  const whiteboardsRef = ref(database, 'whiteboards');
-  
-  try {
-    const newWhiteboardRef = push(whiteboardsRef); // Create a new child reference
-    console.log('newWhiteboardRef:', newWhiteboardRef);
-
-    await set(newWhiteboardRef, newWhiteboard); // Use set() to save data to the new location
-    console.log(`Whiteboard successfully created with ID: ${newWhiteboardRef.key}`);
-    return NextResponse.json({ id: newWhiteboardRef.key, ...newWhiteboard }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating whiteboard in POST:", error);
-    return NextResponse.json({ error: 'Failed to create whiteboard' }, { status: 500 });
-  }
-}
-

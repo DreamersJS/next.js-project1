@@ -5,37 +5,37 @@ import { ref, push, set, get, update } from 'firebase/database';
  * Creates a new blank whiteboard in the Firebase database.
  * @returns {Promise<{ id: string, content: string }>} - An object containing the ID, content: photo url of the newly created whiteboard.
  */
-export const createNewWhiteboard = async (userId) => {
-  try {
-    const newWhiteboardRef = push(ref(database, 'whiteboards'));
-    const newWhiteboardId = newWhiteboardRef.key;
+// export const createNewWhiteboard = async (userId) => {
+//   try {
+//     const newWhiteboardRef = push(ref(database, 'whiteboards'));
+//     const newWhiteboardId = newWhiteboardRef.key;
 
-    // Set the initial whiteboard data
-    await set(newWhiteboardRef, {
-      id: newWhiteboardId,
-      content: '',
-      photo: '',
-    });
+//     // Set the initial whiteboard data
+//     await set(newWhiteboardRef, {
+//       id: newWhiteboardId,
+//       content: '',
+//       photo: '',
+//     });
 
-    console.log('New Whiteboard Created:', newWhiteboardId);
+//     console.log('New Whiteboard Created:', newWhiteboardId);
 
-    // Reference to the user's whiteboards
-    const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
-    const snapshot = await get(userWhiteboardsRef);
-    const updatedUserWhiteboards = snapshot.val() || {};
+//     // Reference to the user's whiteboards
+//     const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
+//     const snapshot = await get(userWhiteboardsRef);
+//     const updatedUserWhiteboards = snapshot.val() || {};
 
-    // Add the new whiteboard ID as a key-value pair (whiteboardId: true)
-    updatedUserWhiteboards[newWhiteboardId] = true;
+//     // Add the new whiteboard ID as a key-value pair (whiteboardId: true)
+//     updatedUserWhiteboards[newWhiteboardId] = true;
 
-    // Update the user's whiteboard list in the database
-    await set(userWhiteboardsRef, updatedUserWhiteboards);
+//     // Update the user's whiteboard list in the database
+//     await set(userWhiteboardsRef, updatedUserWhiteboards);
 
-    return { id: newWhiteboardId, content: '', photo: '' };
-  } catch (error) {
-    console.error('Error in createNewWhiteboard:', error);
-    throw error;
-  }
-};
+//     return { id: newWhiteboardId, content: '', photo: '' };
+//   } catch (error) {
+//     console.error('Error in createNewWhiteboard:', error);
+//     throw error;
+//   }
+// };
 
 /**
  * Loads the content of a whiteboard from the Firebase database.
@@ -49,14 +49,17 @@ export const loadWhiteboardById = async (whiteboardId) => {
     });
 
     if (response.ok) {
-      const data = await response.json();
-
-      return data;
+      return await response.json(); // Return parsed data directly
+    } else {
+      console.error('Failed to load whiteboard:', response.statusText);
+      return null; // Return null for error handling
     }
   } catch (error) {
     console.error('Error loading whiteboard:', error);
+    return null; // Return null for error handling
   }
 };
+
 
 /**
  * Deletes a whiteboard by its ID from db and removes it from the user's list of whiteboards.
@@ -66,23 +69,16 @@ export const loadWhiteboardById = async (whiteboardId) => {
 export const deleteWhiteboard = async (whiteboardId, userId) => {
   if (confirm('Are you sure you want to delete this whiteboard?')) {
     try {
-      // Delete the whiteboard from the database (this part is still using fetch)
-      const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
+      // Send a DELETE request to the API to delete the whiteboard
+      const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${userId}`, {
         method: 'DELETE',
       });
 
-      // Reference to the user's whiteboards
-      const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
-      const snapshot = await get(userWhiteboardsRef);
-      const userWhiteboards = snapshot.val() || {};
-
-      // Remove the whiteboard ID from the user's list by deleting the key
-      delete userWhiteboards[whiteboardId];
-
-      // Update the user's whiteboard list in the database
-      await set(userWhiteboardsRef, userWhiteboards);
-
-      console.log('Deleted whiteboard:', whiteboardId);
+      if (response.ok) {
+        console.log('Deleted whiteboard:', whiteboardId);
+      } else {
+        console.error('Error deleting whiteboard:', response.statusText);
+      }
     } catch (error) {
       console.error('Error deleting whiteboard:', error);
     }
@@ -119,18 +115,18 @@ export const getUserWhiteboards = async (userId) => {
  * @param {HTMLCanvasElement} canvas - The canvas element to capture.
  * @returns {Promise<void>}
  */
-export const saveWhiteboardAsImage = async (whiteboardId, canvas) => {
-  const dataURL = canvas.toDataURL('image/png');
-  console.log('in func: Saving whiteboard as image:', dataURL);
-  // Save the image URL to your database
-  try {
-    const whiteboardRef = ref(database, `whiteboards/${whiteboardId}`);
-    await set(whiteboardRef, { photo: dataURL }); // Update with image URL
-    console.log('Whiteboard saved as image:', dataURL);
-  } catch (error) {
-    console.error('Error saving whiteboard image:', error);
-  }
-};
+// export const saveWhiteboardAsImage = async (whiteboardId, canvas) => {
+//   const dataURL = canvas.toDataURL('image/png');
+//   console.log('in func: Saving whiteboard as image:', dataURL);
+//   // Save the image URL to your database
+//   try {
+//     const whiteboardRef = ref(database, `whiteboards/${whiteboardId}`);
+//     await set(whiteboardRef, { photo: dataURL }); // Update with image URL
+//     console.log('Whiteboard saved as image:', dataURL);
+//   } catch (error) {
+//     console.error('Error saving whiteboard image:', error);
+//   }
+// };
 
 /**
  * Load whiteboard image onto the canvas.
@@ -138,23 +134,23 @@ export const saveWhiteboardAsImage = async (whiteboardId, canvas) => {
  * @param {HTMLCanvasElement} canvas - The canvas element to draw the image onto.
  * @returns {Promise<void>}
  */
-export const loadWhiteboardImage = async (whiteboardId, canvas) => {
-  try {
-    const whiteboard = await loadWhiteboardById(whiteboardId);
-    const ctx = canvas.getContext('2d');
+// export const loadWhiteboardImage = async (whiteboardId, canvas) => {
+//   try {
+//     const whiteboard = await loadWhiteboardById(whiteboardId);
+//     const ctx = canvas.getContext('2d');
 
-    // Clear the canvas before loading
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+//     // Clear the canvas before loading
+//     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Load the image if it exists
-    if (whiteboard.photo) {
-      const img = new Image();
-      img.src = whiteboard.photo;
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0); // Draw the image on the canvas
-      };
-    }
-  } catch (error) {
-    console.error('Error loading whiteboard image:', error);
-  }
-};
+//     // Load the image if it exists
+//     if (whiteboard.photo) {
+//       const img = new Image();
+//       img.src = whiteboard.photo;
+//       img.onload = () => {
+//         ctx.drawImage(img, 0, 0); // Draw the image on the canvas
+//       };
+//     }
+//   } catch (error) {
+//     console.error('Error loading whiteboard image:', error);
+//   }
+// };

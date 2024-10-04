@@ -23,9 +23,11 @@ export default function WhiteboardList() {
     setLoading(true); 
     try {
       const whiteboardIds = await getUserWhiteboards(userId);
+      console.log('Whiteboard IDs:', whiteboardIds);
       const whiteboardData = await Promise.all(
         whiteboardIds.map(async (whiteboardId) => await loadWhiteboardById(whiteboardId))
       );
+      console.log('Whiteboard Data:', whiteboardData);
       setWhiteboards(whiteboardData);
     } catch (error) {
       console.error('Error loading user whiteboards:', error);
@@ -54,14 +56,17 @@ export default function WhiteboardList() {
     try {
       await deleteWhiteboard(user.uid, whiteboardId);
   
-      setUser((prevUser) => ({
-        ...prevUser,
-        listOfWhiteboardIds: prevUser.listOfWhiteboardIds.filter(id => id !== whiteboardId),
-      }));
+      setUser((prevUser) => {
+        const whiteboardIdsArray = Object.keys(prevUser.listOfWhiteboardIds);
+        return {
+          ...prevUser,
+          listOfWhiteboardIds: whiteboardIdsArray.filter(id => id !== whiteboardId),
+        };
+      });
     } catch (error) {
       console.error('Error deleting whiteboard:', error);
     }
-  };  
+  };   
 
   return (
     <div className="mt-8">

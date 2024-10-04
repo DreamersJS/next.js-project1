@@ -3,7 +3,7 @@
 
 import { useState, Suspense, lazy, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createNewWhiteboard } from '../app/services/whiteboardService';
+// import { createNewWhiteboard } from '../app/services/whiteboardService';
 import { useRecoilValue } from "recoil";
 import { useRecoilState } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
@@ -15,12 +15,12 @@ export default function HomePage() {
   const [oldBoardId, setOldBoardId] = useState('');
   const router = useRouter();
   // const user = useRecoilValue(userState);
-  const [user,  setUser] = useRecoilState(userState);
+  const [user, setUser] = useRecoilState(userState);
 
   useEffect(() => {
 
-console.log('user', user);
-    
+    console.log('user', user);
+
     if (!user.uid) {
       router.push('/login');
     }
@@ -31,15 +31,22 @@ console.log('user', user);
       if (!user.uid) {
         return;
       }
-      const data = await createNewWhiteboard(user.uid);
-      setNewBoardId(data.id);
-      console.log('New Whiteboard Created:', data.id);
+      const response = await fetch(`/api/whiteboards?userId=${user.uid}`, {
+        method: 'GET',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log('data', data);
+        setNewBoardId(data.id);
+        console.log('New Whiteboard Created:', data.id);
+        console.log('user', user);
 
-      setUser((prevUser) => ({
-        ...prevUser,
-        listOfWhiteboardIds: newBoardId,
-      }));
-      router.push(`/whiteboard/${data.id}`);
+        setUser((prevUser) => ({
+          ...prevUser,
+          listOfWhiteboardIds: [...(prevUser.listOfWhiteboardIds || []), data.id],
+        }));
+        router.push(`/whiteboard/${data.id}`);
+      }
     } catch (error) {
       console.error('Error creating whiteboard:', error);
     }
