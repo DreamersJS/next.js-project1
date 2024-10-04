@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
+import { deleteWhiteboard } from "@/app/services/whiteboardService";
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
@@ -352,21 +353,22 @@ const Whiteboard = ({ id }) => {
   };
 
   // Delete 
-  const deleteWhiteboard = async (whiteboardId) => {
+  const handleDeleteWhiteboard = async (whiteboardId) => {
     if (confirm('Are you sure you want to delete this whiteboard?')) {
       try {
-        const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${user.uid}`, {
-          method: 'DELETE',
-        });
+        // const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${user.uid}`, {
+        //   method: 'DELETE',
+        // });
 
-        if (response.ok) {
-          const data = await response.json();
+        // if (response.ok) {
+        //   const data = await response.json();
+          const del = await deleteWhiteboard(whiteboardId, user.uid);
           console.log('Deleted whiteboard:', data);
           // Handle the UI updates, e.g., remove the whiteboard from the list
           router.push(`/`);
-        } else {
-          alert('Failed to delete the whiteboard.');
-        }
+        // } else {
+        //   alert('Failed to delete the whiteboard.');
+        // }
       } catch (error) {
         console.error('Error deleting whiteboard:', error);
       }
@@ -395,7 +397,7 @@ const Whiteboard = ({ id }) => {
             </button>
           </div>)}
           <div className='flex'>
-            <button onClick={() => deleteWhiteboard(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-red-500 text-white">
+            <button onClick={() => handleDeleteWhiteboard(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-red-500 text-white">
               Delete
             </button>
           </div>

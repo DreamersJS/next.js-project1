@@ -1,41 +1,41 @@
 import { database } from '@/app/services/firebase';
-import { ref, push, set, get, update } from 'firebase/database';
+import { ref, push, set, get, update, remove } from 'firebase/database';
 
 /**
  * Creates a new blank whiteboard in the Firebase database.
  * @returns {Promise<{ id: string, content: string }>} - An object containing the ID, content: photo url of the newly created whiteboard.
  */
-// export const createNewWhiteboard = async (userId) => {
-//   try {
-//     const newWhiteboardRef = push(ref(database, 'whiteboards'));
-//     const newWhiteboardId = newWhiteboardRef.key;
+export const createNewWhiteboard = async (userId) => {
+  try {
+    const newWhiteboardRef = push(ref(database, 'whiteboards'));
+    const newWhiteboardId = newWhiteboardRef.key;
 
-//     // Set the initial whiteboard data
-//     await set(newWhiteboardRef, {
-//       id: newWhiteboardId,
-//       content: '',
-//       photo: '',
-//     });
+    // Set the initial whiteboard data
+    await set(newWhiteboardRef, {
+      id: newWhiteboardId,
+      content: '',
+      photo: '',
+    });
 
-//     console.log('New Whiteboard Created:', newWhiteboardId);
+    console.log('New Whiteboard Created:', newWhiteboardId);
 
-//     // Reference to the user's whiteboards
-//     const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
-//     const snapshot = await get(userWhiteboardsRef);
-//     const updatedUserWhiteboards = snapshot.val() || {};
+    // Reference to the user's whiteboards
+    const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
+    const snapshot = await get(userWhiteboardsRef);
+    const updatedUserWhiteboards = snapshot.val() || {};
 
-//     // Add the new whiteboard ID as a key-value pair (whiteboardId: true)
-//     updatedUserWhiteboards[newWhiteboardId] = true;
+    // Add the new whiteboard ID as a key-value pair (whiteboardId: true)
+    updatedUserWhiteboards[newWhiteboardId] = true;
 
-//     // Update the user's whiteboard list in the database
-//     await set(userWhiteboardsRef, updatedUserWhiteboards);
+    // Update the user's whiteboard list in the database
+    await set(userWhiteboardsRef, updatedUserWhiteboards);
 
-//     return { id: newWhiteboardId, content: '', photo: '' };
-//   } catch (error) {
-//     console.error('Error in createNewWhiteboard:', error);
-//     throw error;
-//   }
-// };
+    return { id: newWhiteboardId, content: '', photo: '' };
+  } catch (error) {
+    console.error('Error in createNewWhiteboard:', error);
+    throw error;
+  }
+};
 
 /**
  * Loads the content of a whiteboard from the Firebase database.
@@ -69,16 +69,16 @@ export const loadWhiteboardById = async (whiteboardId) => {
 export const deleteWhiteboard = async (whiteboardId, userId) => {
   if (confirm('Are you sure you want to delete this whiteboard?')) {
     try {
-      // Send a DELETE request to the API to delete the whiteboard
+
       const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${userId}`, {
         method: 'DELETE',
       });
-
       if (response.ok) {
         console.log('Deleted whiteboard:', whiteboardId);
       } else {
         console.error('Error deleting whiteboard:', response.statusText);
       }
+
     } catch (error) {
       console.error('Error deleting whiteboard:', error);
     }
@@ -93,10 +93,10 @@ export const deleteWhiteboard = async (whiteboardId, userId) => {
 export const getUserWhiteboards = async (userId) => {
   try {
     const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
-    
+
     // Fetch user's whiteboards (as key-value pairs)
     const snapshot = await get(userWhiteboardsRef);
-    
+
     const whiteboardObject = snapshot.val() || {};
 
     const whiteboardIds = Object.keys(whiteboardObject);
