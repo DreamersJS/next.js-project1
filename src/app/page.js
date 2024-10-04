@@ -37,7 +37,7 @@ console.log('user', user);
 
       setUser((prevUser) => ({
         ...prevUser,
-        listOfWhiteboardIds: newBoardId,
+        listOfWhiteboardIds: [...newBoardId],
       }));
       router.push(`/whiteboard/${data.id}`);
     } catch (error) {

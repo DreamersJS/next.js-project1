@@ -19,27 +19,28 @@ export default function Chat() {
 
   // Listen for incoming chat messages
   useEffect(() => {
-
+    // Only proceed if socketRef.current is defined
     if (socketRef.current) {
-      socketRef.current.on('message', (data) => {
+      const handleMessage = (data) => {
         setMessages((prevMessages) => [...prevMessages, data]);
-      });
+      };
+  
+      socketRef.current.on('message', handleMessage);
+  
+      // Cleanup listener when component unmounts or before adding a new one
+      return () => {
+        socketRef.current.off('message', handleMessage);
+      };
     }
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.off('message');
-      }
-    };
-  }, [socketRef.current]);
-
+  }, [socketRef.current]);  
+  
   const handleSend = () => {
-    if (socketRef.current && newMessage.trim()){
-      setMessages([...messages, newMessage]);
+    if (socketRef.current && newMessage.trim()) {
+
       socketRef.current.emit('message', newMessage);
-      setNewMessage("");
+      setNewMessage(""); 
     }
-  };
+  };  
 
   return (
     <div className="flex flex-col h-full">
