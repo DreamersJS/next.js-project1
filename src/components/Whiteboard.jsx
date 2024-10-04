@@ -356,19 +356,9 @@ const Whiteboard = ({ id }) => {
   const handleDeleteWhiteboard = async (whiteboardId) => {
     if (confirm('Are you sure you want to delete this whiteboard?')) {
       try {
-        // const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${user.uid}`, {
-        //   method: 'DELETE',
-        // });
-
-        // if (response.ok) {
-        //   const data = await response.json();
-          const del = await deleteWhiteboard(whiteboardId, user.uid);
-          console.log('Deleted whiteboard:', data);
-          // Handle the UI updates, e.g., remove the whiteboard from the list
+          await deleteWhiteboard(whiteboardId, user.uid);
           router.push(`/`);
-        // } else {
-        //   alert('Failed to delete the whiteboard.');
-        // }
+
       } catch (error) {
         console.error('Error deleting whiteboard:', error);
       }
