@@ -29,12 +29,13 @@ const LoginPage = () => {
       const userData = await getUserByUid(user.uid);
       console.log('userData:', userData);
       // Update the user state in Recoil
+      const arrayOfWhiteboardIds = Object.keys(userData.listOfWhiteboardIds);
       setUser({
         uid: user.uid,
         email: user.email,
         username: userData.username || "Unknown",
         avatar: userData.avatar || null,
-        listOfWhiteboardIds: userData.listOfWhiteboardIds || [],
+        listOfWhiteboardIds: arrayOfWhiteboardIds || [],
         role: userData.role || "registered",
       });
       // Redirect to the original path if available or to the home page

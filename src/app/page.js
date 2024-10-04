@@ -15,12 +15,12 @@ export default function HomePage() {
   const [oldBoardId, setOldBoardId] = useState('');
   const router = useRouter();
   // const user = useRecoilValue(userState);
-  const [user,  setUser] = useRecoilState(userState);
+  const [user, setUser] = useRecoilState(userState);
 
   useEffect(() => {
 
-console.log('user', user);
-    
+    console.log('user', user);
+
     if (!user.uid) {
       router.push('/login');
     }
@@ -37,7 +37,7 @@ console.log('user', user);
 
       setUser((prevUser) => ({
         ...prevUser,
-        listOfWhiteboardIds: [...newBoardId],
+        arrayOfWhiteboardIds: [...prevUser.arrayOfWhiteboardIds, data.id], 
       }));
       router.push(`/whiteboard/${data.id}`);
     } catch (error) {
