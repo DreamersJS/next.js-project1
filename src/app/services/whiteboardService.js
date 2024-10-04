@@ -69,32 +69,16 @@ export const loadWhiteboardById = async (whiteboardId) => {
 export const deleteWhiteboard = async (whiteboardId, userId) => {
   if (confirm('Are you sure you want to delete this whiteboard?')) {
     try {
-      // Delete the whiteboard from the database
-      const whiteboardRef = ref(database, `whiteboards/${whiteboardId}`);
-      await remove(whiteboardRef);
-      // const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${userId}`, {
-      //   method: 'DELETE',
-      // });
 
-      // Get the user's current list of whiteboards
-      const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
-      const snapshot = await get(userWhiteboardsRef);
-      console.log('snapshot:', snapshot.val());
-      const userWhiteboards = snapshot.val() || {};
-
-      if (userWhiteboards[whiteboardId]) {
-        delete userWhiteboards[whiteboardId];
+      const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${userId}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        console.log('Deleted whiteboard:', whiteboardId);
+      } else {
+        console.error('Error deleting whiteboard:', response.statusText);
       }
 
-      // for (const whiteboardId in userWhiteboards ?? {}) {
-      //   await remove(whiteboardId);
-      // }
-      const snapshotAfter = await get(userWhiteboardsRef);
-      console.log('User whiteboards after deletion:', snapshotAfter.val());
-      
-      await set(userWhiteboardsRef, userWhiteboards);
-
-      console.log('Deleted whiteboard:', whiteboardId);
     } catch (error) {
       console.error('Error deleting whiteboard:', error);
     }
