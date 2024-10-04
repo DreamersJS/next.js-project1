@@ -352,13 +352,11 @@ const Whiteboard = ({ id }) => {
     }
   };
 
-  // Delete 
   const handleDeleteWhiteboard = async (whiteboardId) => {
     if (confirm('Are you sure you want to delete this whiteboard?')) {
       try {
           await deleteWhiteboard(whiteboardId, user.uid);
           router.push(`/`);
-
       } catch (error) {
         console.error('Error deleting whiteboard:', error);
       }

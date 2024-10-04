@@ -67,7 +67,6 @@ export const loadWhiteboardById = async (whiteboardId) => {
  * @param {string} userId - The ID of the current user.
  */
 export const deleteWhiteboard = async (whiteboardId, userId) => {
-  if (confirm('Are you sure you want to delete this whiteboard?')) {
     try {
 
       const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${userId}`, {
@@ -82,7 +81,7 @@ export const deleteWhiteboard = async (whiteboardId, userId) => {
     } catch (error) {
       console.error('Error deleting whiteboard:', error);
     }
-  }
+  
 };
 
 /**
