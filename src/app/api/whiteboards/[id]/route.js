@@ -1,10 +1,10 @@
 // src/app/api/whiteboards/[id]/route.js
-import { database } from '@/app/services/firebase'; 
+import { database } from '@/app/services/firebase';
 import { ref, remove, set, get } from 'firebase/database';
 
 // load board by id
 export async function GET(req, { params }) {
-    const { id } = params; 
+    const { id } = params;
     console.log(`Loading whiteboard ID: ${id}`);
 
     try {
@@ -24,16 +24,26 @@ export async function GET(req, { params }) {
 
 // delete board by id
 export async function DELETE(req, { params }) {
+    console.log('Params:', params);
     const { userId, id } = params; // Assuming userId is part of the URL params
-    console.log(`Deleting whiteboard ID: ${id}`);
+    console.log(`API: Deleting whiteboard ID: ${id}`);
 
     try {
         const whiteboardRef = ref(database, `whiteboards/${id}`);
         await remove(whiteboardRef); // Remove the whiteboard
 
         // Remove the whiteboard ID from the user's listOfWhiteboardIds
-        const userWhiteboardRef = ref(database, `users/${userId}/listOfWhiteboardIds/${id}`);
-        await remove(userWhiteboardRef);
+
+const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
+const snapshotBefore = await get(userWhiteboardsRef);
+console.log('User whiteboards before deletion:', snapshotBefore.val());
+
+const userWhiteboardRef = ref(database, `users/${userId}/listOfWhiteboardIds/${id}`);
+await remove(userWhiteboardRef);
+
+const snapshotAfter = await get(userWhiteboardsRef);
+console.log('User whiteboards after deletion:', snapshotAfter.val());
+
 
         return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (error) {
