@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Collaborative Whiteboard Application
 
-## Getting Started
+## Overview
 
-First, run the development server:
+This project is a **Collaborative Whiteboard Application** built using **Next.js** and **Socket.IO** for real-time interaction. The application allows multiple users to collaborate on a virtual whiteboard in real time. It incorporates APIs for backend operations, ensuring seamless data handling and user authentication. This project demonstrates the power of modern web technologies in creating interactive applications.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Real-time Collaboration**: 
+  - Utilizes **Socket.IO** for WebSocket connections, enabling users to interact with each other in real time, drawing, and annotating on the whiteboard.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+- **API Integration**: 
+  - Interacts with various **APIs** for creating, retrieving, and updating whiteboard content. This facilitates operations like saving whiteboard states and managing user sessions.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+<!-- - **User Authentication**:
+  - Middleware checks for user authentication using cookies, ensuring that only authorized users can access certain features and routes within the application. -->
 
-## Learn More
+- **State Management**:
+  - Implements **Recoil** for global state management, allowing for efficient state updates and reactivity throughout the application.
 
-To learn more about Next.js, take a look at the following resources:
+- **Next.js App Router**:
+  - Leverages Next.js App Router architecture for enhanced routing capabilities, simplifying navigation and page structure.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Technologies Used
 
-## Deploy on Vercel
+- **Frontend**: 
+  - **Next.js** 
+  - **React**
+  - **Socket.IO** 
+  - **Recoil**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Backend**: 
+  - REST APIs for data handling 
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- **Containerization**: 
+  - **Docker**
+
+- **Development Tools**:
+  - Node.js
+  - npm
+
+## Installation
+
+To get started with this project, follow the steps below:
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/DreamersJS/next.js-project1.git
+   cd next.js-project1
+
+2. **Install dependencies**:
+    npm install
+
+3. **Set up environment variables**:
+    Create a .env file in the root directory and add any necessary environment variables 
+    PORT
+    NODE_ENV
+    NEXT_PUBLIC_SOCKET_URL
+
+4. **Run the application**:
+   npm run dev
+   or
+   docker-compose up --build
+The application will start on http://localhost:3000 or on whichever PORT you are using.
+
+## Usage
+
+- Users can draw on the board, and all actions will be synced in real time with other connected users.
+- The application require authentication. Ensure to log in to access all features.
