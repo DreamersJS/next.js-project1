@@ -49,14 +49,17 @@ export const loadWhiteboardById = async (whiteboardId) => {
     });
 
     if (response.ok) {
-      const data = await response.json();
-
-      return data;
+      return await response.json(); // Return parsed data directly
+    } else {
+      console.error('Failed to load whiteboard:', response.statusText);
+      return null; // Return null for error handling
     }
   } catch (error) {
     console.error('Error loading whiteboard:', error);
+    return null; // Return null for error handling
   }
 };
+
 
 /**
  * Deletes a whiteboard by its ID from db and removes it from the user's list of whiteboards.
