@@ -53,9 +53,9 @@ To get started with this project, follow the steps below:
     npm install
 
 3. **Set up environment variables**:
-    Create a .env file in the root directory and add any necessary environment variables 
-    PORT
-    NODE_ENV
+    Create a .env file in the root directory and add any necessary environment variables: <br/>
+    PORT<br/>
+    NODE_ENV<br/>
     NEXT_PUBLIC_SOCKET_URL
 
 4. **Run the application**:
