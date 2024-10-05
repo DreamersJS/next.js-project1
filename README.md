@@ -2,18 +2,18 @@
 
 ## Overview
 
-This project is a **Collaborative Whiteboard Application** built using **Next.js** and **Socket.IO** for real-time interaction. The application allows multiple users to collaborate on a virtual whiteboard in real time. It incorporates APIs for backend operations, ensuring seamless data handling and user authentication. This project demonstrates the power of modern web technologies in creating interactive applications.
+This project is a **Collaborative Whiteboard Application** built using **Next.js** and **Socket.IO** for real-time interaction. The application allows multiple users to collaborate on a virtual whiteboard in real time. It incorporates APIs for backend operations, ensuring seamless data handling and user authentication.
 
 ## Features
 
 - **Real-time Collaboration**: 
-  - Utilizes **Socket.IO** for WebSocket connections, enabling users to interact with each other in real time, drawing, and annotating on the whiteboard.
+  - Utilizes **Socket.IO** for WebSocket connections, enabling users to interact with each other in real time, drawing, and chatting on the whiteboard.
 
 - **API Integration**: 
-  - Interacts with various **APIs** for creating, retrieving, and updating whiteboard content. This facilitates operations like saving whiteboard states and managing user sessions.
+  - Interacts with various **APIs** for creating, retrieving, and updating whiteboard content. 
 
-<!-- - **User Authentication**:
-  - Middleware checks for user authentication using cookies, ensuring that only authorized users can access certain features and routes within the application. -->
+- **User Authentication**:
+  - Middleware checks for user authentication using cookies, ensuring that only authorized users can access certain features and routes within the application.
 
 - **State Management**:
   - Implements **Recoil** for global state management, allowing for efficient state updates and reactivity throughout the application.
