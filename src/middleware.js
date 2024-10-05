@@ -5,7 +5,8 @@ export function middleware(req) {
 
   // Retrieve cookies
   const cookieStore = req.cookies;
-  const isAuthenticated = cookieStore.get('auth')?.value === 'true';
+  // const isAuthenticated = cookieStore.get('auth')?.value === 'true';
+  const isAuthenticated = cookieStore.get('auth')?.value === 'true' || false;
 
   // Debug logs to confirm middleware execution
   console.log('Middleware executing');
@@ -20,10 +21,10 @@ export function middleware(req) {
     url.searchParams.set('redirect', pathname); // Pass the original path as a query parameter
     console.log('Redirecting to:', url.href);
 
-  console.log('Middleware executing');
-  console.log('Request Path:', pathname);
-  console.log('Is Authenticated:', isAuthenticated);
-  console.log('All Cookies:', cookieStore.getAll());
+    console.log('Middleware executing');
+    console.log('Request Path:', pathname);
+    console.log('Is Authenticated:', isAuthenticated);
+    console.log('All Cookies:', cookieStore.getAll());
     return NextResponse.redirect(url);
   }
 
