@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from 'react';
 import { useSocketConnection } from '@/app/services/useSocket';
 import { useRecoilValue } from "recoil";
@@ -9,6 +10,7 @@ export default function Chat() {
   const [newMessage, setNewMessage] = useState("");
   const user = useRecoilValue(userState);
   const username = user?.username;
+  console.log("User:", user);
 
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
   if (!socketUrl) {
@@ -19,9 +21,10 @@ export default function Chat() {
 
   // Listen for incoming chat messages
   useEffect(() => {
-    // Only proceed if socketRef.current is defined
+
     if (socketRef.current) {
       const handleMessage = (data) => {
+        console.log("Received message:", data); 
         setMessages((prevMessages) => [...prevMessages, data]);
       };
   
@@ -36,8 +39,13 @@ export default function Chat() {
   
   const handleSend = () => {
     if (socketRef.current && newMessage.trim()) {
+      const messageData = {
+        username: username || 'Unknown',
+        text: newMessage,
+      };
 
-      socketRef.current.emit('message', newMessage);
+      console.log("Sending message:", messageData);
+      socketRef.current.emit('message', messageData); 
       setNewMessage(""); 
     }
   };  
@@ -49,7 +57,7 @@ export default function Chat() {
         <div className="space-y-2 overflow-scroll">
           {messages.map((message, index) => (
             <div key={index} className="bg-white p-2 rounded shadow-sm">
-              {username || 'Unknown'}:{message}
+              {message.username}: {message.text} 
             </div>
           ))}
         </div>
@@ -61,7 +69,7 @@ export default function Chat() {
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Type a message"
-          className="flex-1 w-32  border rounded"
+          className="flex-1 w-32 border rounded"
         />
         <button
           onClick={handleSend}

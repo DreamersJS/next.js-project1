@@ -58,7 +58,10 @@ app.prepare().then(() => {
     });
 
     socket.on('message', (data) => {
-      io.emit('message', data);
+      io.emit('message', {
+        username: data.username, 
+        text: data.text,
+      });
     });
 
     socket.on('clear', () => {
