@@ -60,7 +60,6 @@ export const loadWhiteboardById = async (whiteboardId) => {
   }
 };
 
-
 /**
  * Deletes a whiteboard by its ID from db and removes it from the user's list of whiteboards.
  * @param {string} whiteboardId - The ID of the whiteboard to delete.
@@ -114,18 +113,18 @@ export const getUserWhiteboards = async (userId) => {
  * @param {HTMLCanvasElement} canvas - The canvas element to capture.
  * @returns {Promise<void>}
  */
-// export const saveWhiteboardAsImage = async (whiteboardId, canvas) => {
-//   const dataURL = canvas.toDataURL('image/png');
-//   console.log('in func: Saving whiteboard as image:', dataURL);
-//   // Save the image URL to your database
-//   try {
-//     const whiteboardRef = ref(database, `whiteboards/${whiteboardId}`);
-//     await set(whiteboardRef, { photo: dataURL }); // Update with image URL
-//     console.log('Whiteboard saved as image:', dataURL);
-//   } catch (error) {
-//     console.error('Error saving whiteboard image:', error);
-//   }
-// };
+export const saveWhiteboardAsImage = async (whiteboardId, canvas) => {
+  const dataURL = canvas.toDataURL('image/png');
+  console.log('in func: Saving whiteboard as image:', dataURL);
+  // Save the image URL to your database
+  try {
+    const whiteboardRef = ref(database, `whiteboards/${whiteboardId}`);
+    await set(whiteboardRef, { photo: dataURL }); // Update with image URL
+    console.log('Whiteboard saved as image:', dataURL);
+  } catch (error) {
+    console.error('Error saving whiteboard image:', error);
+  }
+};
 
 /**
  * Load whiteboard image onto the canvas.

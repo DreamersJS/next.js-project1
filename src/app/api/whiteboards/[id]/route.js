@@ -1,6 +1,6 @@
 // src/app/api/whiteboards/[id]/route.js
 import { database } from '@/app/services/firebase';
-import { ref, remove, set, get } from 'firebase/database';
+import { ref, remove, set, get, update } from 'firebase/database';
 
 // load board by id
 export async function GET(req, { params }) {
@@ -25,14 +25,14 @@ export async function GET(req, { params }) {
 // delete board by id
 export async function DELETE(req, { params }) {
     console.log('Params:', params);
-    
+
     // Extract userId from the query parameters in the URL
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId');
-    const { id } = params;  // Get the whiteboard ID
-    
+    const { id } = params;
+
     console.log(`API: Deleting whiteboard ID: ${id} for user ID: ${userId}`);
-    
+
     if (!userId || !id) {
         return new Response(JSON.stringify({ success: false, error: 'Missing userId or whiteboardId' }), { status: 400 });
     }
@@ -42,14 +42,14 @@ export async function DELETE(req, { params }) {
         const whiteboardRef = ref(database, `whiteboards/${id}`);
         await remove(whiteboardRef);
         console.log(`Whiteboard ${id} deleted from /whiteboards`);
-        
+
         // 2. Load the user's list of whiteboards (entire list)
         const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
         const snapshotBefore = await get(userWhiteboardsRef);
         const userWhiteboards = snapshotBefore.val() || {};
 
         console.log('User whiteboards before deletion:', userWhiteboards);
-        
+
         // 3. Delete the specific whiteboard ID from the user's list if it exists
         if (userWhiteboards[id]) {
             delete userWhiteboards[id];
@@ -61,15 +61,13 @@ export async function DELETE(req, { params }) {
         // 4. Update the user's list of whiteboards in the database
         await set(userWhiteboardsRef, userWhiteboards);
         console.log('User whiteboards after deletion:', userWhiteboards);
-        
+
         return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (error) {
         console.error('Error deleting whiteboard or updating user reference:', error);
         return new Response(JSON.stringify({ success: false, error: 'Failed to delete whiteboard or update user' }), { status: 500 });
     }
 }
-
-
 
 /**
  * Save update board by id
@@ -78,26 +76,33 @@ export async function DELETE(req, { params }) {
  * @returns new Response
  */
 export async function PUT(req, { params }) {
-    const { userId } = params; // Assuming userId is passed in the request
-    const { id, content, photo } = await req.json(); // Get content, photo, and id from the request body
+    const { id } = params; 
+    const { content } = await req.json(); 
 
-    // Validate inputs
-    if (!userId || !id || typeof content !== 'string' || typeof photo !== 'string') {
+    if (!id || !content) {
         return new Response(JSON.stringify({ success: false, error: 'Invalid input' }), { status: 400 });
     }
 
     try {
         const whiteboardRef = ref(database, `whiteboards/${id}`);
-        // Save the whiteboard with its ID, content, and photo
-        await set(whiteboardRef, { id, content, photo });
+        
+        // Check if the whiteboard exists
+        const snapshot = await get(whiteboardRef);
+        const whiteboardVal = snapshot.val() || {};
 
-        // Update the user's listOfWhiteboardIds
-        const userRef = ref(database, `users/${userId}/listOfWhiteboardIds/${id}`);
-        await set(userRef, true); // Add the whiteboard ID to the user's list
+        if (whiteboardVal) {
+            // Update the content field without affecting other fields
+            await update(whiteboardRef, { content });
+            console.log(`Whiteboard ${id} updated successfully.`);
 
-        return new Response(JSON.stringify({ success: true, message: 'Whiteboard saved successfully.' }), { status: 200 });
+            return new Response(JSON.stringify({ success: true, message: 'Whiteboard updated successfully.' }), { status: 200 });
+        } else {
+            console.log(`Whiteboard ID ${id} not found.`);
+            return new Response(JSON.stringify({ success: false, error: 'Whiteboard not found.' }), { status: 404 });
+        }
     } catch (error) {
-        console.error('Error saving whiteboard:', error);
-        return new Response(JSON.stringify({ success: false, error: 'Failed to save whiteboard.' }), { status: 500 });
+        console.error('Error updating whiteboard:', error);
+        return new Response(JSON.stringify({ success: false, error: 'Failed to update whiteboard.' }), { status: 500 });
     }
 }
+
