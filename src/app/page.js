@@ -4,8 +4,7 @@
 import { useState, Suspense, lazy, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createNewWhiteboard } from '../app/services/whiteboardService';
-import { useRecoilValue } from "recoil";
-import { useRecoilState } from 'recoil';
+import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
 
 const WhiteboardList = lazy(() => import('@/components/WhiteboardList'));
@@ -14,33 +13,28 @@ export default function HomePage() {
   const [newBoardId, setNewBoardId] = useState('');
   const [oldBoardId, setOldBoardId] = useState('');
   const router = useRouter();
-  // const user = useRecoilValue(userState);
   const [user, setUser] = useRecoilState(userState);
 
   useEffect(() => {
-
     console.log('user', user);
 
-    if (!user.uid) {
+    if (!user?.uid) {
       router.push('/login');
     }
   }, [user, router]);
 
   const handleCreateNewBoard = async () => {
     try {
-      if (!user.uid) {
+      if (!user?.uid) {
         return;
       }
       const data = await createNewWhiteboard(user.uid);
       setNewBoardId(data.id);
       console.log('New Whiteboard Created:', data.id);
-      console.log('user', user);
-
-      // const arrayOfWhiteboardIds = Object.keys(userData.listOfWhiteboardIds);
 
       setUser((prevUser) => ({
         ...prevUser,
-        listOfWhiteboardIds: [...(prevUser.listOfWhiteboardIds || []), data.id], 
+        listOfWhiteboardIds: [...(prevUser.listOfWhiteboardIds || []), data.id],
       }));
       router.push(`/whiteboard/${data.id}`);
     } catch (error) {
@@ -59,7 +53,7 @@ export default function HomePage() {
       <h1 className="text-4xl font-bold mb-4" aria-label="Welcome to the Whiteboard App">
         Welcome to the Whiteboard App
       </h1>
-      {!user && (
+      {!user?.uid && (
         <button
           onClick={() => router.push('/login')}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
@@ -78,7 +72,7 @@ export default function HomePage() {
           aria-label="Create a new whiteboard session"
           onClick={handleCreateNewBoard}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-          disabled={!user}
+          disabled={!user?.uid}
         >
           Create New Whiteboard
         </button>

@@ -9,7 +9,7 @@ const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect"); // Retrieve the 'redirect' query parameter
-  console.log('redirectPath:', redirectPath);
+  // console.log('redirectPath:', redirectPath);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -29,7 +29,9 @@ const LoginPage = () => {
       const userData = await getUserByUid(user.uid);
       console.log('userData:', userData);
       // Update the user state in Recoil
-      const arrayOfWhiteboardIds = Object.keys(userData.listOfWhiteboardIds);
+      // const arrayOfWhiteboardIds = Object.keys(userData.listOfWhiteboardIds);
+      const arrayOfWhiteboardIds = userData?.listOfWhiteboardIds ? Object.keys(userData.listOfWhiteboardIds) : [];
+
       setUser({
         uid: user.uid,
         email: user.email,

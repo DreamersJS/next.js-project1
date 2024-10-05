@@ -25,7 +25,7 @@ export default function RootLayout({ children }) {
             >
               My Whiteboard App
             </button>
-            <UserAvatar />
+            {/* <UserAvatar /> */}
             <Logout />
           </header>
           <main className="flex-grow container mx-auto p-2">{children}</main>

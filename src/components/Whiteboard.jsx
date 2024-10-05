@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
-import { deleteWhiteboard } from "@/app/services/whiteboardService";
+import { deleteWhiteboard, saveWhiteboardAsImage } from "@/app/services/whiteboardService";
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
@@ -265,7 +265,6 @@ const Whiteboard = ({ id }) => {
       console.error("Socket is not connected yet.");
     }
   };
-  
   const handleRedo = () => {
     if (socketRef.current) {
       socketRef.current.emit('redo');
@@ -303,8 +302,11 @@ const Whiteboard = ({ id }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: whiteboardId, content: dataURL,  userId: user.uid }), // Sending image data
+        body: JSON.stringify({ id: whiteboardId, content: dataURL }), // Sending image data
       });
+
+      console.log('API response status:', response.status);
+      console.log('API response:', await response.json()); // Log the entire response for debugging
 
       if (response.ok) {
         alert('Whiteboard image saved successfully!');
@@ -352,13 +354,11 @@ const Whiteboard = ({ id }) => {
     }
   };
 
-  // Delete 
   const handleDeleteWhiteboard = async (whiteboardId) => {
     if (confirm('Are you sure you want to delete this whiteboard?')) {
       try {
           await deleteWhiteboard(whiteboardId, user.uid);
           router.push(`/`);
-
       } catch (error) {
         console.error('Error deleting whiteboard:', error);
       }
