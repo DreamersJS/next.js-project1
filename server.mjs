@@ -47,10 +47,13 @@ app.prepare().then(() => {
     });
 
     socket.on('draw', (data) => {
+      // Save the new shape
+      // socket.broadcast.emit('draw', data);
       drawnShapes.push(data);
-      undoStack.push(data); 
-      redoStack = []; 
+      undoStack.push(data); // Add to the undo stack
+      redoStack = []; // Clear the redo stack as the new action invalidates future redos
 
+      // Broadcast the drawing event to all clients, including the sender
       io.emit('draw', data);
     });
 
