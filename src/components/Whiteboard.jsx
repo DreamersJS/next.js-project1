@@ -189,6 +189,8 @@ const Whiteboard = ({ id }) => {
 
         const shapeData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
         setDrawnShapes((prevShapes) => [...prevShapes, shapeData]);
+        socketRef.current.emit('draw', shapeData);
+
         setStartPosition({ x, y });
       } else {
         redrawAllShapes();
