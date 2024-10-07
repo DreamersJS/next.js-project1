@@ -181,15 +181,23 @@ const Whiteboard = ({ id }) => {
           context.stroke();
     
           // Store the current line segment in the pen stroke
-          currentPathRef.current.push({ tool, color, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y });
+          const previewData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
+          currentPathRef.current.push(previewData);
     
           // Emit previewDraw event for real-time collaboration
-          socketRef.current.emit('previewDraw', { tool, color, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y });
+          socketRef.current.emit('previewDraw', previewData);
     
           // Update the starting position to continue the path
           setStartPosition({ x, y });
         }
         previewCounter++;
+        context.lineTo(x, y);
+        context.stroke();
+
+        const shapeData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
+        setDrawnShapes((prevShapes) => [...prevShapes, shapeData]);
+        socketRef.current.emit('draw', shapeData);
+
       }
     };
 
