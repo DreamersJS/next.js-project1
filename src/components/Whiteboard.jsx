@@ -22,6 +22,8 @@ const Whiteboard = ({ id }) => {
   const user = useRecoilValue(userState);
   let previewCounter = 0;
   const granularity = 5;
+  const currentPathRef = useRef([]);
+
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
   if (!socketUrl) {
     console.error('Socket URL is undefined');
@@ -166,64 +168,43 @@ const Whiteboard = ({ id }) => {
 
     const handleMouseMove = (e) => {
       if (!isDrawing) return;
-
+    
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       setCurrentPosition({ x, y });
-
+    
       if (tool === 'pen' || tool === 'eraser') {
         if (previewCounter % granularity === 0) {
           context.lineTo(x, y);
           context.stroke();
-
-          const previewData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
-          socketRef.current.emit('previewDraw', previewData);
-
+    
+          // Store the current line segment in the pen stroke
+          currentPathRef.current.push({ tool, color, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y });
+    
+          // Emit previewDraw event for real-time collaboration
+          socketRef.current.emit('previewDraw', { tool, color, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y });
+    
+          // Update the starting position to continue the path
           setStartPosition({ x, y });
         }
         previewCounter++;
-        context.lineTo(x, y);
-        context.stroke();
-
-        const shapeData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
-        setDrawnShapes((prevShapes) => [...prevShapes, shapeData]);
-        socketRef.current.emit('draw', shapeData);
-
-        setStartPosition({ x, y });
-      } else {
-        redrawAllShapes();
-        drawShape(context, {
-          tool,
-          color,
-          fill: fillMode,
-          startX: startPosition.x,
-          startY: startPosition.y,
-          endX: x,
-          endY: y,
-        }, true);
       }
     };
 
     const handleMouseUp = () => {
       if (!isDrawing) return;
-
-      const x = currentPosition.x;
-      const y = currentPosition.y;
-
-      const shapeData = {
-        tool,
-        color,
-        fill: fillMode,
-        startX: startPosition.x,
-        startY: startPosition.y,
-        endX: x,
-        endY: y,
-      };
-
-      setDrawnShapes((prevShapes) => [...prevShapes, shapeData]);
-      socketRef.current.emit('draw', shapeData);
+    
+      // Emit each pen segment as a draw event (finalize all segments of this stroke)
+      currentPathRef.current.forEach((segment) => {
+        socketRef.current.emit('draw', segment);
+        setDrawnShapes((prevShapes) => [...prevShapes, segment]);
+      });
+    
+      // Clear the ref after finalizing
+      currentPathRef.current = [];
+    
       setIsDrawing(false);
     };
 
