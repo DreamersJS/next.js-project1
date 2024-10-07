@@ -1,4 +1,3 @@
-// components/AuthProvider.jsx
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "@/app/services/firebase";
