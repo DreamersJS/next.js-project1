@@ -1,7 +1,7 @@
 // components/Whiteboard.jsx
 "use client";
 import { useRef, useEffect, useState } from 'react';
-import { useSocketConnection } from '@/app/services/useSocket';
+import { useSocketConnection } from '@/app/hooks/useSocket';
 import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";

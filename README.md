@@ -67,4 +67,4 @@ The application will start on http://localhost:3000 or on whichever PORT you are
 ## Usage
 
 - Users can draw on the board, and all actions will be synced in real time with other connected users.
-- The application require authentication. Ensure to log in to access all features.
+- The application require authentication. Ensure to log in to access all features. A registered user has more features than a guest.

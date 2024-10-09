@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useSocketConnection } from '@/app/services/useSocket';
+import { useSocketConnection } from '@/app/hooks/useSocket';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 

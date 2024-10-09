@@ -1,4 +1,3 @@
-// lib/auth.js
 import { auth, database } from './firebase';
 import {
   createUserWithEmailAndPassword,
@@ -8,7 +7,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { ref, set, get } from "firebase/database";
-import Cookies from 'js-cookie'; // Import js-cookie
+import Cookies from 'js-cookie';
 
 /**
  * Register a new user
@@ -109,7 +108,7 @@ export const logoutUser = async () => {
 /**
  * 
  * @param {string} uid 
- * @returns  snapshot.val()
+ * @returns  snapshot.val() of user data
  */
 export const getUserByUid = async (uid) => {
   try {
