@@ -118,7 +118,7 @@ export default function WhiteboardList() {
       {/* Pagination Controls */}
       <div className="flex justify-center mt-4">
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+          className="bg-blue-600 text-white px-4 py-2 rounded mr-2"
           onClick={handlePrevPage}
           disabled={currentPage === 1}
         >
@@ -126,7 +126,7 @@ export default function WhiteboardList() {
         </button>
         <span className="px-4 py-2 mr-2">Page {currentPage} of {totalPages}</span>
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-blue-600 text-white px-4 py-2 rounded"
           onClick={handleNextPage}
           disabled={currentPage === totalPages}
         >
