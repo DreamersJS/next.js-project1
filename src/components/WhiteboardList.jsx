@@ -11,6 +11,8 @@ export default function WhiteboardList() {
   const setUser = useSetRecoilState(userState);
   const [whiteboards, setWhiteboards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1); 
+  const pageSize = 5;
 
   useEffect(() => {
     if (!user.uid || !user.listOfWhiteboardIds) return;
@@ -46,6 +48,20 @@ export default function WhiteboardList() {
     return <div className="mt-8">No whiteboards available</div>;
   }
 
+   // Calculate total pages
+   const totalPages = Math.ceil(whiteboards.length / pageSize);
+
+   // Paginate whiteboards - only show the ones for the current page
+   const paginatedWhiteboards = whiteboards.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+    const handleNextPage = () => {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+
+    const handlePrevPage = () => {
+      setCurrentPage((prevPage) => prevPage - 1);
+    }
+
   const handleDeleteWhiteboard = async (event, whiteboardId) => {
     event.stopPropagation();
     
@@ -73,8 +89,8 @@ export default function WhiteboardList() {
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Your Whiteboards</h2>
       <ul>
-        {whiteboards.map((whiteboard) => (
-          whiteboard ? ( // Check if whiteboard is not null before rendering
+        {paginatedWhiteboards.map((whiteboard) => (
+          whiteboard ? ( 
             <li
               className="bg-white p-4 rounded shadow-md hover:bg-gray-100 transition-colors flex justify-between items-center"
               key={whiteboard.id}
@@ -96,9 +112,26 @@ export default function WhiteboardList() {
                 x
               </button>
             </li>
-          ) : null // Return null if whiteboard is null
+          ) : null
         ))}
       </ul>
+      {/* Pagination Controls */}
+      <div className="flex justify-center mt-4">
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+          onClick={handlePrevPage}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+          onClick={handleNextPage}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
