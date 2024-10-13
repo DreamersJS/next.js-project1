@@ -111,6 +111,13 @@ const Whiteboard = ({ id }) => {
           ctx.lineTo(shape.endX, shape.endY);
           ctx.stroke();
           break;
+        case 'image':
+          const img = new Image();
+          img.onload = () => {
+            ctx.drawImage(img, shape.startX, shape.startY, shape.width, shape.height);
+          };
+          img.src = shape.src;  // Use the base64 image data
+          break;
         default:
           break;
       }
@@ -323,8 +330,21 @@ const Whiteboard = ({ id }) => {
 
             // Draw the loaded image onto the canvas
             context.drawImage(img, 0, 0, canvas.width, canvas.height);
-          };
 
+            // Add the image as a "shape" to drawnShapes array for further interaction
+            const imageShape = {
+              tool: 'image',  // Use 'image' as a new shape type
+              src: data.content, // Store the base64 image data
+              startX: 0,
+              startY: 0,
+              width: canvas.width,
+              height: canvas.height,
+            };
+
+            // Add this image "shape" to the drawnShapes array
+            setDrawnShapes((prevShapes) => [...prevShapes, imageShape]);
+
+          };
           img.src = data.content; // Set the source of the image to the base64 data
           alert('Whiteboard loaded successfully!');
         } else {
