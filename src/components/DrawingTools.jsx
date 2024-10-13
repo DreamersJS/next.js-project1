@@ -30,7 +30,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
   return (
     <div className="flex flex-col space-y-2">
       {/* Drawing Tools */}
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap justify-center">
       <button
         onClick={() => handleToolChange('pen')}
         className={`px-4 py-2 border rounded ${selectedTool === 'pen' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
@@ -88,7 +88,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
       </div>
 
       {/* Undo & Redo Buttons */}
-      <div className='flex flex-row'>
+      <div className='flex flex-row justify-center'>
       <button onClick={onUndo} className="px-4 py-2 border rounded bg-blue-400 text-black" aria-label="Undo" title="Undo"><FaUndo className="mr-2" /></button>
       <button onClick={onRedo} className="px-4 py-2 border rounded bg-blue-400 text-black" aria-label="Redo" title="Redo"><FaRedo className="mr-2" /></button>
       </div>

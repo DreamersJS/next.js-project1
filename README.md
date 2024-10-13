@@ -31,13 +31,13 @@ This project is a **Collaborative Whiteboard Application** built using **Next.js
   - **Recoil**
 
 - **Backend**: 
-  - REST APIs for data handling 
+  - **Firebase** 
+  - **Next.js API Routes**: Provides serverless API endpoints, adhering to REST principles
 
 - **Containerization**: 
   - **Docker**
 
 - **Development Tools**:
-  - Node.js
   - npm
 
 ## Installation
@@ -50,18 +50,24 @@ To get started with this project, follow the steps below:
    cd next.js-project1
 
 2. **Install dependencies**:
+```bash
     npm install
+```
 
-3. **Set up environment variables**:
+1. **Set up environment variables**:<br/>
     Create a .env file in the root directory and add any necessary environment variables: <br/>
     PORT<br/>
     NODE_ENV<br/>
     NEXT_PUBLIC_SOCKET_URL
 
-4. **Run the application**:
+2. **Run the application**:<br/>
+```bash
    npm run dev
+```
    or
+```bash
    docker-compose up --build
+```
 The application will start on http://localhost:3000 or on whichever PORT you are using.
 
 ## Usage
