@@ -341,6 +341,8 @@ const Whiteboard = ({ id }) => {
               height: canvas.height,
             };
 
+            socketRef.current.emit('loadImage', imageShape);
+            
             // Add this image "shape" to the drawnShapes array
             setDrawnShapes((prevShapes) => [...prevShapes, imageShape]);
 
