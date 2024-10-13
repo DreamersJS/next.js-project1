@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
             <Logout />
           </header>
           <main className="flex-grow container mx-auto p-2">{children}</main>
-          <footer className="bg-gray-800 text-white text-center py-4">
+          <footer className="bg-gray-800 text-white text-center py-2">
             © 2024 Whiteboard Inc.
           </footer>
         </RecoilRoot>

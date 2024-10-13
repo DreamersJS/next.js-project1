@@ -5,6 +5,9 @@ import {
   signInAnonymously,
   signOut,
   updateProfile,
+  setPersistence,
+  browserLocalPersistence,
+  onAuthStateChanged
 } from 'firebase/auth';
 import { ref, set, get } from "firebase/database";
 import Cookies from 'js-cookie';
@@ -100,6 +103,7 @@ export const logoutUser = async () => {
   try {
     await signOut(auth);
     Cookies.remove('auth'); // Remove the auth cookie
+    Cookies.remove('userState'); // Remove the userState cookie as well
   } catch (error) {
     console.error('Error logging out:', error);
   }
@@ -126,3 +130,14 @@ export const getUserByUid = async (uid) => {
     throw error;
   }
 };
+
+// Save user state in a cookie
+export const saveUserToCookie = (user) => {
+  Cookies.set('userState', JSON.stringify(user), {
+    expires: 1, // Cookie expires in 1 day
+    path: '/',
+    sameSite: 'Lax',
+    secure: process.env.NODE_ENV === 'production', 
+  });
+};
+

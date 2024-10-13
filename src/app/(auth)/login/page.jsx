@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { loginUser, loginAsGuest, getUserByUid } from "@/app/services/auth";
+import { loginUser, loginAsGuest, getUserByUid, saveUserToCookie } from "@/app/services/auth";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
@@ -9,7 +9,6 @@ const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect"); // Retrieve the 'redirect' query parameter
-  // console.log('redirectPath:', redirectPath);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,19 +26,20 @@ const LoginPage = () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const userData = await getUserByUid(user.uid);
-      console.log('userData:', userData);
-      // Update the user state in Recoil
-      // const arrayOfWhiteboardIds = Object.keys(userData.listOfWhiteboardIds);
       const arrayOfWhiteboardIds = userData?.listOfWhiteboardIds ? Object.keys(userData.listOfWhiteboardIds) : [];
 
-      setUser({
+      const userState = {
         uid: user.uid,
         email: user.email,
         username: userData.username || "Unknown",
         avatar: userData.avatar || null,
         listOfWhiteboardIds: arrayOfWhiteboardIds || [],
         role: userData.role || "registered",
-      });
+      };
+      setUser(userState);
+      // Save user state in a cookie
+      saveUserToCookie(userState);
+
       // Redirect to the original path if available or to the home page
       if (redirectPath) {
         router.push(redirectPath);
@@ -93,7 +93,7 @@ const LoginPage = () => {
           onChange={(e) => setPassword(e.target.value)}
           className="border p-2"
         />
-        <button type="submit" className="bg-blue-500 text-white p-2" disabled={isLoading}>
+        <button type="submit" className="bg-blue-500 text-white p-2 m-2" disabled={isLoading}>
           {isLoading ? 'Logging in...' : 'Login'} {/* Disable and show loading text */}
         </button>
       </form>

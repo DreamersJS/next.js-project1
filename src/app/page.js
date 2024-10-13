@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createNewWhiteboard } from '../app/services/whiteboardService';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
+import Cookies from "js-cookie";
 
 const WhiteboardList = lazy(() => import('@/components/WhiteboardList'));
 
@@ -14,14 +15,29 @@ export default function HomePage() {
   const [oldBoardId, setOldBoardId] = useState('');
   const router = useRouter();
   const [user, setUser] = useRecoilState(userState);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     console.log('user', user);
+    const savedUserState = Cookies.get('userState');
+    if (savedUserState && !user?.uid) {
+      try {
+        const parsedUser = JSON.parse(savedUserState);
+        // Restore the user state in Recoil
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Error rehydrating user data:', error);
+      }
+    }
 
-    if (!user?.uid) {
+    setLoading(false);  // Once user state is loaded or no cookie is found, stop loading
+  }, [user, setUser]);
+
+  useEffect(() => {
+    if (!loading && !user?.uid) {
       router.push('/login');
     }
-  }, [user, router]);
+  }, [loading, user, router]);
 
   const handleCreateNewBoard = async () => {
     try {
