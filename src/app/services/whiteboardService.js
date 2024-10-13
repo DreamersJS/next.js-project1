@@ -109,18 +109,36 @@ export const getUserWhiteboards = async (userId) => {
 
 /**
  * Save whiteboard content as an image.
- * @param {string} whiteboardId - The ID of the whiteboard.
  * @param {HTMLCanvasElement} canvas - The canvas element to capture.
+ * @param {string} whiteboardId - The ID of the whiteboard.
+ * @param {string} userId - The ID of the user.
  * @returns {Promise<void>}
  */
-export const saveWhiteboardAsImage = async (whiteboardId, canvas) => {
+export const saveWhiteboardAsImage = async (canvas, whiteboardId, userId) => {
+  if (!canvas || !whiteboardId || !userId) {
+    console.error("Canvas, whiteboard ID or user ID is not defined.");
+    return;
+  }
   const dataURL = canvas.toDataURL('image/png');
   console.log('in func: Saving whiteboard as image:', dataURL);
   // Save the image URL to your database
   try {
-    const whiteboardRef = ref(database, `whiteboards/${whiteboardId}`);
-    await set(whiteboardRef, { photo: dataURL }); // Update with image URL
-    console.log('Whiteboard saved as image:', dataURL);
+    const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: whiteboardId, content: dataURL }),
+    });
+
+    console.log('API response status:', response.status);
+    console.log('API response:', await response.json()); // Log the entire response for debugging
+
+    if (response.ok) {
+      alert('Whiteboard image saved successfully!');
+    } else {
+      alert('Failed to save the whiteboard image.');
+    }
   } catch (error) {
     console.error('Error saving whiteboard image:', error);
   }
