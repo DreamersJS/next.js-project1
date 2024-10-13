@@ -8,6 +8,7 @@ import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 import { deleteWhiteboard, saveWhiteboardAsImage } from "@/app/services/whiteboardService";
 import { drawLine, drawRectangle, drawCircle, drawTriangle } from "@/app/services/drawService";
+import { clearCanvas } from "@/app/services/canvasService";
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
@@ -47,37 +48,35 @@ const Whiteboard = ({ id }) => {
       return;
     }
 
-    // Listen for the initial drawing state from the server
     socketRef.current.on('initDrawings', (shapes) => {
       setDrawnShapes(shapes);
-      redrawAllShapes(); // Redraw shapes when initialized
+      redrawAllShapes(); 
     });
 
-    // Listen for drawing events from other clients
     socketRef.current.on('draw', (shape) => {
       setDrawnShapes((prevShapes) => [...prevShapes, shape]);
-      drawShape(context, shape); // Draw the shape on the canvas
+      drawShape(context, shape); 
     });
 
     socketRef.current.on('previewDraw', (shape) => {
-      drawShape(context, shape, true); // Preview draw without finalizing
+      drawShape(context, shape, true);
     });
 
     socketRef.current.on('clear', () => {
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      setDrawnShapes([]); // Clear local state
+      clearCanvas(canvasRef);
+      setDrawnShapes([]); 
     });
 
-    // Set canvas dimensions
     const resizeCanvas = () => {
       canvas.width = canvas.parentElement.clientWidth;
       canvas.height = canvas.parentElement.clientHeight;
-      redrawAllShapes(); // Redraw shapes if needed
+      redrawAllShapes(); 
     };
 
     // Function to redraw all shapes and pen strokes
     const redrawAllShapes = () => {
-      context.clearRect(0, 0, canvas.width, canvas.height);
+      const context = canvasRef.current.getContext('2d');
+      clearCanvas(canvasRef);
       drawnShapes.forEach((shape) => {
         drawShape(context, shape);
       });
@@ -135,13 +134,6 @@ const Whiteboard = ({ id }) => {
       setStartPosition({ x, y });
       setCurrentPosition({ x, y });
       setIsDrawing(true);
-
-      if (tool === 'pen' || tool === 'eraser') {
-        context.lineWidth = tool === 'eraser' ? 10 : 2;
-        context.strokeStyle = tool === 'eraser' ? '#FFFFFF' : color;
-        context.beginPath();
-        context.moveTo(x, y);
-      }
     };
 
     const handleMouseMove = (e) => {
@@ -237,44 +229,21 @@ const Whiteboard = ({ id }) => {
     };
   }, [tool, isDrawing, startPosition, currentPosition, drawnShapes, color, fillMode, socketRef]);
 
-  const handleToolChange = (newTool) => {
-    setTool(newTool);
-  };
+  const handleToolChange = (newTool) => setTool(newTool);
+  const handleColorChange = (newColor) => setColor(newColor);
+  const handleFillToggle = (fillStatus) => setFillMode(fillStatus);
 
-  const handleColorChange = (newColor) => {
-    setColor(newColor);
-  };
+  const handleUndo = () => {socketRef.current.emit('undo')};
+  const handleRedo = () => {socketRef.current.emit('redo')};
 
-  const handleFillToggle = (fillStatus) => {
-    setFillMode(fillStatus);
-  };
-
-  const handleUndo = () => {
-    if (socketRef.current) {
-      socketRef.current.emit('undo');
-    } else {
-      console.error("Socket is not connected yet.");
-    }
-  };
-  const handleRedo = () => {
-    if (socketRef.current) {
-      socketRef.current.emit('redo');
-    } else {
-      console.error("Socket is not connected yet.");
-    }
-  };
   const handleClear = () => {
     const confirmClear = window.confirm("Are you sure you want to clear the board? This will clear the board for everyone!");
     if (confirmClear) {
-      const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      setDrawnShapes([]); // Clear local shapes state
-      if (socketRef.current) {
-        socketRef.current.emit('clear');
-      } else {
-        console.error("Socket is not connected yet.");
-      }
+      clearCanvas(canvasRef)
+      setDrawnShapes([]);
+      socketRef.current.emit('clear');
+    } else {
+      console.error("Error clearing the board.");
     }
   };
 
