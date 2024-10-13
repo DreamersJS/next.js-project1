@@ -392,7 +392,7 @@ const Whiteboard = ({ id }) => {
               Load
             </button>
           </div>)}
-          <div className='flex'>
+          <div className='flex flex-col'>
             <button onClick={() => handleDeleteWhiteboard(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-red-500 text-white">
               Delete
             </button>
