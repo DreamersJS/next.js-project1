@@ -92,6 +92,24 @@ app.prepare().then(() => {
       }
     });
 
+    socket.on('loadImage', (imageData) => {
+      // Load the image data (in base64 or URL format) as a drawable shape
+      const imageShape = {
+        tool: 'image',
+        src: imageData.src,
+        startX: imageData.startX,
+        startY: imageData.startY,
+        width: imageData.width,
+        height: imageData.height,
+      };
+
+      drawnShapes.push(imageShape); // Add the image to drawnShapes
+      undoStack.push(imageShape); // Add to the undo stack
+      redoStack = []; // Clear the redo stack
+
+      // Broadcast the image drawing to all clients
+      io.emit('draw', imageShape);
+    });
 
     socket.on('disconnect', () => {
       console.log('Client disconnected');
