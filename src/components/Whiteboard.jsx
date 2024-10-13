@@ -7,11 +7,15 @@ import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 import { deleteWhiteboard, saveWhiteboardAsImage } from "@/app/services/whiteboardService";
+import { drawLine, drawRectangle, drawCircle, drawTriangle } from "@/app/services/drawService";
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
   const canvasRef = useRef(null);
   const router = useRouter();
+  const user = useRecoilValue(userState);
+
+  // State variables
   const [tool, setTool] = useState('pen');
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
@@ -19,7 +23,6 @@ const Whiteboard = ({ id }) => {
   const [drawnShapes, setDrawnShapes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
-  const user = useRecoilValue(userState);
   let previewCounter = 0;
   const granularity = 5;
   const currentPathRef = useRef([]);
@@ -89,48 +92,16 @@ const Whiteboard = ({ id }) => {
 
       switch (shape.tool) {
         case 'line':
-          ctx.moveTo(shape.startX, shape.startY);
-          ctx.lineTo(shape.endX, shape.endY);
-          ctx.stroke();
+          drawLine(ctx, shape);
           break;
         case 'rectangle':
-          if (shape.fill) {
-            ctx.fillRect(
-              shape.startX,
-              shape.startY,
-              shape.endX - shape.startX,
-              shape.endY - shape.startY
-            );
-          } else {
-            ctx.strokeRect(
-              shape.startX,
-              shape.startY,
-              shape.endX - shape.startX,
-              shape.endY - shape.startY
-            );
-          }
+          drawRectangle(ctx, shape);
           break;
         case 'circle':
-          const radius = Math.sqrt(
-            Math.pow(shape.endX - shape.startX, 2) + Math.pow(shape.endY - shape.startY, 2)
-          );
-          ctx.arc(shape.startX, shape.startY, radius, 0, 2 * Math.PI);
-          if (shape.fill) {
-            ctx.fill();
-          } else {
-            ctx.stroke();
-          }
+          drawCircle(ctx, shape);
           break;
         case 'triangle':
-          ctx.moveTo(shape.startX, shape.startY);
-          ctx.lineTo(shape.endX, shape.endY);
-          ctx.lineTo(shape.startX, shape.endY);
-          ctx.closePath();
-          if (shape.fill) {
-            ctx.fill();
-          } else {
-            ctx.stroke();
-          }
+          drawTriangle(ctx, shape);
           break;
         case 'pen':
         case 'eraser':
@@ -168,22 +139,22 @@ const Whiteboard = ({ id }) => {
 
     const handleMouseMove = (e) => {
       if (!isDrawing) return;
-    
+
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       setCurrentPosition({ x, y });
-    
+
       if (tool === 'pen' || tool === 'eraser') {
         if (previewCounter % granularity === 0) {
           context.lineTo(x, y);
           context.stroke();
-    
+
           const previewData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
           currentPathRef.current.push(previewData);
           socketRef.current.emit('previewDraw', previewData);
-    
+
           setStartPosition({ x, y });
         }
         previewCounter++;
@@ -225,16 +196,16 @@ const Whiteboard = ({ id }) => {
 
       setDrawnShapes((prevShapes) => [...prevShapes, shapeData]);
       socketRef.current.emit('draw', shapeData);
-     
+
       // Emit each pen segment as a draw event (finalize all segments of this stroke)
       currentPathRef.current.forEach((segment) => {
         socketRef.current.emit('draw', segment);
         setDrawnShapes((prevShapes) => [...prevShapes, segment]);
       });
-    
+
       // Clear the ref after finalizing
       currentPathRef.current = [];
-    
+
       setIsDrawing(false);
     };
 
@@ -370,8 +341,8 @@ const Whiteboard = ({ id }) => {
   const handleDeleteWhiteboard = async (whiteboardId) => {
     if (confirm('Are you sure you want to delete this whiteboard?')) {
       try {
-          await deleteWhiteboard(whiteboardId, user.uid);
-          router.push(`/`);
+        await deleteWhiteboard(whiteboardId, user.uid);
+        router.push(`/`);
       } catch (error) {
         console.error('Error deleting whiteboard:', error);
       }
