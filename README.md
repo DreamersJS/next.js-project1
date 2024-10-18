@@ -4,6 +4,9 @@
 
 This project is a **Collaborative Whiteboard Application** built using **Next.js** and **Socket.IO** for real-time interaction. The application allows multiple users to collaborate on a virtual whiteboard in real time. It incorporates APIs for backend operations, ensuring seamless data handling and user authentication.
 
+
+**DEMO** [https://youtu.be/ivVlTKGkniU](https://youtu.be/ivVlTKGkniU)
+
 ## Features
 
 - **Real-time Collaboration**: 
