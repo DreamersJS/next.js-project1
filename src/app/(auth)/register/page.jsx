@@ -2,14 +2,14 @@
 "use client";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { registerUser } from "@/app/services/auth";
+import { createUserProfile, registerUser } from "@/app/services/auth";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
 const RegisterPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get("redirect"); 
+  const redirectPath = searchParams.get("redirect");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,37 +21,63 @@ const RegisterPage = () => {
     e.preventDefault();
     try {
       // await registerUser(email, password, username);
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, email, password }),
-      });
-
-      console.log('response:', response);
-      if (response.ok) {
-        const data = await response.json();
-        const user = data.user;
-        console.log('User registered:', user);
-        const arrayOfWhiteboardIds = Object.keys(user.listOfWhiteboardIds);
-        setUser({
-          uid: user.uid,
-          email: user.email,
-          username: user.username || "Unknown",
-          avatar: user.avatar || null,
-          listOfWhiteboardIds: arrayOfWhiteboardIds || [],
-        });
-
+      // const response = await fetch('/api/auth/register', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ username, email, password }),
+      // });
+      const credentials = await registerUser(email, password);
+      console.log({ credentials });
+      const avatarUrl = `https://avatars.dicebear.com/api/identicon/${username}.svg`;
+      // const userData = {
+      //   uid: credentials.user.uid,
+      //   username,
+      //   email: credentials.user.email,
+      //   avatar: avatarUrl,
+      //   role: 'registered',
+      //   listOfWhiteboardIds: {}, // key-value pairs (id:true)
+      // };
+      await createUserProfile(
+        credentials.user.uid,
+        username,
+        credentials.user.email,
+        avatarUrl,
+        'registered',
+        {}, // key-value pairs (id:true)
+      );
+      setUser(credentials.user);
+      if (credentials) {
         if (redirectPath) {
           router.push(redirectPath);
         } else {
           router.push("/login");
         }
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || "Registration failed");
       }
+      // console.log('response:', response);
+      // if (response.ok) {
+      //   const data = await response.json();
+      //   const user = data.user;
+      //   console.log('User registered:', user);
+      //   const arrayOfWhiteboardIds = Object.keys(user.listOfWhiteboardIds);
+      //   setUser({
+      //     uid: user.uid,
+      //     email: user.email,
+      //     username: user.username || "Unknown",
+      //     avatar: user.avatar || null,
+      //     listOfWhiteboardIds: arrayOfWhiteboardIds || [],
+      //   });
+
+      //   if (redirectPath) {
+      //     router.push(redirectPath);
+      //   } else {
+      //     router.push("/login");
+      //   }
+      // } else {
+      //   const errorData = await response.json();
+      //   setError(errorData.error || "Registration failed");
+      // }
     } catch (error) {
       setError(error.message);
     }
