@@ -28,7 +28,7 @@ const LoginPage = () => {
       const userData = await getUserByUid(user.uid);
       const arrayOfWhiteboardIds = userData?.listOfWhiteboardIds ? Object.keys(userData.listOfWhiteboardIds) : [];
 
-      const userState = {
+      const userObject = {
         uid: user.uid,
         email: user.email,
         username: userData.username || "Unknown",
@@ -36,9 +36,9 @@ const LoginPage = () => {
         listOfWhiteboardIds: arrayOfWhiteboardIds || [],
         role: userData.role || "registered",
       };
-      setUser(userState);
+      setUser(userObject);
       // Save user state in a cookie
-      saveUserToCookie(userState);
+      saveUserToCookie(userObject);
 
       // Redirect to the original path if available or to the home page
       if (redirectPath) {
@@ -47,7 +47,7 @@ const LoginPage = () => {
         router.push("/");
       }
     } catch (error) {
-      setError(error.message);
+      setError(error?.message || "An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +72,7 @@ const LoginPage = () => {
         router.push("/");
       }
     } catch (error) {
-      setError(error.message);
+      setError(error?.message || "An unexpected error occurred. Please try again.");
     }
   };
 
@@ -84,6 +84,7 @@ const LoginPage = () => {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
           className="border p-2"
         />
         <input
@@ -91,6 +92,7 @@ const LoginPage = () => {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
           className="border p-2"
         />
         <button type="submit" className="bg-blue-500 text-white p-2 m-2" disabled={isLoading}>
@@ -98,8 +100,8 @@ const LoginPage = () => {
         </button>
       </form>
       <br />or<br />
-      <button onClick={handleGuestLogin} className="bg-green-500 text-white p-2 mt-4">
-        Login as Guest
+      <button onClick={handleGuestLogin} className="bg-green-500 text-white p-2 mt-4" disabled={isLoading}>
+        {isLoading ? 'Loading...' : 'Login as Guest'}
       </button>
       {error && <p className="text-red-500 mt-2">{error}</p>}
       <br />or<br />

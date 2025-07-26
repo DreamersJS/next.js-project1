@@ -1,4 +1,6 @@
 // // api/auth/register/route.js
+// Firebase’s SDK is primarily client-side, and certain parts (like firebase/auth) are browser-only. You cannot safely use them in server code like API routes or getServerSideProps.
+// Firebase Auth (client SDK) does not work on the server. It uses browser features like window, navigator, and throws when used server-side.
 // import { NextResponse } from 'next/server';
 // import { database, auth } from '@/app/services/firebase';
 // import { ref, set } from 'firebase/database';
