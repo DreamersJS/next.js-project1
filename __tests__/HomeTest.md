@@ -98,13 +98,14 @@ Firebase's real ref() object has internal properties like _path, and it has meth
   2. Inline jest.mock() with Manual Implementation in Test File
 
 Example:
-
+```js
 jest.mock('@/services/firebase', () => ({
   getDatabase: jest.fn(() => mockDb),
   ref: jest.fn(() => mockUserRef),
   get: jest.fn(() => Promise.resolve({ exists: () => true, val: () => ({}) })),
   // ... other mocks
 }));
+```
 
     This is mocking the module inline directly inside the test file.
 
@@ -128,7 +129,7 @@ Cons
 
     Duplicates mock logic if shared across multiple test files.
 
-3. jest.spyOn
+1. jest.spyOn
 
     spyOn wraps an existing function in the imported real module.
 
