@@ -25,6 +25,10 @@ const firebaseConfig = {
 //   databaseURL:NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 // };
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const auth = getAuth(app);
 // This is confirmed to be a known issue introduced in Firebase SDK v10.13.x (especially firebase/auth) due to internal changes to emulator detection.
 // Safe guard to prevent emulator initialization
 try {
@@ -36,9 +40,5 @@ try {
 } catch (err) {
   console.warn('Safe guard for emulator failed:', err);
 }
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-const auth = getAuth(app);
 
 export { database, auth };

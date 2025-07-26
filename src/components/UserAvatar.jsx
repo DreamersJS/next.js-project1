@@ -14,7 +14,7 @@ const UserAvatar = () => {
 
   return (
     <div className="flex items-center space-x-2">
-      <img src={user?.avatar} alt="" className="w-10 h-10 rounded-full" />
+      <img src={user?.avatar} alt={`${user?.username}'s avatar`} className="w-10 h-10 rounded-full" />
       <span>{user?.username}</span>
     </div>
   );
