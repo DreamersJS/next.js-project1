@@ -29,9 +29,8 @@ export default function HomePage() {
         console.error('Error rehydrating user data:', error);
       }
     }
-
     setLoading(false);  // Once user state is loaded or no cookie is found, stop loading
-  }, [user, setUser]);
+  }, []);
 
   useEffect(() => {
     if (!loading && !user?.uid) {
