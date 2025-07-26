@@ -1,0 +1,35 @@
+export const createCanvas = () => ({
+    getContext: () => ({
+      fillRect: () => {},
+      clearRect: () => {},
+      getImageData: () => ({ data: [] }),
+      putImageData: () => {},
+      createImageData: () => [],
+      setTransform: () => {},
+      drawImage: () => {},
+      save: () => {},
+      fillText: () => {},
+      restore: () => {},
+      beginPath: () => {},
+      moveTo: () => {},
+      lineTo: () => {},
+      closePath: () => {},
+      stroke: () => {},
+      translate: () => {},
+      scale: () => {},
+      rotate: () => {},
+      arc: () => {},
+      fill: () => {},
+      measureText: () => ({ width: 0 }),
+      transform: () => {},
+      rect: () => {},
+      clip: () => {},
+    }),
+    toDataURL: () => '',
+    toBuffer: () => Buffer.from([]),
+    width: 0,
+    height: 0,
+  });
+  
+  export const loadImage = () => Promise.resolve({});
+  

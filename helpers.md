@@ -17,3 +17,5 @@ docker exec -it ae3fd548d6c7 /bin/sh
 then run 
 npm i dotenv
 ++++++++++++++++++
+docker ps
+tree -L 3 -I 'node_modules|.next|.git|.vscode|public/assets|coverage|__tests__|dist'

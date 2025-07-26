@@ -2,58 +2,73 @@
 "use client";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { registerUser } from "@/app/services/auth";
+import { createUserProfile, loginUser, registerUser, saveUserToCookie } from "@/services/auth";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
 const RegisterPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get("redirect"); 
+  const redirectPath = searchParams.get("redirect");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const setUser = useSetRecoilState(userState);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
     try {
-      // await registerUser(email, password, username);
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, email, password }),
-      });
+      const credentials = await registerUser(email, password);
+      console.log({ credentials });
+      const uid = credentials.user.uid;
+      const avatarUrl = `https://avatars.dicebear.com/api/identicon/${username}.svg`;
+      const userObject = {
+        uid: credentials.user.uid,
+        email: credentials.user.email,
+        username,
+        avatar: avatarUrl,
+        listOfWhiteboardIds: [],
+        role: 'registered',
+      };
+      await createUserProfile(
+        credentials.user.uid,
+        username,
+        credentials.user.email,
+        avatarUrl,
+        'registered',
+        {}, // key-value pairs (id:true)
+      );
 
-      console.log('response:', response);
-      if (response.ok) {
-        const data = await response.json();
-        const user = data.user;
-        console.log('User registered:', user);
-        const arrayOfWhiteboardIds = Object.keys(user.listOfWhiteboardIds);
-        setUser({
-          uid: user.uid,
-          email: user.email,
-          username: user.username || "Unknown",
-          avatar: user.avatar || null,
-          listOfWhiteboardIds: arrayOfWhiteboardIds || [],
-        });
+      // Auto-login the user
+      const loggedInUser = await loginUser(email, password);
+      const userData = {
+        uid: loggedInUser.uid,
+        email: loggedInUser.email,
+        username,
+        avatar: avatarUrl,
+        listOfWhiteboardIds: [],
+        role: 'registered',
+      };
 
+      // Set user in global state and cookie
+      setUser(userData);
+      saveUserToCookie(userObject);
+      if (credentials) {
         if (redirectPath) {
           router.push(redirectPath);
         } else {
-          router.push("/login");
+          router.push("/");
         }
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || "Registration failed");
       }
     } catch (error) {
       setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,9 +77,11 @@ const RegisterPage = () => {
       <form onSubmit={handleRegister} className="space-y-4">
         <input
           type="text"
-          placeholder="Display Name"
+          placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          required
+          autoComplete="username"
           className="border p-2"
         />
         <input
@@ -72,6 +89,8 @@ const RegisterPage = () => {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
           className="border p-2"
         />
         <input
@@ -79,9 +98,13 @@ const RegisterPage = () => {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
+          autoComplete="new-password"
           className="border p-2"
         />
-        <button type="submit" className="bg-blue-500 text-white p-2">Register</button>
+        <button type="submit" className="bg-blue-500 text-white p-2" disabled={isLoading}>
+          {isLoading ? 'Registering...' : 'Register'}
+        </button>
       </form>
       {error && <p className="text-red-500 mt-2">{error}</p>}
     </div>

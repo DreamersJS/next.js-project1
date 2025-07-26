@@ -3,7 +3,7 @@
 
 import { useState, Suspense, lazy, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createNewWhiteboard } from '../app/services/whiteboardService';
+import { createNewWhiteboard } from '../services/whiteboardService';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
 import Cookies from "js-cookie";
@@ -29,9 +29,8 @@ export default function HomePage() {
         console.error('Error rehydrating user data:', error);
       }
     }
-
     setLoading(false);  // Once user state is loaded or no cookie is found, stop loading
-  }, [user, setUser]);
+  }, []);
 
   useEffect(() => {
     if (!loading && !user?.uid) {

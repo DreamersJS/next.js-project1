@@ -12,16 +12,33 @@ import {
 import { ref, set, get } from "firebase/database";
 import Cookies from 'js-cookie';
 
+export const createUserProfile = (
+  uid,
+  username,
+  email,
+  avatar,
+  role = "user",
+  listOfWhiteboardIds,
+) => {
+  return set(ref(database, `users/${uid}`), {
+    uid,
+    username,
+    email,
+    avatar,
+    role,
+    listOfWhiteboardIds,
+  });
+};
+
 /**
  * Register a new user
  * @param {string} email 
  * @param {string} password 
- * @returns userCredential.user
+ * @returns createUserWithEmailAndPassword(auth, email, password);
  */
 export const registerUser = async (email, password) => {
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
+    return createUserWithEmailAndPassword(auth, email, password);
   } catch (error) {
     console.error('Error registering user:', error);
     throw error;
@@ -47,8 +64,8 @@ export const loginUser = async (email, password) => {
       sameSite: 'Lax',   // Ensure it’s sent with requests
       secure: process.env.NODE_ENV === 'production', // Only set 'secure' in production
     });
-    console.log('Cookie set:', Cookies.get('auth')); 
-
+    // console.log('Cookie set:', Cookies.get('auth'));
+    // console.log({ user });
     return user;
   } catch (error) {
     console.error('Error logging in user:', error);
@@ -87,12 +104,12 @@ export const loginAsGuest = async () => {
       sameSite: 'None',
       secure: process.env.NODE_ENV === 'production',
     });
-    console.log('Cookie set:', Cookies.get('auth')); 
+    console.log('Cookie set:', Cookies.get('auth'));
 
-    return userCredential.user; 
+    return userCredential.user;
   } catch (error) {
     console.error('Error logging in as guest:', error);
-    throw error; 
+    throw error;
   }
 };
 
@@ -137,7 +154,7 @@ export const saveUserToCookie = (user) => {
     expires: 1, // Cookie expires in 1 day
     path: '/',
     sameSite: 'Lax',
-    secure: process.env.NODE_ENV === 'production', 
+    secure: process.env.NODE_ENV === 'production',
   });
 };
 

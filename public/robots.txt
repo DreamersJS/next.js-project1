@@ -1,0 +1,8 @@
+# public/robots.txt
+User-agent: *
+Disallow: /
+
+#for production:
+#User-agent: *
+#Allow: /
+#Sitemap: https://yourdomain.com/sitemap.xml

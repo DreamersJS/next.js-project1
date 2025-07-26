@@ -1,4 +1,4 @@
-import { database } from '@/app/services/firebase';
+import { database } from '@/services/firebase';
 import { ref, push, set, get, update, remove } from 'firebase/database';
 
 /**

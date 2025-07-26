@@ -1,5 +1,5 @@
 // src/app/api/whiteboards/[id]/route.js
-import { database } from '@/app/services/firebase';
+import { database } from '@/services/firebase';
 import { ref, remove, set, get, update } from 'firebase/database';
 
 // load board by id

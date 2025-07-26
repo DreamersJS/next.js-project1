@@ -1,14 +1,14 @@
 // components/Whiteboard.jsx
 "use client";
 import { useRef, useEffect, useState } from 'react';
-import { useSocketConnection } from '@/app/hooks/useSocket';
+import { useSocketConnection } from '@/hooks/useSocket';
 import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
-import { deleteWhiteboard, saveWhiteboardAsImage } from "@/app/services/whiteboardService";
-import { drawLine, drawRectangle, drawCircle, drawTriangle } from "@/app/services/drawService";
-import { clearCanvas } from "@/app/services/canvasService";
+import { deleteWhiteboard, saveWhiteboardAsImage } from "@/services/whiteboardService";
+import { drawLine, drawRectangle, drawCircle, drawTriangle } from "@/services/drawService";
+import { clearCanvas } from "@/services/canvasService";
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;

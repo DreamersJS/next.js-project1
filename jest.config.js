@@ -5,10 +5,14 @@ const createJestConfig = nextJest({
 });
 
 const customJestConfig = {
-  testEnvironment: 'jest-environment-jsdom',
+  testEnvironment: 'jest-environment-jsdom',// Simulates browser env
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1', // Match the path alias from your jsconfig.json
-    '\\.(css|less|scss)$': 'identity-obj-proxy', // Mock CSS/SCSS imports
+    '^canvas$': '<rootDir>/__mocks__/canvas.js',  // <-- force mock canvas
+    '^node-canvas$': '<rootDir>/__mocks__/canvas.js', // alias, just in case
+    "^firebase$": "<rootDir>/__mocks__/firebase.js", // Mock Firebase Realtime Database
+
+    '^@/(.*)$': '<rootDir>/src/$1', // Path alias, matches jsconfig.json
+    '\\.(css|less|scss)$': 'identity-obj-proxy', // Mock CSS imports
     '\\.(png|jpg|jpeg|gif|webp|svg)$': '<rootDir>/__mocks__/fileMock.js', // Mock static files
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],

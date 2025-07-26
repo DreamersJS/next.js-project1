@@ -6,9 +6,12 @@ import { RecoilRoot } from "recoil";
 import Logout from "@/components/Logout";
 import  UserAvatar  from "@/components/UserAvatar";
 import { useRouter } from 'next/navigation';
+import { useRecoilValue } from 'recoil';
+import { userState } from "@/recoil/atoms/userAtom";
 
-export default function RootLayout({ children }) {
+ function LayoutContent({ children }) {
   const router = useRouter();
+  const user = useRecoilValue(userState);
 
   return (
     <html lang="en" className="h-full">
@@ -32,21 +35,28 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#ffffff" />
       </Head>
       <body className="bg-gray-100 min-h-screen flex flex-col">
-        <RecoilRoot>
           <header className="bg-blue-600 text-white py-2 px-8 flex justify-between items-center shadow-md">
             <button onClick={() => router.push(`/`)}
             >
               My Whiteboard App
             </button>
-            {/* <UserAvatar /> */}
-            <Logout />
+            {user?.uid && <UserAvatar />} 
+            {user?.uid && <Logout />}
           </header>
           <main className="flex-grow container mx-auto p-2">{children}</main>
           <footer className="bg-gray-800 text-white text-center py-2">
             © 2024 Whiteboard Inc.
           </footer>
-        </RecoilRoot>
       </body>
+    </html>
+  );
+}
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" className="h-full">
+      <RecoilRoot>
+        <LayoutContent>{children}</LayoutContent>
+      </RecoilRoot>
     </html>
   );
 }

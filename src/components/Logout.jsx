@@ -1,5 +1,5 @@
 "use client";
-import { logoutUser } from '@/app/services/auth'; // Ensure this is working correctly
+import { logoutUser } from '@/services/auth'; // Ensure this is working correctly
 import { useRouter } from 'next/navigation';
 import { useRecoilState, useResetRecoilState } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
