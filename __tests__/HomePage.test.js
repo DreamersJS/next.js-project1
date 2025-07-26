@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import HomePage from '../src/app/page';
 import { useRouter } from 'next/navigation';
-import { createNewWhiteboard } from '../src/app/services/whiteboardService';
+import { createNewWhiteboard } from '../src/services/whiteboardService';
 import { useRecoilState } from 'recoil';
 import Cookies from 'js-cookie';
 

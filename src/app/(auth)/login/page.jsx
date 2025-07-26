@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { loginUser, loginAsGuest, getUserByUid, saveUserToCookie } from "@/app/services/auth";
+import { loginUser, loginAsGuest, getUserByUid, saveUserToCookie } from "@/services/auth";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 

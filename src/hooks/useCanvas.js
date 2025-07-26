@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSocketConnection } from '@/app/hooks/useSocket';
+import { useSocketConnection } from '@/hooks/useSocket';
 
 const useCanvas = (whiteboardId, user, tool, color, fillMode, drawnShapes) => {
   const canvasRef = useRef(null);

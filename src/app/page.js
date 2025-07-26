@@ -3,7 +3,7 @@
 
 import { useState, Suspense, lazy, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createNewWhiteboard } from '../app/services/whiteboardService';
+import { createNewWhiteboard } from '../services/whiteboardService';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
 import Cookies from "js-cookie";

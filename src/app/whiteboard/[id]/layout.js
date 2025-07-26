@@ -1,7 +1,7 @@
 // components/WhiteboardLayout.jsx
 'use client';
 import Chat from "@/components/Chat";
-import { AuthProvider } from "@/app/context/AuthProvider";
+import { AuthProvider } from "@/context/AuthProvider";
 
 export default function WhiteboardLayout({ children }) {
 

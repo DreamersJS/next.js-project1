@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { userState } from '@/recoil/atoms/userAtom';
-import { deleteWhiteboard, getUserWhiteboards, loadWhiteboardById } from '@/app/services/whiteboardService';
+import { deleteWhiteboard, getUserWhiteboards, loadWhiteboardById } from '@/services/whiteboardService';
 
 export default function WhiteboardList() {
   const user = useRecoilValue(userState);

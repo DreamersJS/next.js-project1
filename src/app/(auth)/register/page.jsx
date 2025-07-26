@@ -2,7 +2,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createUserProfile, loginUser, registerUser, saveUserToCookie } from "@/app/services/auth";
+import { createUserProfile, loginUser, registerUser, saveUserToCookie } from "@/services/auth";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
