@@ -1,6 +1,6 @@
 // components/Whiteboard.jsx
 "use client";
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { useSocketConnection } from '@/hooks/useSocket';
 import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
@@ -13,6 +13,7 @@ import { clearCanvas, debounce } from "@/services/canvasService";
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
   const canvasRef = useRef(null);
+  const drawnShapesRef = useRef([]);
   const router = useRouter();
   const user = useRecoilValue(userState);
 
@@ -38,7 +39,7 @@ const Whiteboard = ({ id }) => {
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
-
+    drawnShapesRef.current = drawnShapes;
     // Set ARIA attributes on canvas for accessibility
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', `Interactive whiteboard session ID: ${whiteboardId}`);
@@ -50,12 +51,12 @@ const Whiteboard = ({ id }) => {
 
     socketRef.current.on('initDrawings', (shapes) => {
       setDrawnShapes(shapes);
-      redrawAllShapes(); 
+      redrawAllShapes();
     });
 
     socketRef.current.on('draw', (shape) => {
       setDrawnShapes((prevShapes) => [...prevShapes, shape]);
-      drawShape(context, shape); 
+      drawShape(context, shape);
     });
 
     socketRef.current.on('previewDraw', (shape) => {
@@ -64,74 +65,19 @@ const Whiteboard = ({ id }) => {
 
     socketRef.current.on('clear', () => {
       clearCanvas(canvasRef);
-      setDrawnShapes([]); 
+      setDrawnShapes([]);
     });
 
     const resizeCanvas = () => {
-      if (!canvas) return;
+      const parent = canvas.parentElement;
+      if (!parent) return;
 
-    const parent = canvas.parentElement;
-    if (!parent) return;
-
-    const { width, height } = parent.getBoundingClientRect();
-     // Only resize if dimensions actually change
-     if (canvas.width !== width || canvas.height !== height) {
-      canvas.width = width;
-      canvas.height = height;
-      redrawAllShapes(); 
-    }
-    };
-
-    // Function to redraw all shapes and pen strokes
-    const redrawAllShapes = () => {
-      const context = canvasRef.current.getContext('2d');
-      clearCanvas(canvasRef);
-      drawnShapes.forEach((shape) => {
-        drawShape(context, shape);
-      });
-    };
-
-    // Function to draw shapes
-    const drawShape = (ctx, shape, preview = false) => {
-      ctx.beginPath();
-      ctx.strokeStyle = shape.color;
-      ctx.fillStyle = shape.color;
-      ctx.lineWidth = shape.tool === 'pen' || shape.tool === 'line' ? 2 : 1;
-
-      switch (shape.tool) {
-        case 'line':
-          drawLine(ctx, shape);
-          break;
-        case 'rectangle':
-          drawRectangle(ctx, shape);
-          break;
-        case 'circle':
-          drawCircle(ctx, shape);
-          break;
-        case 'triangle':
-          drawTriangle(ctx, shape);
-          break;
-        case 'pen':
-        case 'eraser':
-          ctx.lineWidth = shape.tool === 'eraser' ? 10 : 2;
-          ctx.strokeStyle = shape.tool === 'eraser' ? '#FFFFFF' : shape.color;
-          ctx.moveTo(shape.startX, shape.startY);
-          ctx.lineTo(shape.endX, shape.endY);
-          ctx.stroke();
-          break;
-        case 'image':
-          const img = new Image();
-          img.onload = () => {
-            ctx.drawImage(img, shape.startX, shape.startY, shape.width, shape.height);
-          };
-          img.src = shape.src;  // Use the base64 image data
-          break;
-        default:
-          break;
-      }
-
-      if (!preview) {
-        ctx.closePath();
+      const { width, height } = parent.getBoundingClientRect();
+      // Only resize if dimensions actually change
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+        redrawAllShapes();
       }
     };
 
@@ -218,22 +164,26 @@ const Whiteboard = ({ id }) => {
       setIsDrawing(false);
     };
 
-    const debouncedResize = debounce(resizeCanvas, 100); // limit calls
-
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
     // window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('resize', debouncedResize);
     resizeCanvas();
 
+    // Observe the parent container for any size changes
+    const resizeObserver = new ResizeObserver(() => {
+      resizeCanvas();
+    });
+    if (canvas.parentElement) {
+      resizeObserver.observe(canvas.parentElement);
+    }
     // Cleanup on component unmount
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseup', handleMouseUp);
       // window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('resize', debouncedResize);
+      resizeObserver.disconnect();
 
       // Remove socket listeners
       socketRef.current.off('initDrawings');
@@ -243,12 +193,66 @@ const Whiteboard = ({ id }) => {
     };
   }, [tool, isDrawing, startPosition, currentPosition, drawnShapes, color, fillMode, socketRef]);
 
+  const redrawAllShapes = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const context = canvas.getContext('2d');
+    clearCanvas(canvasRef);
+    drawnShapesRef.current.forEach((shape) => {
+      drawShape(context, shape);
+    });
+  }, []);
+
+      // Function to draw shapes
+      const drawShape = (ctx, shape, preview = false) => {
+        ctx.beginPath();
+        ctx.strokeStyle = shape.color;
+        ctx.fillStyle = shape.color;
+        ctx.lineWidth = shape.tool === 'pen' || shape.tool === 'line' ? 2 : 1;
+  
+        switch (shape.tool) {
+          case 'line':
+            drawLine(ctx, shape);
+            break;
+          case 'rectangle':
+            drawRectangle(ctx, shape);
+            break;
+          case 'circle':
+            drawCircle(ctx, shape);
+            break;
+          case 'triangle':
+            drawTriangle(ctx, shape);
+            break;
+          case 'pen':
+          case 'eraser':
+            ctx.lineWidth = shape.tool === 'eraser' ? 10 : 2;
+            ctx.strokeStyle = shape.tool === 'eraser' ? '#FFFFFF' : shape.color;
+            ctx.moveTo(shape.startX, shape.startY);
+            ctx.lineTo(shape.endX, shape.endY);
+            ctx.stroke();
+            break;
+          case 'image':
+            const img = new Image();
+            img.onload = () => {
+              ctx.drawImage(img, shape.startX, shape.startY, shape.width, shape.height);
+            };
+            img.src = shape.src;  // Use the base64 image data
+            break;
+          default:
+            break;
+        }
+  
+        if (!preview) {
+          ctx.closePath();
+        }
+      };
+
   const handleToolChange = (newTool) => setTool(newTool);
   const handleColorChange = (newColor) => setColor(newColor);
   const handleFillToggle = (fillStatus) => setFillMode(fillStatus);
 
-  const handleUndo = () => {socketRef.current.emit('undo')};
-  const handleRedo = () => {socketRef.current.emit('redo')};
+  const handleUndo = () => { socketRef.current.emit('undo') };
+  const handleRedo = () => { socketRef.current.emit('redo') };
 
   const handleClear = () => {
     const confirmClear = window.confirm("Are you sure you want to clear the board? This will clear the board for everyone!");
@@ -325,7 +329,7 @@ const Whiteboard = ({ id }) => {
             };
 
             socketRef.current.emit('loadImage', imageShape);
-            
+
             // Add this image "shape" to the drawnShapes array
             setDrawnShapes((prevShapes) => [...prevShapes, imageShape]);
 
