@@ -15,7 +15,7 @@ export default function Chat() {
 
   const params = useParams();
   const whiteboardId = params.id;
-  
+
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
   if (!socketUrl) {
     console.error('Socket URL is undefined');
@@ -78,6 +78,12 @@ export default function Chat() {
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault(); // Prevents newline
+              handleSend();
+            }
+          }}
           placeholder="Type a message"
           className="flex-1 w-32 border rounded"
         />
