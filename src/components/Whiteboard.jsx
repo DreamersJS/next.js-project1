@@ -79,13 +79,12 @@ const Whiteboard = ({ id }) => {
     if (!preview) {
       ctx.closePath();
     }
-  },[ drawLine, drawRectangle, drawCircle, drawTriangle ]);
+  }, [drawLine, drawRectangle, drawCircle, drawTriangle]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
-    drawnShapesRef.current = drawnShapes;
-    // Set ARIA attributes on canvas for accessibility
+    
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', `Interactive whiteboard session ID: ${whiteboardId}`);
 
@@ -94,15 +93,23 @@ const Whiteboard = ({ id }) => {
       return;
     }
 
-    socketRef.current.on('initDrawings', (shapes) => {
+    const handleInit = (shapes) => {
       setDrawnShapes(shapes);
+      drawnShapesRef.current = shapes;
       redrawAllShapes();
-    });
+    };
 
-    socketRef.current.on('draw', (shape) => {
-      setDrawnShapes((prevShapes) => [...prevShapes, shape]);
+    const handleDraw = (shape) => {
+      setDrawnShapes(prev => {
+        const updated = [...prev, shape];
+        drawnShapesRef.current = updated;
+        return updated;
+      });
       drawShape(context, shape);
-    });
+    };
+
+    socketRef.current.on('initDrawings', handleInit);
+    socketRef.current.on('draw', handleDraw);
 
     socketRef.current.on('previewDraw', (shape) => {
       drawShape(context, shape, true);
