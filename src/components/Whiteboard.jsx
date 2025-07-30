@@ -8,7 +8,7 @@ import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 import { deleteWhiteboard, saveWhiteboardAsImage } from "@/services/whiteboardService";
 import { drawLine, drawRectangle, drawCircle, drawTriangle } from "@/services/drawService";
-import { clearCanvas } from "@/services/canvasService";
+import { clearCanvas, debounce } from "@/services/canvasService";
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
@@ -68,9 +68,18 @@ const Whiteboard = ({ id }) => {
     });
 
     const resizeCanvas = () => {
-      canvas.width = canvas.parentElement.clientWidth;
-      canvas.height = canvas.parentElement.clientHeight;
+      if (!canvas) return;
+
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    const { width, height } = parent.getBoundingClientRect();
+     // Only resize if dimensions actually change
+     if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
       redrawAllShapes(); 
+    }
     };
 
     // Function to redraw all shapes and pen strokes
@@ -127,6 +136,7 @@ const Whiteboard = ({ id }) => {
     };
 
     const handleMouseDown = (e) => {
+      if (e.button !== 0) return; // Only respond to left-click
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -137,7 +147,7 @@ const Whiteboard = ({ id }) => {
     };
 
     const handleMouseMove = (e) => {
-      if (!isDrawing) return;
+      if (!isDrawing || e.button !== 0) return; // Ignore if not drawing or not left-click
 
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
@@ -208,10 +218,13 @@ const Whiteboard = ({ id }) => {
       setIsDrawing(false);
     };
 
+    const debouncedResize = debounce(resizeCanvas, 100); // limit calls
+
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('resize', resizeCanvas);
+    // window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', debouncedResize);
     resizeCanvas();
 
     // Cleanup on component unmount
@@ -219,7 +232,8 @@ const Whiteboard = ({ id }) => {
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('resize', resizeCanvas);
+      // window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('resize', debouncedResize);
 
       // Remove socket listeners
       socketRef.current.off('initDrawings');
