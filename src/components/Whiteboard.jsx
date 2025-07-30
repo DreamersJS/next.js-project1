@@ -8,7 +8,7 @@ import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 import { deleteWhiteboard, saveWhiteboardAsImage } from "@/services/whiteboardService";
 import { drawLine, drawRectangle, drawCircle, drawTriangle } from "@/services/drawService";
-import { clearCanvas, debounce } from "@/services/canvasService";
+import { clearCanvas } from "@/services/canvasService";
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
@@ -67,19 +67,6 @@ const Whiteboard = ({ id }) => {
       clearCanvas(canvasRef);
       setDrawnShapes([]);
     });
-
-    const resizeCanvas = () => {
-      const parent = canvas.parentElement;
-      if (!parent) return;
-
-      const { width, height } = parent.getBoundingClientRect();
-      // Only resize if dimensions actually change
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width;
-        canvas.height = height;
-        redrawAllShapes();
-      }
-    };
 
     const handleMouseDown = (e) => {
       if (e.button !== 0) return; // Only respond to left-click
@@ -174,8 +161,8 @@ const Whiteboard = ({ id }) => {
     const resizeObserver = new ResizeObserver(() => {
       resizeCanvas();
     });
-    if (canvas.parentElement) {
-      resizeObserver.observe(canvas.parentElement);
+    if (canvas && canvas.parentElement) {
+      observer.observe(canvas.parentElement);
     }
     // Cleanup on component unmount
     return () => {
@@ -203,49 +190,61 @@ const Whiteboard = ({ id }) => {
     });
   }, []);
 
-      // Function to draw shapes
-      const drawShape = (ctx, shape, preview = false) => {
-        ctx.beginPath();
-        ctx.strokeStyle = shape.color;
-        ctx.fillStyle = shape.color;
-        ctx.lineWidth = shape.tool === 'pen' || shape.tool === 'line' ? 2 : 1;
-  
-        switch (shape.tool) {
-          case 'line':
-            drawLine(ctx, shape);
-            break;
-          case 'rectangle':
-            drawRectangle(ctx, shape);
-            break;
-          case 'circle':
-            drawCircle(ctx, shape);
-            break;
-          case 'triangle':
-            drawTriangle(ctx, shape);
-            break;
-          case 'pen':
-          case 'eraser':
-            ctx.lineWidth = shape.tool === 'eraser' ? 10 : 2;
-            ctx.strokeStyle = shape.tool === 'eraser' ? '#FFFFFF' : shape.color;
-            ctx.moveTo(shape.startX, shape.startY);
-            ctx.lineTo(shape.endX, shape.endY);
-            ctx.stroke();
-            break;
-          case 'image':
-            const img = new Image();
-            img.onload = () => {
-              ctx.drawImage(img, shape.startX, shape.startY, shape.width, shape.height);
-            };
-            img.src = shape.src;  // Use the base64 image data
-            break;
-          default:
-            break;
-        }
-  
-        if (!preview) {
-          ctx.closePath();
-        }
-      };
+  const resizeCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !canvas.parentElement) return;
+
+    const { width, height } = canvas.parentElement.getBoundingClientRect();
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+      redrawAllShapes();  // Will now use latest shapes
+    }
+  }, [redrawAllShapes]);
+
+  // Function to draw shapes
+  const drawShape = (ctx, shape, preview = false) => {
+    ctx.beginPath();
+    ctx.strokeStyle = shape.color;
+    ctx.fillStyle = shape.color;
+    ctx.lineWidth = shape.tool === 'pen' || shape.tool === 'line' ? 2 : 1;
+
+    switch (shape.tool) {
+      case 'line':
+        drawLine(ctx, shape);
+        break;
+      case 'rectangle':
+        drawRectangle(ctx, shape);
+        break;
+      case 'circle':
+        drawCircle(ctx, shape);
+        break;
+      case 'triangle':
+        drawTriangle(ctx, shape);
+        break;
+      case 'pen':
+      case 'eraser':
+        ctx.lineWidth = shape.tool === 'eraser' ? 10 : 2;
+        ctx.strokeStyle = shape.tool === 'eraser' ? '#FFFFFF' : shape.color;
+        ctx.moveTo(shape.startX, shape.startY);
+        ctx.lineTo(shape.endX, shape.endY);
+        ctx.stroke();
+        break;
+      case 'image':
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, shape.startX, shape.startY, shape.width, shape.height);
+        };
+        img.src = shape.src;  // Use the base64 image data
+        break;
+      default:
+        break;
+    }
+
+    if (!preview) {
+      ctx.closePath();
+    }
+  };
 
   const handleToolChange = (newTool) => setTool(newTool);
   const handleColorChange = (newColor) => setColor(newColor);
