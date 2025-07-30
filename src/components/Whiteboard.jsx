@@ -262,6 +262,7 @@ const Whiteboard = ({ id }) => {
     if (confirmClear) {
       clearCanvas(canvasRef)
       setDrawnShapes([]);
+      drawnShapesRef.current = [];
       socketRef.current.emit('clear');
     } else {
       console.error("Error clearing the board.");
