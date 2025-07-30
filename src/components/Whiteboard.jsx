@@ -16,6 +16,7 @@ const Whiteboard = ({ id }) => {
   const drawnShapesRef = useRef([]);
   const router = useRouter();
   const user = useRecoilValue(userState);
+  const previewCounterRef = useRef(0);
 
   // State variables
   const [tool, setTool] = useState('pen');
@@ -25,7 +26,6 @@ const Whiteboard = ({ id }) => {
   const [drawnShapes, setDrawnShapes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
-  let previewCounter = 0;
   const granularity = 5;
   const currentPathRef = useRef([]);
 
@@ -35,6 +35,51 @@ const Whiteboard = ({ id }) => {
     return;
   }
   const socketRef = useSocketConnection(socketUrl, user);
+
+  // Function to draw shapes
+  // React requires hooks and hook-dependent functions (like drawShape with useCallback) to be declared before useEffect if used inside it.Draw shape is stable and won't cause unexpected re-renders or stale values inside useEffect.Prevents lint errors like: React Hook “useEffect” has a missing dependency if it's defined after useEffect but used within it.
+  const drawShape = useCallback((ctx, shape, preview = false) => {
+    ctx.beginPath();
+    ctx.strokeStyle = shape.color;
+    ctx.fillStyle = shape.color;
+    ctx.lineWidth = shape.tool === 'pen' || shape.tool === 'line' ? 2 : 1;
+
+    switch (shape.tool) {
+      case 'line':
+        drawLine(ctx, shape);
+        break;
+      case 'rectangle':
+        drawRectangle(ctx, shape);
+        break;
+      case 'circle':
+        drawCircle(ctx, shape);
+        break;
+      case 'triangle':
+        drawTriangle(ctx, shape);
+        break;
+      case 'pen':
+      case 'eraser':
+        ctx.lineWidth = shape.tool === 'eraser' ? 10 : 2;
+        ctx.strokeStyle = shape.tool === 'eraser' ? '#FFFFFF' : shape.color;
+        ctx.moveTo(shape.startX, shape.startY);
+        ctx.lineTo(shape.endX, shape.endY);
+        ctx.stroke();
+        break;
+      case 'image':
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, shape.startX, shape.startY, shape.width, shape.height);
+        };
+        img.src = shape.src;  // Use the base64 image data
+        break;
+      default:
+        break;
+    }
+
+    if (!preview) {
+      ctx.closePath();
+    }
+  },[ drawLine, drawRectangle, drawCircle, drawTriangle ]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -89,17 +134,13 @@ const Whiteboard = ({ id }) => {
       setCurrentPosition({ x, y });
 
       if (tool === 'pen' || tool === 'eraser') {
-        if (previewCounter % granularity === 0) {
-          context.lineTo(x, y);
-          context.stroke();
-
+        if (previewCounterRef.current % granularity === 0) {
           const previewData = { tool, color, fill: false, startX: startPosition.x, startY: startPosition.y, endX: x, endY: y };
           currentPathRef.current.push(previewData);
           socketRef.current.emit('previewDraw', previewData);
-
           setStartPosition({ x, y });
         }
-        previewCounter++;
+        previewCounterRef.current++;//  In React useRef, .current is how you access the mutable value. The ref object itself (e.g., previewCounterRef) is constant and shouldn't be reassigned. Always use .current when reading or updating the value.
         context.lineTo(x, y);
         context.stroke();
 
@@ -162,7 +203,7 @@ const Whiteboard = ({ id }) => {
       resizeCanvas();
     });
     if (canvas && canvas.parentElement) {
-      observer.observe(canvas.parentElement);
+      resizeObserver.observe(canvas.parentElement);
     }
     // Cleanup on component unmount
     return () => {
@@ -201,50 +242,6 @@ const Whiteboard = ({ id }) => {
       redrawAllShapes();  // Will now use latest shapes
     }
   }, [redrawAllShapes]);
-
-  // Function to draw shapes
-  const drawShape = (ctx, shape, preview = false) => {
-    ctx.beginPath();
-    ctx.strokeStyle = shape.color;
-    ctx.fillStyle = shape.color;
-    ctx.lineWidth = shape.tool === 'pen' || shape.tool === 'line' ? 2 : 1;
-
-    switch (shape.tool) {
-      case 'line':
-        drawLine(ctx, shape);
-        break;
-      case 'rectangle':
-        drawRectangle(ctx, shape);
-        break;
-      case 'circle':
-        drawCircle(ctx, shape);
-        break;
-      case 'triangle':
-        drawTriangle(ctx, shape);
-        break;
-      case 'pen':
-      case 'eraser':
-        ctx.lineWidth = shape.tool === 'eraser' ? 10 : 2;
-        ctx.strokeStyle = shape.tool === 'eraser' ? '#FFFFFF' : shape.color;
-        ctx.moveTo(shape.startX, shape.startY);
-        ctx.lineTo(shape.endX, shape.endY);
-        ctx.stroke();
-        break;
-      case 'image':
-        const img = new Image();
-        img.onload = () => {
-          ctx.drawImage(img, shape.startX, shape.startY, shape.width, shape.height);
-        };
-        img.src = shape.src;  // Use the base64 image data
-        break;
-      default:
-        break;
-    }
-
-    if (!preview) {
-      ctx.closePath();
-    }
-  };
 
   const handleToolChange = (newTool) => setTool(newTool);
   const handleColorChange = (newColor) => setColor(newColor);

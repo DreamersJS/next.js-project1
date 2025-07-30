@@ -7,7 +7,7 @@ const useCanvas = (whiteboardId, user, tool, color, fillMode, drawnShapes) => {
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
   const [currentPosition, setCurrentPosition] = useState({ x: 0, y: 0 });
   const currentPathRef = useRef([]);
-  let previewCounter = 0;
+  let previewCounterRef = 0;
   const granularity = 5;
 
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
@@ -155,7 +155,7 @@ const useCanvas = (whiteboardId, user, tool, color, fillMode, drawnShapes) => {
       setCurrentPosition({ x, y });
 
       if (tool === 'pen' || tool === 'eraser') {
-        if (previewCounter % granularity === 0) {
+        if (previewCounterRef % granularity === 0) {
           context.lineTo(x, y);
           context.stroke();
 
@@ -165,7 +165,7 @@ const useCanvas = (whiteboardId, user, tool, color, fillMode, drawnShapes) => {
 
           setStartPosition({ x, y });
         }
-        previewCounter++;
+        previewCounterRef++;
         context.lineTo(x, y);
         context.stroke();
 
