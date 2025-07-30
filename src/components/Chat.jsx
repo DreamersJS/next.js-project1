@@ -77,6 +77,7 @@ export default function Chat() {
         <input
           type="text"
           value={newMessage}
+          name='message input'
           onChange={(e) => setNewMessage(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
