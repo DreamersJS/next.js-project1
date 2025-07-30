@@ -57,11 +57,15 @@ app.prepare().then(() => {
       io.emit('draw', data);
     });
 
+    socket.on('joinRoom', (roomId) => {
+      socket.join(roomId);
+      console.log(`${socket.id} joined room ${roomId}`);
+    });
+    
     socket.on('message', (data) => {
-      io.emit('message', {
-        username: data.username, 
-        text: data.text,
-      });
+      const { roomId, username, text } = data;
+      if (!roomId) return;  // Safety check
+      io.to(roomId).emit('message', { username, text });
     });
 
     socket.on('clear', () => {
