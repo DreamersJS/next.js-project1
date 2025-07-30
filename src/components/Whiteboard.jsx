@@ -118,6 +118,7 @@ const Whiteboard = ({ id }) => {
     socketRef.current.on('clear', () => {
       clearCanvas(canvasRef);
       setDrawnShapes([]);
+      drawnShapesRef.current = [];
     });
 
     const handleMouseDown = (e) => {
