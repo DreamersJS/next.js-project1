@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useSocketConnection } from '@/hooks/useSocket';
+import { useSocketConnection } from '@/context/SocketProvider';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 import { useParams } from 'next/navigation';
@@ -21,7 +21,7 @@ export default function Chat() {
     console.error('Socket URL is undefined');
     return;
   }
-  const socketRef = useSocketConnection(socketUrl, user);
+  const socketRef = useSocketConnection();
 
   // Join the whiteboard room when the component mounts or when whiteboardId changes
   useEffect(() => {
