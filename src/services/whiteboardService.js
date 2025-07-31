@@ -170,3 +170,19 @@ export const saveWhiteboardAsImage = async (canvas, whiteboardId, userId) => {
 //     console.error('Error loading whiteboard image:', error);
 //   }
 // };
+
+export const loadWhiteboardImage = async (whiteboardId) => {
+  try {
+    const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
+      method: 'GET',
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(`Error loading whiteboard: ${data.message}`);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error loading whiteboard:', error);
+  }
+};

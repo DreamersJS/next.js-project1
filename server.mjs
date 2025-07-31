@@ -18,85 +18,110 @@ app.prepare().then(() => {
 
   const io = new socketIo(server);
 
-  // const io = new socketIo(server, {
-  //   cors: {
-  //     origin: process.env.FRONTEND_URL || "*", 
-  //     methods: ["GET", "POST"]
-  //   }
-  // });
-
-  let drawnShapes = [];
-  let undoStack = [];
-  let redoStack = [];
+  const whiteboardData = new Map();
 
   io.on('connection', (socket) => {
     console.log('New client connected');
     const username = socket.handshake.query.username; // Retrieve username from query params
 
-    // Send all previously drawn shapes to the new client
-    socket.emit('initDrawings', drawnShapes);
-
-    socket.on('previewDraw', (data) => {
+    socket.on('previewDraw', (whiteboardId, data) => {
       // Broadcast the preview to other clients but do not store it
-      socket.broadcast.emit('previewDraw', data);
+      socket.to(whiteboardId).broadcast.emit('previewDraw', data);
     });
 
     // Broadcast mouse movement to other clients
-    socket.on('mousemove', (data) => {
-      socket.broadcast.emit('mousemove', data);
+    socket.on('mousemove', (whiteboardId, data) => {
+      socket.to(whiteboardId).broadcast.emit('mousemove', data);
     });
 
-    socket.on('draw', (data) => {
-      // Save the new shape
-      // socket.broadcast.emit('draw', data);
-      drawnShapes.push(data);
-      undoStack.push(data); // Add to the undo stack
-      redoStack = []; // Clear the redo stack as the new action invalidates future redos
+    socket.on('join', (whiteboardId) => {
+      socket.join(whiteboardId);
 
-      // Broadcast the drawing event to all clients, including the sender
-      io.emit('draw', data);
+      // Initialize board if not exist
+      if (!whiteboardData.has(whiteboardId)) {
+        console.log(`!whiteboardData.has(whiteboardId for ${whiteboardId}`);
+        whiteboardData.set(whiteboardId, {
+          drawnShapes: [],
+          undoStack: [],
+          redoStack: [],
+          content: "",     // Optional: for base64 image
+        });
+      }
+      const board = whiteboardData.get(whiteboardId);
+      if (board) {
+        // Send the current drawnShapes to the newly joined client
+        socket.emit('initDrawings', board.drawnShapes || []);
+
+        // OPTIONAL: Also send `content` if you want image
+        if (board.content) {
+          socket.emit('initImage', board.content);
+        }
+      }
+      // socket.to(whiteboardId).emit('initDrawings', board.drawnShapes.filter(Boolean));
+      // io.to(whiteboardId).emit('initDrawings', board.drawnShapes.filter(Boolean));
+      // socket.emit('initDrawings', board.drawnShapes);
     });
 
-    socket.on('joinRoom', (roomId) => {
-      socket.join(roomId);
-      console.log(`${socket.id} joined room ${roomId}`);
-    });
-    
-    socket.on('message', (data) => {
-      const { roomId, username, text } = data;
-      if (!roomId) return;  // Safety check
-      io.to(roomId).emit('message', { username, text });
+    socket.on('draw', ({ whiteboardId, shape }) => {
+      if (!whiteboardData.has(whiteboardId)) {
+        whiteboardData.set(whiteboardId, {
+          drawnShapes: [],
+          undoStack: [],
+          redoStack: [],
+          content: "",     // Optional: for base64 image
+        });
+      }
+      const board = whiteboardData.get(whiteboardId);
+      if (!board) return;
+
+      board.undoStack.push(shape);
+      board.redoStack = [];
+      board.drawnShapes.push(shape);
+      // board.drawnShapes = board.undoStack.slice();
+      console.log('Sending shape to client:', shape);
+
+      io.to(whiteboardId).emit('draw', shape);
     });
 
-    socket.on('clear', () => {
-      drawnShapes = [];
-      undoStack = [];
-      redoStack = [];
-      io.emit('clear');
+    socket.on('clear', (whiteboardId) => {
+      const board = whiteboardData.get(whiteboardId);
+      if (!board) return;
+
+      board.drawnShapes = [];
+      board.undoStack = [];
+      board.redoStack = [];
+
+      io.to(whiteboardId).emit('clear');
     });
 
-    socket.on('undo', () => {
-      if (undoStack.length > 0) {
-        const shape = undoStack.pop();
-        redoStack.push(shape);
-        drawnShapes = undoStack.slice(); // Reflect the change in drawnShapes
+    socket.on('undo', (whiteboardId) => {
+      const board = whiteboardData.get(whiteboardId);
+      if (!board) return;
+
+      if (board.undoStack.length > 0) {
+        const shape = board.undoStack.pop();
+        board.redoStack.push(shape);
+        board.drawnShapes = board.undoStack.slice(); // Reflect the change in drawnShapes
 
         // Broadcast the updated state to all clients
-        io.emit('initDrawings', drawnShapes); // This ensures all clients get the same, updated state
+        io.to(whiteboardId).emit('initDrawings', board.drawnShapes.filter(Boolean)); // This ensures all clients get the same, updated state
       }
     });
 
-    socket.on('redo', () => {
-      if (redoStack.length > 0) {
-        const shape = redoStack.pop();
-        undoStack.push(shape);
-        drawnShapes.push(shape);
+    socket.on('redo', (whiteboardId) => {
+      const board = whiteboardData.get(whiteboardId);
+      if (!board) return;
 
-        io.emit('draw', shape); // Send the redone shape to all clients
+      if (board.redoStack.length > 0) {
+        const shape = board.redoStack.pop();
+        board.undoStack.push(shape);
+        board.drawnShapes.push(shape);
+
+        io.to(whiteboardId).emit('draw', shape); // Send the redone shape to all clients
       }
     });
 
-    socket.on('loadImage', (imageData) => {
+    socket.on('loadImage', (whiteboardId, imageData) => {
       // Load the image data (in base64 or URL format) as a drawable shape
       const imageShape = {
         tool: 'image',
@@ -107,12 +132,25 @@ app.prepare().then(() => {
         height: imageData.height,
       };
 
-      drawnShapes.push(imageShape); // Add the image to drawnShapes
-      undoStack.push(imageShape); // Add to the undo stack
-      redoStack = []; // Clear the redo stack
+      const board = whiteboardData.get(whiteboardId);
+      if (!board) return;
 
-      // Broadcast the image drawing to all clients
-      io.emit('draw', imageShape);
+      board.drawnShapes.push(imageShape);
+      board.undoStack.push(imageShape);
+      board.redoStack = [];
+
+      io.to(whiteboardId).emit('draw', imageShape)
+    });
+
+    socket.on('joinRoom', (roomId) => {
+      socket.join(roomId);
+      console.log(`${socket.id} joined room ${roomId}`);
+    });
+
+    socket.on('message', (data) => {
+      const { roomId, username, text } = data;
+      if (!roomId) return;  // Safety check
+      io.to(roomId).emit('message', { username, text });
     });
 
     socket.on('disconnect', () => {

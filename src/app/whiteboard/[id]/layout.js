@@ -7,9 +7,9 @@ export default function WhiteboardLayout({ children }) {
 
   return (
       <AuthProvider>
-        <div className="flex-grow flex m-1 p-0 h-full overflow-hidden relative">
+        <div className="flex flex-row h-screen overflow-hidden">
           {/* Main Content - Whiteboard */}
-          <main className="flex-grow bg-white p-0 flex items-center justify-center">
+          <main className="flex-grow h-full bg-white p-0 flex items-center justify-center overflow-hidden">
             {children}
           </main>
 

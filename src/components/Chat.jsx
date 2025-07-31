@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useSocketConnection } from '@/hooks/useSocket';
+import { useSocketConnection } from '@/context/SocketProvider';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 import { useParams } from 'next/navigation';
@@ -15,13 +15,13 @@ export default function Chat() {
 
   const params = useParams();
   const whiteboardId = params.id;
-  
+
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
   if (!socketUrl) {
     console.error('Socket URL is undefined');
     return;
   }
-  const socketRef = useSocketConnection(socketUrl, user);
+  const socketRef = useSocketConnection();
 
   // Join the whiteboard room when the component mounts or when whiteboardId changes
   useEffect(() => {
@@ -77,7 +77,14 @@ export default function Chat() {
         <input
           type="text"
           value={newMessage}
+          name='message input'
           onChange={(e) => setNewMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault(); // Prevents newline
+              handleSend();
+            }
+          }}
           placeholder="Type a message"
           className="flex-1 w-32 border rounded"
         />
