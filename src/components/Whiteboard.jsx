@@ -24,10 +24,13 @@ const Whiteboard = ({ id }) => {
   const [drawnShapes, setDrawnShapes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
-
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
   if (!socketUrl) return;
   const socketRef = useSocketConnection();
+
+  // let currentStroke = useRef({ tool: '', color: '', points: [] });
+  const currentStroke = useRef(null)
+  // const [currentStroke, setCurrentStroke] = useState({ tool: '', color: '', points: [] });
 
   const drawShape = useCallback((ctx, shape, preview = false) => {
     if (!shape) return;
@@ -51,9 +54,18 @@ const Whiteboard = ({ id }) => {
         break;
       case 'pen':
       case 'eraser':
-        ctx.moveTo(shape.startX, shape.startY);
-        ctx.lineTo(shape.endX, shape.endY);
-        ctx.stroke();
+        ctx.beginPath();
+        ctx.strokeStyle = shape.tool === 'eraser' ? '#FFFFFF' : shape.color;
+        ctx.lineWidth = shape.tool === 'eraser' ? 10 : 2;
+
+        const points = shape.points;
+        if (points.length > 1) {
+          ctx.moveTo(points[0].x, points[0].y);
+          for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
+          }
+          ctx.stroke();
+        }
         break;
       case 'image':
         const img = new Image();
@@ -76,8 +88,8 @@ const Whiteboard = ({ id }) => {
     clearCanvas(canvasRef);
 
     // Separate image shapes and other shapes
-    const imageShapes = drawnShapesRef.current.filter(shape => shape.tool === 'image');
-    const otherShapes = drawnShapesRef.current.filter(shape => shape.tool !== 'image');
+    const imageShapes = drawnShapesRef.current.filter(shape => shape && shape.tool === 'image');
+    const otherShapes = drawnShapesRef.current.filter(shape => shape && shape.tool !== 'image');
 
     // Helper to load image and return Promise with loaded img element
     const loadImage = (src) => new Promise((resolve) => {
@@ -183,6 +195,8 @@ const Whiteboard = ({ id }) => {
       return;
     }
 
+    // let currentStroke = null;
+
     const handleMouseDown = (e) => {
       if (e.button !== 0) return; // Only respond to left-click
       const canvas = canvasRef.current;
@@ -192,6 +206,16 @@ const Whiteboard = ({ id }) => {
       setStartPosition({ x, y });
       setCurrentPosition({ x, y });
       setIsDrawing(true);
+
+      if (tool === 'pen' || tool === 'eraser') {
+        currentStroke.current = {
+          tool,
+          color,
+          points: [{ x, y }]
+        };
+      } else {
+        setStartPosition({ x, y });
+      }
     };
 
     const handleMouseMove = (e) => {
@@ -203,24 +227,24 @@ const Whiteboard = ({ id }) => {
       const y = e.clientY - rect.top;
       setCurrentPosition({ x, y });
 
-      const shapeData = {
-        tool,
-        color,
-        fill: fillMode,
-        startX: startPosition.x,
-        startY: startPosition.y,
-        endX: x,
-        endY: y,
-      };
+
 
       if (tool === 'pen' || tool === 'eraser') {
+        currentStroke.current.points.push({ x, y });
+
         const ctx = canvas.getContext('2d');
-        drawShape(ctx, shapeData);
-        socketRef.current.emit('draw', { whiteboardId, shape: shapeData });
-        drawnShapesRef.current.push(shapeData);
-        setDrawnShapes([...drawnShapesRef.current]);
-        setStartPosition({ x, y });
+        drawShape(ctx, currentStroke.current); // draw the line segment live
       } else {
+        setCurrentPosition({ x, y });
+        const shapeData = {
+          tool,
+          color,
+          fill: fillMode,
+          startX: startPosition.x,
+          startY: startPosition.y,
+          endX: x,
+          endY: y,
+        };
         redrawAllShapes();
         const ctx = canvas.getContext('2d');
         drawShape(ctx, shapeData, true);
@@ -231,18 +255,26 @@ const Whiteboard = ({ id }) => {
       if (!isDrawing) return;
       setIsDrawing(false);
 
-      if (tool !== 'pen' && tool !== 'eraser') {
+      const ctx = canvasRef.current.getContext('2d');
+
+      if (tool === 'pen' || tool === 'eraser') {
+        // if (currentStroke.points.length > 1)
+        if (currentStroke.current) {
+          drawShape(ctx, currentStroke.current);
+          socketRef.current.emit('draw', { whiteboardId, shape: currentStroke.current });
+          drawnShapesRef.current.push(currentStroke.current);
+          setDrawnShapes([...drawnShapesRef.current]);
+        }
+        currentStroke.current = null;
+        // currentStroke = { tool: '', color: '', points: [] }; // Reset currentStroke
+        
+      } else {
         const shapeData = {
-          tool,
-          color,
-          fill: fillMode,
-          startX: startPosition.x,
-          startY: startPosition.y,
-          endX: currentPosition.x,
-          endY: currentPosition.y,
+          tool, color, fill: fillMode,
+          startX: startPosition.x, startY: startPosition.y,
+          endX: currentPosition.x, endY: currentPosition.y,
         };
 
-        const ctx = canvasRef.current.getContext('2d');
         drawShape(ctx, shapeData);
         socketRef.current.emit('draw', { whiteboardId, shape: shapeData });
         drawnShapesRef.current.push(shapeData);
