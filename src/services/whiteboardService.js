@@ -143,35 +143,12 @@ export const saveWhiteboardAsImage = async (canvas, whiteboardId, userId) => {
     console.error('Error saving whiteboard image:', error);
   }
 };
-
 /**
- * Load whiteboard image onto the canvas.
- * @param {string} whiteboardId - The ID of the whiteboard.
- * @param {HTMLCanvasElement} canvas - The canvas element to draw the image onto.
- * @returns {Promise<void>}
+ * Load a whiteboard image by its ID.
+ * @param {string} whiteboardId - The ID of the whiteboard to load.
+ * @returns {Promise<{ id: string, content: string, , photo: string }>} - An object containing the whiteboard ID and content: data:image/png;base64,(image URL) and , photo: "".
  */
-// export const loadWhiteboardImage = async (whiteboardId, canvas) => {
-//   try {
-//     const whiteboard = await loadWhiteboardById(whiteboardId);
-//     const ctx = canvas.getContext('2d');
-
-//     // Clear the canvas before loading
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-//     // Load the image if it exists
-//     if (whiteboard.photo) {
-//       const img = new Image();
-//       img.src = whiteboard.photo;
-//       img.onload = () => {
-//         ctx.drawImage(img, 0, 0); // Draw the image on the canvas
-//       };
-//     }
-//   } catch (error) {
-//     console.error('Error loading whiteboard image:', error);
-//   }
-// };
-
-export const loadWhiteboardImage = async (whiteboardId) => {
+export const loadWhiteboardImageById = async (whiteboardId) => {
   try {
     const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
       method: 'GET',
@@ -179,8 +156,10 @@ export const loadWhiteboardImage = async (whiteboardId) => {
 
     const data = await response.json();
     if (!response.ok) {
+      alert('No whiteboard data found.');
       throw new Error(`Error loading whiteboard: ${data.message}`);
     }
+    console.log('Whiteboard data loaded successfully:', data);
     return data;
   } catch (error) {
     console.error('Error loading whiteboard:', error);
