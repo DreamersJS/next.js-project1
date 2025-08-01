@@ -27,10 +27,7 @@ const Whiteboard = ({ id }) => {
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
   if (!socketUrl) return;
   const socketRef = useSocketConnection();
-
-  // let currentStroke = useRef({ tool: '', color: '', points: [] });
   const currentStroke = useRef(null)
-  // const [currentStroke, setCurrentStroke] = useState({ tool: '', color: '', points: [] });
 
   const drawShape = useCallback((ctx, shape, preview = false) => {
     if (!shape) return;
@@ -195,8 +192,6 @@ const Whiteboard = ({ id }) => {
       return;
     }
 
-    // let currentStroke = null;
-
     const handleMouseDown = (e) => {
       if (e.button !== 0) return; // Only respond to left-click
       const canvas = canvasRef.current;
@@ -227,8 +222,6 @@ const Whiteboard = ({ id }) => {
       const y = e.clientY - rect.top;
       setCurrentPosition({ x, y });
 
-
-
       if (tool === 'pen' || tool === 'eraser') {
         currentStroke.current.points.push({ x, y });
 
@@ -258,16 +251,13 @@ const Whiteboard = ({ id }) => {
       const ctx = canvasRef.current.getContext('2d');
 
       if (tool === 'pen' || tool === 'eraser') {
-        // if (currentStroke.points.length > 1)
         if (currentStroke.current) {
           drawShape(ctx, currentStroke.current);
           socketRef.current.emit('draw', { whiteboardId, shape: currentStroke.current });
           drawnShapesRef.current.push(currentStroke.current);
           setDrawnShapes([...drawnShapesRef.current]);
         }
-        currentStroke.current = null;
-        // currentStroke = { tool: '', color: '', points: [] }; // Reset currentStroke
-        
+        currentStroke.current = null;        
       } else {
         const shapeData = {
           tool, color, fill: fillMode,
