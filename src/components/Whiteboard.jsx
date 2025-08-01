@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
-import { deleteWhiteboard, loadWhiteboardImage, saveWhiteboardAsImage } from "@/services/whiteboardService";
+import { deleteWhiteboard, loadWhiteboardImage, loadWhiteboardImageById, saveWhiteboardAsImage } from "@/services/whiteboardService";
 import { drawLine, drawRectangle, drawCircle, drawTriangle } from "@/services/drawService";
 import { clearCanvas } from "@/services/canvasService";
 import { useSocketConnection } from '@/context/SocketProvider';
@@ -28,7 +28,6 @@ const Whiteboard = ({ id }) => {
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
   if (!socketUrl) return;
   const socketRef = useSocketConnection();
-  // const { socketRef } = useSocketConnection();
 
   const drawShape = useCallback((ctx, shape, preview = false) => {
     if (!shape) return;
@@ -70,62 +69,23 @@ const Whiteboard = ({ id }) => {
     if (!preview) ctx.closePath();
   }, []);
 
-  // const redrawAllShapes = useCallback(() => {
-  //   const canvas = canvasRef.current;
-  //   if (!canvas) return;
-  //   const context = canvas.getContext('2d');
-  //   clearCanvas(canvasRef);
-  //   drawnShapesRef?.current.forEach((shape) => {
-  //     drawShape(context, shape);
-  //   });
-  // }, []);
-
-  // const redrawAllShapes = useCallback(() => {
-  //   const canvas = canvasRef.current;
-  //   if (!canvas) return;
-  //   const context = canvas.getContext('2d');
-  //   clearCanvas(canvasRef);
-
-  //   const drawPromises = drawnShapesRef.current.map(shape => {
-  //     if (!shape) return Promise.resolve();
-
-  //     if (shape.tool === 'image') {
-  //       return new Promise((resolve) => {
-  //         const img = new Image();
-  //         img.onload = () => {
-  //           context.drawImage(img, shape.startX, shape.startY, shape.width, shape.height);
-  //           resolve();
-  //         };
-  //         img.src = shape.src;
-  //       });
-  //     } else {
-  //       drawShape(context, shape);
-  //       return Promise.resolve();
-  //     }
-  //   });
-
-  //   Promise.all(drawPromises).then(() => {
-  //     // All shapes, including images, have been drawn
-  //   });
-  // }, []);
-
   const redrawAllShapes = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     clearCanvas(canvasRef);
-  
+
     // Separate image shapes and other shapes
     const imageShapes = drawnShapesRef.current.filter(shape => shape.tool === 'image');
     const otherShapes = drawnShapesRef.current.filter(shape => shape.tool !== 'image');
-  
+
     // Helper to load image and return Promise with loaded img element
     const loadImage = (src) => new Promise((resolve) => {
       const img = new Image();
       img.onload = () => resolve(img);
       img.src = src;
     });
-  
+
     // Load all images first
     Promise.all(imageShapes.map(shape => loadImage(shape.src))).then(images => {
       // Draw all images
@@ -133,13 +93,13 @@ const Whiteboard = ({ id }) => {
         const shape = imageShapes[i];
         ctx.drawImage(img, shape.startX, shape.startY, shape.width, shape.height);
       });
-  
+
       // Draw all other shapes on top
       otherShapes.forEach(shape => drawShape(ctx, shape));
     });
   }, [drawShape]);
-  
-  
+
+
 
 
   const resizeCanvas = useCallback(() => {
@@ -175,19 +135,13 @@ const Whiteboard = ({ id }) => {
       drawShape(shapes);
     };
 
-    // const handleDraw = (shape) => {
-    //   drawnShapesRef.current.push(shape);
-    //   setDrawnShapes([...drawnShapesRef.current]);
-    //   drawShape(context, shape);
-    // };
-
     const handleDraw = (shape) => {
       drawnShapesRef.current.push(shape);
       setDrawnShapes([...drawnShapesRef.current]);
-    
+
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
-    
+
       if (shape.tool === 'image') {
         // For images, just call redrawAllShapes to ensure loading order & redraw consistency
         redrawAllShapes();
@@ -197,7 +151,6 @@ const Whiteboard = ({ id }) => {
       }
     };
 
-    
     const handlePreviewDraw = (shape) => {
       drawShape(context, shape, true);
     };
@@ -348,69 +301,10 @@ const Whiteboard = ({ id }) => {
     }
   };
 
-  // Load like a quick load in game for now
-  // const handleLoad = async (whiteboardId) => {
-  //   try {
-  //     const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
-  //       method: 'GET',
-  //     });
-
-  //     if (response.ok) {
-  //       const data = await response.json();
-
-  //       if (data.content) {
-  //         const img = new Image();
-  //         img.onload = () => {
-  //           const canvas = canvasRef.current;
-  //           const context = canvas.getContext('2d');
-
-  //           // Clear the canvas before drawing the loaded image
-  //           context.clearRect(0, 0, canvas.width, canvas.height);
-
-  //           // Draw the loaded image onto the canvas
-  //           context.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-  //           // Add the image as a "shape" to drawnShapes array for further interaction
-  //           const imageShape = {
-  //             tool: 'image',  // Use 'image' as a new shape type
-  //             src: data.content, // Store the base64 image data
-  //             startX: 0,
-  //             startY: 0,
-  //             width: canvas.width,
-  //             height: canvas.height,
-  //           };
-
-  //           // socketRef.current.emit('loadImage', imageShape);
-  //           socketRef.current.emit('loadImage', whiteboardId, imageShape);
-
-  //           // Add this image "shape" to the drawnShapes array
-  //           setDrawnShapes((prevShapes) => [...prevShapes, imageShape]);
-  //           // drawnShapesRef.current = imageShape;
-  //           // drawnShapesRef.current = [imageShape];
-  //           drawnShapesRef.current = [...(drawnShapesRef.current || []), imageShape];
-  //         };
-  //         img.src = data.content; // Set the source of the image to the base64 data
-          
-          
-  //         alert('Whiteboard loaded successfully!');
-  //       } else {
-  //         alert('No whiteboard data found.');
-  //       }
-  //     } else {
-  //       alert('Failed to load the whiteboard.');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error loading whiteboard:', error);
-  //   }
-  // };
-
   const handleLoad = async (whiteboardId) => {
     try {
-      const response = await fetch(`/api/whiteboards/${whiteboardId}`, { method: 'GET' });
-  
-      if (response.ok) {
-        const data = await response.json();
-  
+        const data = await loadWhiteboardImageById(whiteboardId);
+
         if (data.content) {
           const imageShape = {
             tool: 'image',
@@ -420,20 +314,16 @@ const Whiteboard = ({ id }) => {
             width: canvasRef.current.width,
             height: canvasRef.current.height,
           };
-  
+
           drawnShapesRef.current = [...(drawnShapesRef.current || []), imageShape];
           setDrawnShapes([...drawnShapesRef.current]);
-  
+
           // Notify others
           socketRef.current.emit('loadImage', whiteboardId, imageShape);
-  
+
           // Redraw all shapes including image properly
           redrawAllShapes();
-  
           alert('Whiteboard loaded successfully!');
-        } else {
-          alert('No whiteboard data found.');
-        }
       } else {
         alert('Failed to load the whiteboard.');
       }
@@ -442,7 +332,6 @@ const Whiteboard = ({ id }) => {
     }
   };
 
-  
   const handleDeleteWhiteboard = async (whiteboardId) => {
     if (confirm('Are you sure you want to delete this whiteboard?')) {
       try {

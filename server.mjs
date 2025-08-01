@@ -51,15 +51,7 @@ app.prepare().then(() => {
       if (board) {
         // Send the current drawnShapes to the newly joined client
         socket.emit('initDrawings', board.drawnShapes || []);
-
-        // OPTIONAL: Also send `content` if you want image
-        if (board.content) {
-          socket.emit('initImage', board.content);
-        }
       }
-      // socket.to(whiteboardId).emit('initDrawings', board.drawnShapes.filter(Boolean));
-      // io.to(whiteboardId).emit('initDrawings', board.drawnShapes.filter(Boolean));
-      // socket.emit('initDrawings', board.drawnShapes);
     });
 
     socket.on('draw', ({ whiteboardId, shape }) => {
