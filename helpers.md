@@ -11,11 +11,11 @@ docker-compose run nextjs npm install
 
 ++++++++++++++++++++++
 docker-compose up --build
+docker ps
 to access your running Docker container:
 docker exec -it <container_id> /bin/sh
-docker exec -it ae3fd548d6c7 /bin/sh
+docker exec -it 0da5c45b2586 /bin/sh
 then run 
 npm i dotenv
 ++++++++++++++++++
-docker ps
 tree -L 3 -I 'node_modules|.next|.git|.vscode|public/assets|coverage|__tests__|dist'
