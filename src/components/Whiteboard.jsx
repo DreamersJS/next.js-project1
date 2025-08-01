@@ -99,9 +99,6 @@ const Whiteboard = ({ id }) => {
     });
   }, [drawShape]);
 
-
-
-
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !canvas.parentElement) return;
@@ -146,7 +143,7 @@ const Whiteboard = ({ id }) => {
         // For images, just call redrawAllShapes to ensure loading order & redraw consistency
         redrawAllShapes();
       } else {
-        // For normal shapes, just draw immediately (optional optimization)
+        // For normal shapes, just draw immediately (optional optimization) 
         drawShape(context, shape);
       }
     };
@@ -219,7 +216,7 @@ const Whiteboard = ({ id }) => {
       if (tool === 'pen' || tool === 'eraser') {
         const ctx = canvas.getContext('2d');
         drawShape(ctx, shapeData);
-        socketRef.current.emit('previewDraw', { whiteboardId, shape: shapeData });
+        socketRef.current.emit('draw', { whiteboardId, shape: shapeData });
         drawnShapesRef.current.push(shapeData);
         setDrawnShapes([...drawnShapesRef.current]);
         setStartPosition({ x, y });
@@ -303,27 +300,27 @@ const Whiteboard = ({ id }) => {
 
   const handleLoad = async (whiteboardId) => {
     try {
-        const data = await loadWhiteboardImageById(whiteboardId);
+      const data = await loadWhiteboardImageById(whiteboardId);
 
-        if (data.content) {
-          const imageShape = {
-            tool: 'image',
-            src: data.content,
-            startX: 0,
-            startY: 0,
-            width: canvasRef.current.width,
-            height: canvasRef.current.height,
-          };
+      if (data.content) {
+        const imageShape = {
+          tool: 'image',
+          src: data.content,
+          startX: 0,
+          startY: 0,
+          width: canvasRef.current.width,
+          height: canvasRef.current.height,
+        };
 
-          drawnShapesRef.current = [...(drawnShapesRef.current || []), imageShape];
-          setDrawnShapes([...drawnShapesRef.current]);
+        drawnShapesRef.current = [...(drawnShapesRef.current || []), imageShape];
+        setDrawnShapes([...drawnShapesRef.current]);
 
-          // Notify others
-          socketRef.current.emit('loadImage', whiteboardId, imageShape);
+        // Notify others
+        socketRef.current.emit('loadImage', whiteboardId, imageShape);
 
-          // Redraw all shapes including image properly
-          redrawAllShapes();
-          alert('Whiteboard loaded successfully!');
+        // Redraw all shapes including image properly
+        redrawAllShapes();
+        alert('Whiteboard loaded successfully!');
       } else {
         alert('Failed to load the whiteboard.');
       }

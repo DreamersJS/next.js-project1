@@ -22,7 +22,6 @@ app.prepare().then(() => {
 
   io.on('connection', (socket) => {
     console.log('New client connected');
-    const username = socket.handshake.query.username; // Retrieve username from query params
 
     socket.on('previewDraw', (whiteboardId, data) => {
       // Broadcast the preview to other clients but do not store it
@@ -44,7 +43,6 @@ app.prepare().then(() => {
           drawnShapes: [],
           undoStack: [],
           redoStack: [],
-          content: "",     // Optional: for base64 image
         });
       }
       const board = whiteboardData.get(whiteboardId);
