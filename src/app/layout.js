@@ -24,10 +24,8 @@ function LayoutContent({ children }) {
   return (
     <>
       {!whiteboardId &&
-        <header className="bg-blue-600 text-white py-2 px-4 flex justify-between items-center shadow-md">
-          <button onClick={() => router.push(`/`)}
-
-          >
+        <header className="bg-blue-700 text-white py-2 px-4 flex justify-between items-center shadow-md">
+          <button onClick={() => router.push(`/`)} aria-label="Go to home page">
             My Whiteboard App
           </button>
           {user?.uid && <UserAvatar />}

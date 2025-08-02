@@ -93,12 +93,12 @@ const LoginPage = () => {
           autoComplete="current-password"
           className="border p-2"
         />
-        <button type="submit" className="bg-blue-500 text-white p-2 m-2" disabled={isLoading}>
+        <button type="submit" className="bg-blue-700 text-white p-2 m-2" disabled={isLoading}>
           {isLoading ? 'Logging in...' : 'Login'} {/* Disable and show loading text */}
         </button>
       </form>
       <br />or<br />
-      <button onClick={handleGuestLogin} className="bg-green-500 text-white p-2 mt-4" disabled={isLoading}>
+      <button onClick={handleGuestLogin} className="bg-green-800 text-white p-2 mt-4" disabled={isLoading}>
         {isLoading ? 'Loading...' : 'Login as Guest'}
       </button>
       {error && <p className="text-red-500 mt-2">{error}</p>}

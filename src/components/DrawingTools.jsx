@@ -33,7 +33,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
       <div className="flex flex-wrap justify-center">
       <button
         onClick={() => handleToolChange('pen')}
-        className={`px-4 py-2 border rounded ${selectedTool === 'pen' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        className={`px-4 py-2 border rounded ${selectedTool === 'pen' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
         aria-pressed={selectedTool === 'pen'}
         aria-label="Pen Tool"
         title="Pen Tool"
@@ -42,7 +42,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
       </button>
       <button
         onClick={() => handleToolChange('eraser')}
-        className={`px-4 py-2 border rounded ${selectedTool === 'eraser' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        className={`px-4 py-2 border rounded ${selectedTool === 'eraser' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
         aria-pressed={selectedTool === 'eraser'}
         aria-label="Eraser Tool"
         title="Eraser Tool"
@@ -51,7 +51,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
       </button>
       <button
         onClick={() => handleToolChange('rectangle')}
-        className={`px-4 py-2 border rounded ${selectedTool === 'rectangle' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        className={`px-4 py-2 border rounded ${selectedTool === 'rectangle' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
         aria-pressed={selectedTool === 'rectangle'}
         aria-label="Rectangle Tool"
         title="Rectangle Tool"
@@ -60,7 +60,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
       </button>
       <button
         onClick={() => handleToolChange('circle')}
-        className={`px-4 py-2 border rounded ${selectedTool === 'circle' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        className={`px-4 py-2 border rounded ${selectedTool === 'circle' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
         aria-pressed={selectedTool === 'circle'}
         aria-label="Circle Tool"
         title="Circle Tool"
@@ -69,7 +69,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
       </button>
       <button
         onClick={() => handleToolChange('line')}
-        className={`px-4 py-2 border rounded ${selectedTool === 'line' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        className={`px-4 py-2 border rounded ${selectedTool === 'line' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
         aria-pressed={selectedTool === 'line'}
         aria-label="Line Tool"
         title="Line Tool"
@@ -78,7 +78,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
       </button>
       <button
         onClick={() => handleToolChange('triangle')}
-        className={`px-4 py-2 border rounded ${selectedTool === 'triangle' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        className={`px-4 py-2 border rounded ${selectedTool === 'triangle' ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
         aria-pressed={selectedTool === 'triangle'}
         aria-label="Triangle Tool"
         title="Triangle Tool"
@@ -89,8 +89,8 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
 
       {/* Undo & Redo Buttons */}
       <div className='flex flex-row justify-center'>
-      <button onClick={onUndo} className="px-4 py-2 border rounded bg-blue-400 text-black" aria-label="Undo" title="Undo"><FaUndo className="mr-2" /></button>
-      <button onClick={onRedo} className="px-4 py-2 border rounded bg-blue-400 text-black" aria-label="Redo" title="Redo"><FaRedo className="mr-2" /></button>
+      <button onClick={onUndo} className="px-4 py-2 border rounded bg-blue-700 text-black" aria-label="Undo" title="Undo"><FaUndo className="mr-2" /></button>
+      <button onClick={onRedo} className="px-4 py-2 border rounded bg-blue-700 text-black" aria-label="Redo" title="Redo"><FaRedo className="mr-2" /></button>
       </div>
 
       {/* Color Picker */}
@@ -110,7 +110,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
       {/* Fill/Stroke Toggle */}
       <button
         onClick={handleFillToggle}
-        className={`px-4 py-2 border rounded ${fillMode ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        className={`px-4 py-2 border rounded ${fillMode ? 'bg-blue-700 text-white' : 'bg-gray-200'}`}
         aria-pressed={fillMode}
         aria-label={fillMode ? 'Fill Mode Enabled' : 'Stroke Mode Enabled'}
         title={fillMode ? 'Fill Mode' : 'Stroke Mode'}
@@ -120,7 +120,7 @@ const DrawingTools = ({ onToolChange, onClear, onColorChange, onFillToggle, onUn
 
       <button
         onClick={handleClear}
-        className="px-4 py-2 border rounded bg-red-500 text-white"
+        className="px-4 py-2 border rounded bg-red-600 text-white"
         aria-label="Clear Canvas"
         title="Clear Canvas"
       >

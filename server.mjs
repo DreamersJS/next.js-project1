@@ -3,7 +3,7 @@ import { parse } from 'url';
 import next from 'next';
 import { Server as socketIo } from 'socket.io';
 import dotenv from 'dotenv';
-dotenv.config(); // Load environment variables from a .env file
+dotenv.config();
 
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -11,8 +11,21 @@ const app = next({ dev });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
+  const securityHeaders = {
+    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.googleusercontent.com https://*.firebaseapp.com; connect-src 'self' https://*.firebaseio.com wss:; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; frame-src 'none';",
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+    'Cross-Origin-Opener-Policy': 'same-origin',
+    'X-Frame-Options': 'DENY',
+  };
+
   const server = createServer((req, res) => {
     const parsedUrl = parse(req.url, true);
+
+    // Set security headers on every response
+    for (const [key, value] of Object.entries(securityHeaders)) {
+      res.setHeader(key, value);
+    }
+
     handle(req, res, parsedUrl);
   });
 

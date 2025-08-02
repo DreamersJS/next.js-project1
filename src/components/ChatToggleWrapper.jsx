@@ -50,11 +50,11 @@ export default function ChatToggleWrapper() {
           {!isChatOpen ? (
             <button
               onClick={toggleChat}
-              className="relative bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg"
+              className="relative bg-blue-700 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg"
             >
               <ChatBubbleBottomCenterTextIcon className="h-6 w-6" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">
                   {unreadCount}
                 </span>
               )}

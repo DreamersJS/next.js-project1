@@ -101,7 +101,7 @@ const RegisterPage = () => {
           autoComplete="new-password"
           className="border p-2"
         />
-        <button type="submit" className="bg-blue-500 text-white p-2" disabled={isLoading}>
+        <button type="submit" className="bg-blue-700 text-white p-2" disabled={isLoading}>
           {isLoading ? 'Registering...' : 'Register'}
         </button>
       </form>

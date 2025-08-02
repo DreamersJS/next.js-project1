@@ -99,7 +99,7 @@ export default function HomePage() {
         <button
           aria-label="Create a new whiteboard session"
           onClick={handleCreateNewBoard}
-          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-700 transition"
           disabled={!user?.uid}
         >
           Create a New Whiteboard
@@ -136,7 +136,7 @@ export default function HomePage() {
         <button
           onClick={handleJoinBoard}
           disabled={!oldBoardId}
-          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-700 transition"
           aria-label="Join the whiteboard session"
         >
           Join Whiteboard

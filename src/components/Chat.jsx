@@ -61,7 +61,7 @@ export default function Chat({ messages, sendMessage }) {
         />
         <button
           onClick={handleSend}
-          className="text-sm bg-blue-500 hover:bg-blue-600 text-white px-0.5 py-1 rounded"
+          className="text-sm bg-blue-700 hover:bg-blue-700 text-white px-0.5 py-1 rounded"
         >
           Send
         </button>
