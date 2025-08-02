@@ -28,7 +28,6 @@ export default function Chat({ messages, sendMessage }) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto mb-2 pr-1 text-wrap break-all">
-        <h2 className="text-lg font-semibold mb-4">Chat</h2>
         <div className="space-y-2">
           {messages.map((message, index) => (
             <div key={index} className="bg-white p-2 rounded shadow-sm">
@@ -50,7 +49,7 @@ export default function Chat({ messages, sendMessage }) {
             }
           }}
           placeholder="Type a message"
-          className="flex-1 border rounded   text-sm placeholder-gray-400"
+          className="flex-1 border rounded text-sm placeholder-gray-400"
         />
         <button
           onClick={handleSend}
