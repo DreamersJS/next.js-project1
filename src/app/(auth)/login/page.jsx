@@ -98,12 +98,12 @@ const LoginPage = () => {
         </button>
       </form>
       <br />or<br />
-      <button onClick={handleGuestLogin} className="bg-green-800 text-white p-2 mt-4" disabled={isLoading}>
+      <button onClick={handleGuestLogin} className="bg-green-700 text-white p-2 mt-4" disabled={isLoading}>
         {isLoading ? 'Loading...' : 'Login as Guest'}
       </button>
       {error && <p className="text-red-500 mt-2">{error}</p>}
       <br />or<br />
-      <button onClick={() => router.push("/register")} className="text-blue-500 underline">
+      <button onClick={() => router.push("/register")} className="text-black-500 underline">
         Register
       </button>
     </div>

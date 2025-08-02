@@ -3,11 +3,11 @@ import "@/app/globals.css";
 import Head from 'next/head';
 import dynamic from "next/dynamic";
 import { RecoilRoot } from "recoil";
-import Logout from "@/components/Logout";
-import UserAvatar from "@/components/UserAvatar";
 import { useRouter } from 'next/navigation';
 import { useRecoilValue } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
+const UserAvatar = dynamic(() => import('@/components/UserAvatar'), { ssr: false });
+const Logout = dynamic(() => import('@/components/Logout'), { ssr: false });
 // import { SocketProvider } from "@/context/SocketProvider";
 // const SocketProvider = dynamic(() => import('@/context/SocketProvider'), { ssr: false });
 const SocketProvider = dynamic(() =>

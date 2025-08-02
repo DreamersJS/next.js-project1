@@ -5,7 +5,7 @@ import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 import Image from 'next/image';
 
-const UserAvatar = () => {
+const UserAvatar = React.memo(() => {
 
   const user = useRecoilValue(userState);
 
@@ -25,6 +25,6 @@ const UserAvatar = () => {
       <span>{user?.username}</span>
     </div>
   );
-};
+});
 
 export default UserAvatar;

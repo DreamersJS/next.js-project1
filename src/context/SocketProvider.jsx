@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useMemo } from 'react';
 import { io } from 'socket.io-client';
 
 const SocketContext = createContext(null);
@@ -26,16 +26,18 @@ export const SocketProvider = ({ children }) => {
         };
     }, [socketUrl]);
 
+    // Memoize the socket instance to prevent unnecessary re-renders of context consumers
+    const contextValue = useMemo(() => socketRef.current, [socketRef.current]);
+
     if (!isReady) return null; // or loading UI
 
     return (
-        <SocketContext.Provider value={socketRef}>
+        <SocketContext.Provider value={contextValue}>
             {children}
         </SocketContext.Provider>
     );
 };
 
 export const useSocketConnection = () => {
-    
     return useContext(SocketContext);
 };
