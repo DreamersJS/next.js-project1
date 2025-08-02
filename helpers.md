@@ -18,4 +18,7 @@ docker exec -it 0da5c45b2586 /bin/sh
 then run 
 npm i dotenv
 ++++++++++++++++++
-tree -L 3 -I 'node_modules|.next|.git|.vscode|public/assets|coverage|__tests__|dist'
+tree -L 3 -I 'node_modules|.next|.git|.vscode|public/assets|coverage|__tests__|dist'+
+
+docker start nextjsproject1-nextjs-1
+docker logs -f nextjsproject1-nextjs-1

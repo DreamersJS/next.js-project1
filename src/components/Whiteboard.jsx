@@ -27,7 +27,6 @@ const Whiteboard = ({ id }) => {
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
   const socketRef = useSocketConnection();
   const currentStroke = useRef(null)
-  const previousWhiteboardIdRef = useRef(null);
 
   if (!socketUrl) return;
 
@@ -128,22 +127,7 @@ const Whiteboard = ({ id }) => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
-    // Leave previous whiteboard room if any
-    console.log('Switching rooms:', {
-      prev: previousWhiteboardIdRef.current,
-      next: whiteboardId,
-    });
-
-    if (previousWhiteboardIdRef.current !== whiteboardId) {
-      if (previousWhiteboardIdRef.current) {
-        socketInstance.emit('leave', previousWhiteboardIdRef.current);
-        console.log(`Emit Left whiteboard session with ID: ${previousWhiteboardIdRef.current}`);
-      }
-
-      socketRef.current.emit('join', whiteboardId);
-      console.log(`Emit Joined whiteboard session with ID: ${whiteboardId}`);
-      previousWhiteboardIdRef.current = whiteboardId; // Update the reference
-    }
+    socketRef.current.emit('join', whiteboardId);
 
     const handleInit = (shapes) => {
       if (!Array.isArray(shapes)) {
@@ -190,10 +174,8 @@ const Whiteboard = ({ id }) => {
     return () => {
       if (whiteboardId) {
         socketRef.current.emit('leave', whiteboardId);
-        console.log(`Emit Left (unmount) whiteboard session with ID: ${whiteboardId}`);
       }
-      previousWhiteboardIdRef.current = null;  // Reset ref on unmount
-    
+
       socketRef.current.off('initDrawings', handleInit);
       socketRef.current.off('draw', handleDraw);
       socketRef.current.off('previewDraw', handlePreviewDraw);

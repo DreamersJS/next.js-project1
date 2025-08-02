@@ -35,21 +35,10 @@ app.prepare().then(() => {
 
     socket.on('join', (whiteboardId) => {
 
-      console.log(`Before join, ${socket.id} is in rooms:`, Array.from(socket.rooms));
-
-      for (const room of socket.rooms) {
-        if (room !== socket.id && room !== whiteboardId) {
-          socket.leave(room);
-          console.log(`${socket.id} auto-left room ${room}`);
-        }
-      }
-
       if (!socket.rooms.has(whiteboardId)) {
         socket.join(whiteboardId);
         console.log(`${socket.id} joined room ${whiteboardId}`);
       }
-
-      console.log(`After join, ${socket.id} is now in rooms:`, Array.from(socket.rooms));
 
       // Initialize board if not exist
       if (!whiteboardData.has(whiteboardId)) {
