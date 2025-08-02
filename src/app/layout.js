@@ -16,7 +16,7 @@ function LayoutContent({ children }) {
 
   return (
     <>
-        <header className="bg-blue-600 text-white py-2 px-8 flex justify-between items-center shadow-md">
+        <header className="bg-blue-600 text-white py-2 px-4 flex justify-between items-center shadow-md">
           <button onClick={() => router.push(`/`)}
           >
             My Whiteboard App
@@ -24,7 +24,7 @@ function LayoutContent({ children }) {
           {user?.uid && <UserAvatar />}
           {user?.uid && <Logout />}
         </header>
-        <main className="flex-grow container mx-auto p-2">
+        <main className="flex-grow container mx-auto p-1">
           {children}
         </main>
         <footer className="bg-gray-800 text-white text-center py-2">

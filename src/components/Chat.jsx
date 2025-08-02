@@ -27,7 +27,7 @@ export default function Chat({ messages, sendMessage }) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto mb-4">
+      <div className="flex-1 overflow-y-auto mb-2 pr-1 text-wrap break-all">
         <h2 className="text-lg font-semibold mb-4">Chat</h2>
         <div className="space-y-2">
           {messages.map((message, index) => (
@@ -38,7 +38,7 @@ export default function Chat({ messages, sendMessage }) {
         </div>
       </div>
 
-      <div className="flex space-x-2 border-t border-gray-300 pt-2">
+      <div className="flex space-x-0.5 border-t border-gray-300 pt-1 mt-auto">
         <input
           type="text"
           value={newMessage}
@@ -50,11 +50,11 @@ export default function Chat({ messages, sendMessage }) {
             }
           }}
           placeholder="Type a message"
-          className="flex-1 border rounded p-1"
+          className="flex-1 border rounded   text-sm placeholder-gray-400"
         />
         <button
           onClick={handleSend}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
+          className="text-sm bg-blue-500 hover:bg-blue-600 text-white px-0.5 py-1 rounded"
         >
           Send
         </button>

@@ -2,12 +2,27 @@
 
 ## Overview
 
-This project is a **Collaborative Whiteboard Application** built using **Next.js** and **Socket.IO** for real-time interaction. The application allows multiple users to collaborate on a virtual whiteboard in real time. It incorporates APIs for backend operations, ensuring seamless data handling and user authentication.
+This project is a **Collaborative Whiteboard Application** built using **Next.js** and **Socket.IO** for real-time interaction. The application allows multiple users to collaborate on a virtual whiteboard in real time. It incorporates APIs for backend operations, ensuring seamless data handling and user authentication. Featuring drawing tools, image saving/loading, undo/redo and integrated chat.
 
 
-**DEMO** [https://youtu.be/ivVlTKGkniU](https://youtu.be/ivVlTKGkniU)
+**DEMO** [Watch on YouTube](https://youtu.be/ivVlTKGkniU)
 
 ## Features
+
+
+**Whiteboard**
+  - Draw with pen, eraser, line, rectangle, circle, triangle.
+  - Fill mode toggle for shapes.
+  - Undo/Redo (with Socket.io support).
+  - Save and load drawings as images (registered users only).
+  - Clear whiteboard (with confirmation).
+  - Real-time synchronization with other users via WebSocket.
+  - Responsive canvas resizing using ResizeObserver.
+  
+**Chat**
+  - Toggleable chat window. 
+  - Real-time messaging via WebSocket. 
+  - Unread message counter when chat is minimized. 
 
 - **Real-time Collaboration**: 
   - Utilizes **Socket.IO** for WebSocket connections, enabling users to interact with each other in real time, drawing, and chatting on the whiteboard.
@@ -75,5 +90,5 @@ The application will start on http://localhost:3000 or on whichever PORT you are
 
 ## Usage
 
-- Users can draw on the board, and all actions will be synced in real time with other connected users.
+- Users can draw on the board, and all actions will be synced in real time with other connected users in the board.
 - The application require authentication. Ensure to log in to access all features. A registered user has more features than a guest.
