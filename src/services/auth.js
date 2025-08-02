@@ -64,8 +64,7 @@ export const loginUser = async (email, password) => {
       sameSite: 'Lax',   // Ensure it’s sent with requests
       secure: process.env.NODE_ENV === 'production', // Only set 'secure' in production
     });
-    // console.log('Cookie set:', Cookies.get('auth'));
-    // console.log({ user });
+ 
     return user;
   } catch (error) {
     console.error('Error logging in user:', error);
@@ -104,7 +103,6 @@ export const loginAsGuest = async () => {
       sameSite: 'None',
       secure: process.env.NODE_ENV === 'production',
     });
-    console.log('Cookie set:', Cookies.get('auth'));
 
     return userCredential.user;
   } catch (error) {

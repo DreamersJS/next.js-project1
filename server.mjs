@@ -34,17 +34,25 @@ app.prepare().then(() => {
     });
 
     socket.on('join', (whiteboardId) => {
+
+      console.log(`Before join, ${socket.id} is in rooms:`, Array.from(socket.rooms));
+
       for (const room of socket.rooms) {
-        if (room !== socket.id) {
-          socket.leave(room); // Leave all rooms except its own ID
+        if (room !== socket.id && room !== whiteboardId) {
+          socket.leave(room);
           console.log(`${socket.id} auto-left room ${room}`);
         }
       }
-      socket.join(whiteboardId);
+
+      if (!socket.rooms.has(whiteboardId)) {
+        socket.join(whiteboardId);
+        console.log(`${socket.id} joined room ${whiteboardId}`);
+      }
+
+      console.log(`After join, ${socket.id} is now in rooms:`, Array.from(socket.rooms));
 
       // Initialize board if not exist
       if (!whiteboardData.has(whiteboardId)) {
-        console.log(`!whiteboardData.has(whiteboardId for ${whiteboardId}`);
         whiteboardData.set(whiteboardId, {
           drawnShapes: [],
           undoStack: [],
@@ -60,9 +68,8 @@ app.prepare().then(() => {
 
     socket.on('leave', (whiteboardId) => {
       socket.leave(whiteboardId);
-      console.log(`${socket.id} left room ${whiteboardId}`);
+      console.log(`${socket.id} manually left room ${whiteboardId}`);
     });
-    
 
     socket.on('draw', ({ whiteboardId, shape }) => {
       if (!whiteboardData.has(whiteboardId)) {
@@ -79,8 +86,6 @@ app.prepare().then(() => {
       board.undoStack.push(shape);
       board.redoStack = [];
       board.drawnShapes.push(shape);
-      // board.drawnShapes = board.undoStack.slice();
-      console.log('Sending shape to client:', shape);
 
       io.to(whiteboardId).emit('draw', shape);
     });
@@ -158,6 +163,9 @@ app.prepare().then(() => {
 
     socket.on('disconnect', () => {
       console.log('Client disconnected');
+      return () => {
+        socket.off('disconnect');
+      };
     });
   });
 

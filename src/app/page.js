@@ -18,7 +18,6 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('user', user);
     const savedUserState = Cookies.get('userState');
     if (savedUserState && !user?.uid) {
       try {
@@ -45,7 +44,6 @@ export default function HomePage() {
       }
       const data = await createNewWhiteboard(user.uid);
       setNewBoardId(data.id);
-      console.log('New Whiteboard Created:', data.id);
 
       setUser((prevUser) => ({
         ...prevUser,

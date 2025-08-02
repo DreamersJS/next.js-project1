@@ -24,14 +24,12 @@ export default function WhiteboardList() {
     setLoading(true); 
     try {
       const whiteboardIds = await getUserWhiteboards(userId);
-      console.log('Whiteboard IDs:', whiteboardIds);
       const whiteboardData = await Promise.all(
         whiteboardIds.map(async (whiteboardId) => {
           const data = await loadWhiteboardById(whiteboardId);
           return data ? data : null; // Handle potential null responses
         })
       );
-      console.log('Whiteboard Data:', whiteboardData);
       setWhiteboards(whiteboardData.filter(board => board !== null)); // Filter out null values
     } catch (error) {
       console.error('Error loading user whiteboards:', error);
@@ -72,7 +70,6 @@ export default function WhiteboardList() {
     
     try {
       await deleteWhiteboard(whiteboardId, user.uid);
-      console.log(`Client: whiteboardId: ${whiteboardId}`);
       setUser((prevUser) => {
         const whiteboardIdsArray = Object.keys(prevUser.listOfWhiteboardIds);
         return {

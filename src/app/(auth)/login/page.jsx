@@ -20,7 +20,6 @@ const LoginPage = () => {
     setIsLoading(true);
     try {
       const user = await loginUser(email, password);
-      console.log(`user.uid: ${user.uid}`);
 
       // Set a short delay or confirm cookie is set
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -56,7 +55,6 @@ const LoginPage = () => {
   const handleGuestLogin = async () => {
     try {
       const user = await loginAsGuest();
-      console.log('Logged in as guest:', user);
       setUser({
         uid: user.uid,
         email: null,

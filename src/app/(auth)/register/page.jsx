@@ -24,7 +24,6 @@ const RegisterPage = () => {
     setIsLoading(true);
     try {
       const credentials = await registerUser(email, password);
-      console.log({ credentials });
       const uid = credentials.user.uid;
       const avatarUrl = `https://avatars.dicebear.com/api/identicon/${username}.svg`;
       const userObject = {

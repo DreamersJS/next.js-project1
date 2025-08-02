@@ -128,22 +128,28 @@ const Whiteboard = ({ id }) => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
-  // Leave previous whiteboard room if any
-  if (previousWhiteboardIdRef.current && previousWhiteboardIdRef.current !== whiteboardId) {
-    socketRef.current.emit('leave', previousWhiteboardIdRef.current);
-    console.log(`Emit Left whiteboard session with ID: ${previousWhiteboardIdRef.current}`);
-  }
+    // Leave previous whiteboard room if any
+    console.log('Switching rooms:', {
+      prev: previousWhiteboardIdRef.current,
+      next: whiteboardId,
+    });
 
-    socketRef.current.emit('join', whiteboardId);
-    console.log(`Emit       Joined whiteboard session with ID: ${whiteboardId}`);
-    previousWhiteboardIdRef.current = whiteboardId; // Update the reference
+    if (previousWhiteboardIdRef.current !== whiteboardId) {
+      if (previousWhiteboardIdRef.current) {
+        socketInstance.emit('leave', previousWhiteboardIdRef.current);
+        console.log(`Emit Left whiteboard session with ID: ${previousWhiteboardIdRef.current}`);
+      }
+
+      socketRef.current.emit('join', whiteboardId);
+      console.log(`Emit Joined whiteboard session with ID: ${whiteboardId}`);
+      previousWhiteboardIdRef.current = whiteboardId; // Update the reference
+    }
 
     const handleInit = (shapes) => {
       if (!Array.isArray(shapes)) {
         console.warn('initDrawings received invalid shapes:', shapes);
         return;
       }
-      console.log('Received initial shapes:', shapes);
       drawnShapesRef.current = shapes;
       setDrawnShapes(shapes);
       redrawAllShapes();
@@ -182,18 +188,18 @@ const Whiteboard = ({ id }) => {
     socketRef.current.on('clear', handleClear);
 
     return () => {
-
-      // if (socketRef.current && previousWhiteboardIdRef.current) {
-      //   socketRef.current.emit('leave', previousWhiteboardIdRef.current);
-      //   console.log(`Emit       Cleanup: Left whiteboard session with ID: ${previousWhiteboardIdRef.current}`);
-      // }
-
+      if (whiteboardId) {
+        socketRef.current.emit('leave', whiteboardId);
+        console.log(`Emit Left (unmount) whiteboard session with ID: ${whiteboardId}`);
+      }
+      previousWhiteboardIdRef.current = null;  // Reset ref on unmount
+    
       socketRef.current.off('initDrawings', handleInit);
       socketRef.current.off('draw', handleDraw);
       socketRef.current.off('previewDraw', handlePreviewDraw);
       socketRef.current.off('clear', handleClear);
     };
-  }, [socketRef.current, whiteboardId, redrawAllShapes]);
+  }, [socketRef, whiteboardId, redrawAllShapes]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -272,7 +278,7 @@ const Whiteboard = ({ id }) => {
           drawnShapesRef.current.push(currentStroke.current);
           setDrawnShapes([...drawnShapesRef.current]);
         }
-        currentStroke.current = null;        
+        currentStroke.current = null;
       } else {
         const shapeData = {
           tool, color, fill: fillMode,
