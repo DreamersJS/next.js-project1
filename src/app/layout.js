@@ -1,13 +1,19 @@
 "use client";
 import "@/app/globals.css";
 import Head from 'next/head';
+import dynamic from "next/dynamic";
 import { RecoilRoot } from "recoil";
 import Logout from "@/components/Logout";
 import UserAvatar from "@/components/UserAvatar";
 import { useRouter } from 'next/navigation';
 import { useRecoilValue } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
-import { SocketProvider } from "@/context/SocketProvider";
+// import { SocketProvider } from "@/context/SocketProvider";
+// const SocketProvider = dynamic(() => import('@/context/SocketProvider'), { ssr: false });
+const SocketProvider = dynamic(() =>
+  import('@/context/SocketProvider').then(mod => mod.SocketProvider),
+  { ssr: false }
+);
 import { useParams } from 'next/navigation';
 
 function LayoutContent({ children }) {
@@ -27,7 +33,7 @@ function LayoutContent({ children }) {
           {user?.uid && <UserAvatar />}
           {user?.uid && <Logout />}
         </header>
-       }
+      }
       <main className="flex-grow container mx-auto p-1">
         {children}
       </main>
@@ -58,8 +64,14 @@ export default function RootLayout({ children }) {
         <meta name="robots" content="index, follow" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#ffffff" />
+        <link rel="preconnect" href="https://via.placeholder.com" crossOrigin="anonymous" />
       </Head>
       <body className="bg-gray-100 min-h-screen flex flex-col">
+        <noscript>
+          <style>{`body { display: block; }`}</style>
+          JavaScript is required to run this application.
+        </noscript>
+
         <RecoilRoot>
           <SocketProvider>
             <LayoutContent>{children}</LayoutContent>

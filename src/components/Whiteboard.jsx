@@ -8,6 +8,7 @@ import { deleteWhiteboard, loadWhiteboardImage, loadWhiteboardImageById, saveWhi
 import { drawLine, drawRectangle, drawCircle, drawTriangle } from "@/services/drawService";
 import { clearCanvas } from "@/services/canvasService";
 import { useSocketConnection } from '@/context/SocketProvider';
+import throttle from 'lodash.throttle';
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
@@ -27,8 +28,9 @@ const Whiteboard = ({ id }) => {
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
   const socketRef = useSocketConnection();
   const currentStroke = useRef(null)
+  const imageCache = useRef(new Map());
 
-  if (!socketUrl) return;
+  if (!socketUrl) return <div>Socket URL is not configured.</div>;
 
   const drawShape = useCallback((ctx, shape, preview = false) => {
     if (!shape) return;
@@ -90,11 +92,20 @@ const Whiteboard = ({ id }) => {
     const otherShapes = drawnShapesRef.current.filter(shape => shape && shape.tool !== 'image');
 
     // Helper to load image and return Promise with loaded img element
-    const loadImage = (src) => new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.src = src;
-    });
+    const loadImage = (src) => {
+      if (imageCache.current.has(src)) {
+        return Promise.resolve(imageCache.current.get(src));
+      }
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          imageCache.current.set(src, img);
+          resolve(img);
+        };
+        img.src = src;
+      });
+    };
+
 
     // Load all images first
     Promise.all(imageShapes.map(shape => loadImage(shape.src))).then(images => {
@@ -120,6 +131,42 @@ const Whiteboard = ({ id }) => {
       redrawAllShapes();
     }
   }, [redrawAllShapes]);
+
+  const throttledResizeCanvas = useCallback(throttle(resizeCanvas, 200), [resizeCanvas]);
+
+  const handleMouseMove = useCallback(
+    throttle((e) => {
+      if (!isDrawing) return;
+
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      setCurrentPosition({ x, y });
+
+      if (tool === 'pen' || tool === 'eraser') {
+        currentStroke.current.points.push({ x, y });
+
+        const ctx = canvas.getContext('2d');
+        drawShape(ctx, currentStroke.current); // draw the line segment live
+      } else {
+        const shapeData = {
+          tool,
+          color,
+          fill: fillMode,
+          startX: startPosition.x,
+          startY: startPosition.y,
+          endX: x,
+          endY: y,
+        };
+        redrawAllShapes();
+        const ctx = canvas.getContext('2d');
+        drawShape(ctx, shapeData, true);
+      }
+    }, 50), // throttle delay in ms, adjust as needed
+    [isDrawing, tool, color, fillMode, startPosition, redrawAllShapes]
+  );
 
   useEffect(() => {
     if (!socketRef.current || !whiteboardId) return;
@@ -196,11 +243,13 @@ const Whiteboard = ({ id }) => {
     }
 
     const handleMouseDown = (e) => {
-      if (e.button !== 0) return; // Only respond to left-click
+      if (e.button !== 0) return; // Only left-click
+
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
+
       setStartPosition({ x, y });
       setCurrentPosition({ x, y });
       setIsDrawing(true);
@@ -211,41 +260,9 @@ const Whiteboard = ({ id }) => {
           color,
           points: [{ x, y }]
         };
-      } else {
-        setStartPosition({ x, y });
       }
     };
 
-    const handleMouseMove = (e) => {
-      if (!isDrawing) return;
-
-      const canvas = canvasRef.current;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      setCurrentPosition({ x, y });
-
-      if (tool === 'pen' || tool === 'eraser') {
-        currentStroke.current.points.push({ x, y });
-
-        const ctx = canvas.getContext('2d');
-        drawShape(ctx, currentStroke.current); // draw the line segment live
-      } else {
-        setCurrentPosition({ x, y });
-        const shapeData = {
-          tool,
-          color,
-          fill: fillMode,
-          startX: startPosition.x,
-          startY: startPosition.y,
-          endX: x,
-          endY: y,
-        };
-        redrawAllShapes();
-        const ctx = canvas.getContext('2d');
-        drawShape(ctx, shapeData, true);
-      }
-    };
 
     const handleMouseUp = () => {
       if (!isDrawing) return;
@@ -278,11 +295,11 @@ const Whiteboard = ({ id }) => {
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
-    resizeCanvas(canvasRef);
+    throttledResizeCanvas(canvasRef);
 
     // Observe the parent container for any size changes
     const resizeObserver = new ResizeObserver(() => {
-      resizeCanvas(canvasRef);
+      throttledResizeCanvas(canvasRef);
     });
     if (canvas && canvas.parentElement) {
       resizeObserver.observe(canvas.parentElement);
@@ -291,10 +308,11 @@ const Whiteboard = ({ id }) => {
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
+      handleMouseMove.cancel(); // Cancel any pending throttled calls
       canvas.removeEventListener('mouseup', handleMouseUp);
       resizeObserver.disconnect();
     };
-  }, [tool, isDrawing, startPosition, currentPosition, color, fillMode, socketRef]);
+  }, [tool, isDrawing, startPosition, currentPosition, color, fillMode, socketRef, handleMouseMove]);
 
   const handleToolChange = (newTool) => setTool(newTool);
   const handleColorChange = (newColor) => setColor(newColor);

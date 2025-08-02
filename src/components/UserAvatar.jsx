@@ -3,18 +3,25 @@
 import React from 'react';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
+import Image from 'next/image';
 
 const UserAvatar = () => {
 
   const user = useRecoilValue(userState);
 
   if (!user || !user.uid) {
-    return null; 
+    return null;
   }
 
   return (
     <div className="flex items-center space-x-2">
-      <img src={user?.avatar} alt={`${user?.username}'s avatar`} className="w-10 h-10 rounded-full" />
+      <Image
+        src={user?.avatar}
+        alt={`${user?.username}'s avatar`}
+        width={10}
+        height={10}
+        className="rounded-full"
+      />
       <span>{user?.username}</span>
     </div>
   );
