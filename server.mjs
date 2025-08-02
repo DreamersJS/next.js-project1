@@ -34,6 +34,12 @@ app.prepare().then(() => {
     });
 
     socket.on('join', (whiteboardId) => {
+      for (const room of socket.rooms) {
+        if (room !== socket.id) {
+          socket.leave(room); // Leave all rooms except its own ID
+          console.log(`${socket.id} auto-left room ${room}`);
+        }
+      }
       socket.join(whiteboardId);
 
       // Initialize board if not exist
@@ -51,6 +57,12 @@ app.prepare().then(() => {
         socket.emit('initDrawings', board.drawnShapes || []);
       }
     });
+
+    socket.on('leave', (whiteboardId) => {
+      socket.leave(whiteboardId);
+      console.log(`${socket.id} left room ${whiteboardId}`);
+    });
+    
 
     socket.on('draw', ({ whiteboardId, shape }) => {
       if (!whiteboardData.has(whiteboardId)) {
@@ -132,6 +144,7 @@ app.prepare().then(() => {
       io.to(whiteboardId).emit('draw', imageShape)
     });
 
+    // for chat only
     socket.on('joinRoom', (roomId) => {
       socket.join(roomId);
       console.log(`${socket.id} joined room ${roomId}`);
