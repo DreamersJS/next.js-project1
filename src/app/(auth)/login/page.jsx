@@ -5,10 +5,6 @@ import { loginUser, loginAsGuest, getUserByUid, saveUserToCookie } from "@/servi
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
-// Minimize Rendering Work
-//Move userObject outside the component to avoid re-creation on each render:
-const defaultUserObject = { uid: '', email: '', username: '', avatar: null, listOfWhiteboardIds: [], role: '' };
-
 const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -33,15 +29,16 @@ const LoginPage = () => {
       const userData = await getUserByUid(user.uid);
       const arrayOfWhiteboardIds = userData?.listOfWhiteboardIds ? Object.keys(userData.listOfWhiteboardIds) : [];
 
-      setUser({
-        ...defaultUserObject,
+      const userObject = {
         uid: user.uid,
         email: user.email,
         username: userData.username || "Unknown",
         avatar: userData.avatar || null,
         listOfWhiteboardIds: arrayOfWhiteboardIds || [],
         role: userData.role || "registered",
-      });
+      };
+      setUser(userObject);
+      
       // Save user state in a cookie
       saveUserToCookie(userObject);
 
