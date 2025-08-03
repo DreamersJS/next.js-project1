@@ -5,6 +5,10 @@ import { loginUser, loginAsGuest, getUserByUid, saveUserToCookie } from "@/servi
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
+// Minimize Rendering Work
+//Move userObject outside the component to avoid re-creation on each render:
+const defaultUserObject = { uid: '', email: '', username: '', avatar: null, listOfWhiteboardIds: [], role: '' };
+
 const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -19,6 +23,8 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      // import services dynamically - cuts initial bundle size—auth code loads only on interaction. Better Lighthouse score
+      const { loginUser, getUserByUid, saveUserToCookie } = await import('@/services/auth');
       const user = await loginUser(email, password);
 
       // Set a short delay or confirm cookie is set
@@ -27,15 +33,15 @@ const LoginPage = () => {
       const userData = await getUserByUid(user.uid);
       const arrayOfWhiteboardIds = userData?.listOfWhiteboardIds ? Object.keys(userData.listOfWhiteboardIds) : [];
 
-      const userObject = {
+      setUser({
+        ...defaultUserObject,
         uid: user.uid,
         email: user.email,
         username: userData.username || "Unknown",
         avatar: userData.avatar || null,
         listOfWhiteboardIds: arrayOfWhiteboardIds || [],
         role: userData.role || "registered",
-      };
-      setUser(userObject);
+      });
       // Save user state in a cookie
       saveUserToCookie(userObject);
 
@@ -54,6 +60,7 @@ const LoginPage = () => {
 
   const handleGuestLogin = async () => {
     try {
+      const { loginAsGuest } = await import('@/services/auth');
       const user = await loginAsGuest();
       setUser({
         uid: user.uid,

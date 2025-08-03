@@ -82,7 +82,7 @@ export const loginAsGuest = async () => {
 
     // Set up guest user profile
     const username = `guest${Math.floor(Math.random() * 10000)}`;
-    const avatarUrl = `https://avatars.dicebear.com/api/identicon/${username}.svg`;
+    const avatarUrl = '/default.png';
 
     await updateProfile(userCredential.user, { displayName: username });
 
@@ -100,7 +100,7 @@ export const loginAsGuest = async () => {
     Cookies.set('auth', 'true', {
       expires: 1,
       path: '/',
-      sameSite: 'None',
+      sameSite: 'Lax',
       secure: process.env.NODE_ENV === 'production',
     });
 

@@ -16,10 +16,10 @@ const UserAvatar = React.memo(() => {
   return (
     <div className="flex items-center space-x-2">
       <Image
-        src={user?.avatar}
-        alt={`${user?.username}'s avatar`}
-        width={10}
-        height={10}
+        src={user?.avatar || '/default.png'}
+        alt={`${user?.username || 'User'}'s avatar`}
+        width={30}
+        height={30}
         className="rounded-full"
       />
       <span>{user?.username}</span>
