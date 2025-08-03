@@ -36,6 +36,6 @@ export const SocketProvider = ({ children }) => {
 };
 
 export const useSocketConnection = () => {
-    
+
     return useContext(SocketContext);
 };

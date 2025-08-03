@@ -1,6 +1,5 @@
-// components/WhiteboardLayout.jsx
 'use client';
-import Chat from "@/components/Chat";
+import ChatToggleWrapper from "@/components/ChatToggleWrapper";
 import { AuthProvider } from "@/context/AuthProvider";
 
 export default function WhiteboardLayout({ children }) {
@@ -14,8 +13,8 @@ export default function WhiteboardLayout({ children }) {
           </main>
 
           {/* Right Rail - Chat */}
-          <aside className="bg-gray-200 p-2 mx-2 top-0 right-0 border-l border-gray-300 w-56 flex-shrink-0">
-            <Chat />
+          <aside>
+            <ChatToggleWrapper />
           </aside>
         </div>
       </AuthProvider>

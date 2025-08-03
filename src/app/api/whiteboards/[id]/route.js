@@ -5,7 +5,6 @@ import { ref, remove, set, get, update } from 'firebase/database';
 // load board by id
 export async function GET(req, { params }) {
     const { id } = params;
-    console.log(`Loading whiteboard ID: ${id}`);
 
     try {
         const whiteboardRef = ref(database, `whiteboards/${id}`);
@@ -24,14 +23,11 @@ export async function GET(req, { params }) {
 
 // delete board by id
 export async function DELETE(req, { params }) {
-    console.log('Params:', params);
 
     // Extract userId from the query parameters in the URL
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId');
     const { id } = params;
-
-    console.log(`API: Deleting whiteboard ID: ${id} for user ID: ${userId}`);
 
     if (!userId || !id) {
         return new Response(JSON.stringify({ success: false, error: 'Missing userId or whiteboardId' }), { status: 400 });
@@ -41,26 +37,21 @@ export async function DELETE(req, { params }) {
         // 1. Delete the whiteboard from /whiteboards
         const whiteboardRef = ref(database, `whiteboards/${id}`);
         await remove(whiteboardRef);
-        console.log(`Whiteboard ${id} deleted from /whiteboards`);
 
         // 2. Load the user's list of whiteboards (entire list)
         const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
         const snapshotBefore = await get(userWhiteboardsRef);
         const userWhiteboards = snapshotBefore.val() || {};
 
-        console.log('User whiteboards before deletion:', userWhiteboards);
-
         // 3. Delete the specific whiteboard ID from the user's list if it exists
         if (userWhiteboards[id]) {
             delete userWhiteboards[id];
-            console.log(`Deleted whiteboard ${id} from user's whiteboard list.`);
         } else {
             console.log(`Whiteboard ID ${id} not found in user's list.`);
         }
 
         // 4. Update the user's list of whiteboards in the database
         await set(userWhiteboardsRef, userWhiteboards);
-        console.log('User whiteboards after deletion:', userWhiteboards);
 
         return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (error) {
@@ -93,11 +84,9 @@ export async function PUT(req, { params }) {
         if (whiteboardVal) {
             // Update the content field without affecting other fields
             await update(whiteboardRef, { content });
-            console.log(`Whiteboard ${id} updated successfully.`);
 
             return new Response(JSON.stringify({ success: true, message: 'Whiteboard updated successfully.' }), { status: 200 });
         } else {
-            console.log(`Whiteboard ID ${id} not found.`);
             return new Response(JSON.stringify({ success: false, error: 'Whiteboard not found.' }), { status: 404 });
         }
     } catch (error) {

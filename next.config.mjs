@@ -7,4 +7,9 @@ export default {
     config.resolve.fallback = { fs: false, path: false }; // Avoids path issues with server-side modules
     return config;
   },
+  images: {
+    domains: ['via.placeholder.com'],
+  },
+  optimizeFonts: true, // Ensure font and CSS optimization is ON
+  compress: true, // Gzip and Brotli compression
 };

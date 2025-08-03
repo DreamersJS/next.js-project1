@@ -19,8 +19,9 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      // import services dynamically - cuts initial bundle size—auth code loads only on interaction. Better Lighthouse score
+      const { loginUser, getUserByUid, saveUserToCookie } = await import('@/services/auth');
       const user = await loginUser(email, password);
-      console.log(`user.uid: ${user.uid}`);
 
       // Set a short delay or confirm cookie is set
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -37,6 +38,7 @@ const LoginPage = () => {
         role: userData.role || "registered",
       };
       setUser(userObject);
+      
       // Save user state in a cookie
       saveUserToCookie(userObject);
 
@@ -55,8 +57,8 @@ const LoginPage = () => {
 
   const handleGuestLogin = async () => {
     try {
+      const { loginAsGuest } = await import('@/services/auth');
       const user = await loginAsGuest();
-      console.log('Logged in as guest:', user);
       setUser({
         uid: user.uid,
         email: null,
@@ -95,17 +97,17 @@ const LoginPage = () => {
           autoComplete="current-password"
           className="border p-2"
         />
-        <button type="submit" className="bg-blue-500 text-white p-2 m-2" disabled={isLoading}>
+        <button type="submit" className="bg-blue-700 text-white p-2 m-2" disabled={isLoading}>
           {isLoading ? 'Logging in...' : 'Login'} {/* Disable and show loading text */}
         </button>
       </form>
       <br />or<br />
-      <button onClick={handleGuestLogin} className="bg-green-500 text-white p-2 mt-4" disabled={isLoading}>
+      <button onClick={handleGuestLogin} className="bg-green-700 text-white p-2 mt-4" disabled={isLoading}>
         {isLoading ? 'Loading...' : 'Login as Guest'}
       </button>
       {error && <p className="text-red-500 mt-2">{error}</p>}
       <br />or<br />
-      <button onClick={() => router.push("/register")} className="text-blue-500 underline">
+      <button onClick={() => router.push("/register")} className="text-black-500 underline">
         Register
       </button>
     </div>

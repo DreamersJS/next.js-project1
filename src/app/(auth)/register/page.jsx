@@ -24,9 +24,8 @@ const RegisterPage = () => {
     setIsLoading(true);
     try {
       const credentials = await registerUser(email, password);
-      console.log({ credentials });
       const uid = credentials.user.uid;
-      const avatarUrl = `https://avatars.dicebear.com/api/identicon/${username}.svg`;
+      const avatarUrl = '/default.png';
       const userObject = {
         uid: credentials.user.uid,
         email: credentials.user.email,
@@ -102,7 +101,7 @@ const RegisterPage = () => {
           autoComplete="new-password"
           className="border p-2"
         />
-        <button type="submit" className="bg-blue-500 text-white p-2" disabled={isLoading}>
+        <button type="submit" className="bg-blue-700 text-white p-2" disabled={isLoading}>
           {isLoading ? 'Registering...' : 'Register'}
         </button>
       </form>

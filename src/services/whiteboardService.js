@@ -17,8 +17,6 @@ export const createNewWhiteboard = async (userId) => {
       photo: '',
     });
 
-    console.log('New Whiteboard Created:', newWhiteboardId);
-
     // Reference to the user's whiteboards
     const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
     const snapshot = await get(userWhiteboardsRef);
@@ -120,7 +118,6 @@ export const saveWhiteboardAsImage = async (canvas, whiteboardId, userId) => {
     return;
   }
   const dataURL = canvas.toDataURL('image/png');
-  console.log('in func: Saving whiteboard as image:', dataURL);
   // Save the image URL to your database
   try {
     const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${userId}`, {
@@ -130,9 +127,6 @@ export const saveWhiteboardAsImage = async (canvas, whiteboardId, userId) => {
       },
       body: JSON.stringify({ id: whiteboardId, content: dataURL }),
     });
-
-    console.log('API response status:', response.status);
-    console.log('API response:', await response.json()); // Log the entire response for debugging
 
     if (response.ok) {
       alert('Whiteboard image saved successfully!');
@@ -159,7 +153,6 @@ export const loadWhiteboardImageById = async (whiteboardId) => {
       alert('No whiteboard data found.');
       throw new Error(`Error loading whiteboard: ${data.message}`);
     }
-    console.log('Whiteboard data loaded successfully:', data);
     return data;
   } catch (error) {
     console.error('Error loading whiteboard:', error);

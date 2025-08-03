@@ -1,7 +1,7 @@
 // app/page.js
 'use client';
 
-import { useState, Suspense, lazy, useEffect } from 'react';
+import { useState, Suspense, lazy, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createNewWhiteboard } from '../services/whiteboardService';
 import { useRecoilValue, useRecoilState } from 'recoil';
@@ -18,25 +18,41 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('user', user);
-    const savedUserState = Cookies.get('userState');
-    if (savedUserState && !user?.uid) {
-      try {
-        const parsedUser = JSON.parse(savedUserState);
-        // Restore the user state in Recoil
-        setUser(parsedUser);
-      } catch (error) {
-        console.error('Error rehydrating user data:', error);
-      }
+    if (typeof window !== 'undefined') {
+      window.requestIdleCallback(() => {
+        const savedUserState = Cookies.get('userState');
+        if (savedUserState && !user?.uid) {
+          try {
+            const parsedUser = JSON.parse(savedUserState);
+            setUser(parsedUser);
+          } catch (error) {
+            console.error('Error rehydrating user data:', error);
+          }
+        }
+        setLoading(false);
+      });
     }
-    setLoading(false);  // Once user state is loaded or no cookie is found, stop loading
   }, []);
+
+  const navigateToLogin = useCallback(() => {
+    router.push('/login');
+  }, [router]);
 
   useEffect(() => {
     if (!loading && !user?.uid) {
-      router.push('/login');
+      navigateToLogin()
+      // router.push('/login');
     }
-  }, [loading, user, router]);
+  }, [loading, user, navigateToLogin]);
+
+  useEffect(() => {
+    if (user?.role === 'registered') {
+      // Preload component in background
+      requestIdleCallback(() => {
+        import('@/components/WhiteboardList');
+      });
+    }
+  }, [user]);
 
   const handleCreateNewBoard = async () => {
     try {
@@ -45,21 +61,26 @@ export default function HomePage() {
       }
       const data = await createNewWhiteboard(user.uid);
       setNewBoardId(data.id);
-      console.log('New Whiteboard Created:', data.id);
 
       setUser((prevUser) => ({
         ...prevUser,
         listOfWhiteboardIds: [...(prevUser.listOfWhiteboardIds || []), data.id],
       }));
-      router.push(`/whiteboard/${data.id}`);
+      // router.push(`/whiteboard/${data.id}`);
+      navigateToBoard(data.id);
     } catch (error) {
       console.error('Error creating whiteboard:', error);
     }
   };
 
+  const navigateToBoard = useCallback((id) => {
+    router.push(`/whiteboard/${id}`);
+  }, [router]);
+
   const handleJoinBoard = () => {
     if (oldBoardId) {
-      router.push(`/whiteboard/${oldBoardId}`);
+      // router.push(`/whiteboard/${oldBoardId}`);
+      navigateToBoard(oldBoardId);
     }
   };
 
@@ -68,15 +89,7 @@ export default function HomePage() {
       <h1 className="text-4xl font-bold mb-4" aria-label="Welcome to the Whiteboard App">
         Welcome to the Whiteboard App
       </h1>
-      {!user?.uid && (
-        <button
-          onClick={() => router.push('/login')}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-          aria-label="Login"
-        >
-          Login
-        </button>
-      )}
+
       <p className="text-lg text-gray-700 mb-8" aria-label="Introduction to whiteboard sessions">
         Create a new whiteboard session or join an existing one.
       </p>
@@ -86,18 +99,18 @@ export default function HomePage() {
         <button
           aria-label="Create a new whiteboard session"
           onClick={handleCreateNewBoard}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-700 transition"
           disabled={!user?.uid}
         >
-          Create New Whiteboard
+          Create a New Whiteboard
         </button>
 
         {/* Display the link to the new whiteboard once created */}
         {newBoardId && (
           <div className="mt-4" aria-live="polite" aria-atomic="true">
             <button
-              onClick={() => router.push(`/whiteboard/${newBoardId}`)}
-              className="text-blue-500 underline"
+              onClick={() => navigateToBoard(newBoardId)}
+              className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-blue-500 underline"
               aria-label={`Go to your new whiteboard session with ID ${newBoardId}`}
             >
               Go to your new whiteboard session: {newBoardId}
@@ -123,7 +136,7 @@ export default function HomePage() {
         <button
           onClick={handleJoinBoard}
           disabled={!oldBoardId}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-700 transition"
           aria-label="Join the whiteboard session"
         >
           Join Whiteboard

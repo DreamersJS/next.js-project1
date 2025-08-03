@@ -11,32 +11,30 @@ export default function WhiteboardList() {
   const setUser = useSetRecoilState(userState);
   const [whiteboards, setWhiteboards] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1); 
+  const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
   useEffect(() => {
-    if (!user.uid || !user.listOfWhiteboardIds) return;
-  
-    loadUserWhiteboards(user.uid);
-  }, [user.uid]);
+    if (user?.uid && user.listOfWhiteboardIds) {
+      loadUserWhiteboards(user.uid);
+    }
+  }, [user.uid, user.listOfWhiteboardIds?.length]);
 
   const loadUserWhiteboards = async (userId) => {
-    setLoading(true); 
+    setLoading(true);
     try {
       const whiteboardIds = await getUserWhiteboards(userId);
-      console.log('Whiteboard IDs:', whiteboardIds);
       const whiteboardData = await Promise.all(
         whiteboardIds.map(async (whiteboardId) => {
           const data = await loadWhiteboardById(whiteboardId);
           return data ? data : null; // Handle potential null responses
         })
       );
-      console.log('Whiteboard Data:', whiteboardData);
       setWhiteboards(whiteboardData.filter(board => board !== null)); // Filter out null values
     } catch (error) {
       console.error('Error loading user whiteboards:', error);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -48,31 +46,32 @@ export default function WhiteboardList() {
     return <div className="mt-8">No whiteboards available</div>;
   }
 
-   // Calculate total pages
-   const totalPages = Math.ceil(whiteboards.length / pageSize);
+  // Calculate total pages
+  const totalPages = Math.ceil(whiteboards.length / pageSize);
 
-   // Paginate whiteboards - only show the ones for the current page
-   const paginatedWhiteboards = whiteboards.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  // Paginate whiteboards - only show the ones for the current page
+  const paginatedWhiteboards = whiteboards.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-    const handleNextPage = () => {
-      setCurrentPage((prevPage) => prevPage + 1);
-    }
+  const handleNextPage = () => {
+    setCurrentPage((prevPage) => prevPage + 1);
+  }
 
-    const handlePrevPage = () => {
-      setCurrentPage((prevPage) => prevPage - 1);
-    }
+  const handlePrevPage = () => {
+    setCurrentPage((prevPage) => prevPage - 1);
+  }
 
   const handleDeleteWhiteboard = async (event, whiteboardId) => {
     event.stopPropagation();
-    
+    const confirmDelete = confirm('Are you sure you want to delete this whiteboard?');
+    if (!confirmDelete) return;
+
     // Optimistically remove the whiteboard from the UI
     setWhiteboards((prevWhiteboards) =>
       prevWhiteboards.filter((whiteboard) => whiteboard && whiteboard.id !== whiteboardId) // Ensure whiteboard is not null
     );
-    
+
     try {
       await deleteWhiteboard(whiteboardId, user.uid);
-      console.log(`Client: whiteboardId: ${whiteboardId}`);
       setUser((prevUser) => {
         const whiteboardIdsArray = Object.keys(prevUser.listOfWhiteboardIds);
         return {
@@ -83,14 +82,14 @@ export default function WhiteboardList() {
     } catch (error) {
       console.error('Error deleting whiteboard:', error);
     }
-  };   
+  };
 
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Your Whiteboards</h2>
       <ul>
         {paginatedWhiteboards.map((whiteboard) => (
-          whiteboard ? ( 
+          whiteboard ? (
             <li
               className="bg-white p-4 rounded shadow-md hover:bg-gray-100 transition-colors flex justify-between items-center"
               key={whiteboard.id}
@@ -118,7 +117,7 @@ export default function WhiteboardList() {
       {/* Pagination Controls */}
       <div className="flex justify-center mt-4">
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded mr-2"
+          className="bg-blue-700 text-white px-4 py-2 rounded mr-2"
           onClick={handlePrevPage}
           disabled={currentPage === 1}
         >
@@ -126,7 +125,7 @@ export default function WhiteboardList() {
         </button>
         <span className="px-4 py-2 mr-2">Page {currentPage} of {totalPages}</span>
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-blue-700 text-white px-4 py-2 rounded"
           onClick={handleNextPage}
           disabled={currentPage === totalPages}
         >

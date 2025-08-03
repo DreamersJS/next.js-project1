@@ -3,7 +3,7 @@ import { parse } from 'url';
 import next from 'next';
 import { Server as socketIo } from 'socket.io';
 import dotenv from 'dotenv';
-dotenv.config(); // Load environment variables from a .env file
+dotenv.config();
 
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -11,8 +11,30 @@ const app = next({ dev });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
+  const securityHeaders = {
+    'Content-Security-Policy': `
+        default-src 'self';
+        script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasedatabase.app https://apis.google.com;
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: https://*.googleusercontent.com https://*.firebaseapp.com https://avatars.dicebear.com https://images.pexels.com;
+        connect-src 'self' https://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss:;
+        font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;
+        frame-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app https://*.firebaseapp.com https://www.gstatic.com;
+      `.replace(/\s{2,}/g, ' ').trim(),
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+    'Cross-Origin-Opener-Policy': 'same-origin',
+    'X-Frame-Options': 'DENY',
+  };
+
+
   const server = createServer((req, res) => {
     const parsedUrl = parse(req.url, true);
+
+    // Set security headers on every response
+    for (const [key, value] of Object.entries(securityHeaders)) {
+      res.setHeader(key, value);
+    }
+
     handle(req, res, parsedUrl);
   });
 
@@ -34,11 +56,14 @@ app.prepare().then(() => {
     });
 
     socket.on('join', (whiteboardId) => {
-      socket.join(whiteboardId);
+
+      if (!socket.rooms.has(whiteboardId)) {
+        socket.join(whiteboardId);
+        console.log(`${socket.id} joined room ${whiteboardId}`);
+      }
 
       // Initialize board if not exist
       if (!whiteboardData.has(whiteboardId)) {
-        console.log(`!whiteboardData.has(whiteboardId for ${whiteboardId}`);
         whiteboardData.set(whiteboardId, {
           drawnShapes: [],
           undoStack: [],
@@ -50,6 +75,11 @@ app.prepare().then(() => {
         // Send the current drawnShapes to the newly joined client
         socket.emit('initDrawings', board.drawnShapes || []);
       }
+    });
+
+    socket.on('leave', (whiteboardId) => {
+      socket.leave(whiteboardId);
+      console.log(`${socket.id} manually left room ${whiteboardId}`);
     });
 
     socket.on('draw', ({ whiteboardId, shape }) => {
@@ -67,8 +97,6 @@ app.prepare().then(() => {
       board.undoStack.push(shape);
       board.redoStack = [];
       board.drawnShapes.push(shape);
-      // board.drawnShapes = board.undoStack.slice();
-      console.log('Sending shape to client:', shape);
 
       io.to(whiteboardId).emit('draw', shape);
     });
@@ -132,6 +160,7 @@ app.prepare().then(() => {
       io.to(whiteboardId).emit('draw', imageShape)
     });
 
+    // for chat only
     socket.on('joinRoom', (roomId) => {
       socket.join(roomId);
       console.log(`${socket.id} joined room ${roomId}`);
@@ -145,6 +174,9 @@ app.prepare().then(() => {
 
     socket.on('disconnect', () => {
       console.log('Client disconnected');
+      return () => {
+        socket.off('disconnect');
+      };
     });
   });
 
