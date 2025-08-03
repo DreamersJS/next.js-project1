@@ -6,7 +6,7 @@ This project is a **Collaborative Whiteboard Application** built using **Next.js
 
 
 **DEMO** [Watch on YouTube](https://youtu.be/ivVlTKGkniU) <br/>
-![GIF](/ezgif-2e4ba3c75ec8e4.gif)
+![GIF](public/ezgif-2e4ba3c75ec8e4.gif)
 
 ## Features
 
