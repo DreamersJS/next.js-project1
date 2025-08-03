@@ -8,24 +8,27 @@ import { useRecoilValue } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
 const UserAvatar = dynamic(() => import('@/components/UserAvatar'), { ssr: false });
 const Logout = dynamic(() => import('@/components/Logout'), { ssr: false });
-// import { SocketProvider } from "@/context/SocketProvider";
-// const SocketProvider = dynamic(() => import('@/context/SocketProvider'), { ssr: false });
 const SocketProvider = dynamic(() =>
   import('@/context/SocketProvider').then(mod => mod.SocketProvider),
   { ssr: false }
 );
 import { useParams } from 'next/navigation';
+import { useCallback } from "react";
 
 function LayoutContent({ children }) {
   const router = useRouter();
   const user = useRecoilValue(userState);
   const { id: whiteboardId } = useParams();
 
+  const navigateTo = useCallback((path) => {
+    router.push(`/${path}`);
+  }, [router]);
+
   return (
     <>
       {!whiteboardId &&
         <header className="bg-blue-700 text-white py-2 px-4 flex justify-between items-center shadow-md">
-          <button onClick={() => router.push(`/`)} aria-label="Go to home page">
+          <button onClick={() => navigateTo('')} aria-label="Go to home page">
             My Whiteboard App
           </button>
           {user?.uid && <UserAvatar />}
@@ -35,9 +38,9 @@ function LayoutContent({ children }) {
       <main className="flex-grow container mx-auto p-1">
         {children}
       </main>
-      <footer className="bg-gray-800 text-white text-center py-2">
+      {/* <footer className="bg-gray-800 text-white text-center py-2">
         © 2024 Whiteboard Inc.
-      </footer>
+      </footer> */}
     </>
   );
 }

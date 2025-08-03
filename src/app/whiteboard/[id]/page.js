@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useRecoilValue } from 'recoil';
@@ -14,9 +14,14 @@ const WhiteboardPage = ({ params }) => {
   const router = useRouter();
   const user = useRecoilValue(userState);
 
+  const navigateTo = useCallback((path) => {
+    router.push(`/${path}`);
+  }, [router]);
+
+
   useEffect(() => {
     if (!user) {
-      router.push(`/login?redirect=/whiteboard/${id}`);
+      navigateTo(`login?redirect=/whiteboard/${id}`);
     }
   }, [user, id, router]);
 
@@ -26,7 +31,7 @@ const WhiteboardPage = ({ params }) => {
 
   return (
     <div aria-labelledby="whiteboard-session-heading" role="main" className="p-0">
-      <Whiteboard id={id}/>
+      <Whiteboard id={id} />
     </div>
   );
 };

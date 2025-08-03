@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
-import { deleteWhiteboard, loadWhiteboardImage, loadWhiteboardImageById, saveWhiteboardAsImage } from "@/services/whiteboardService";
-import { drawLine, drawRectangle, drawCircle, drawTriangle } from "@/services/drawService";
-import { clearCanvas } from "@/services/canvasService";
+// import { deleteWhiteboard, loadWhiteboardImageById, saveWhiteboardAsImage } from "@/services/whiteboardService";
+// import { drawLine, drawRectangle, drawCircle, drawTriangle } from "@/services/drawService";
+// import { clearCanvas } from "@/services/canvasService";
 import { useSocketConnection } from '@/context/SocketProvider';
 import throttle from 'lodash.throttle';
 
@@ -30,7 +30,59 @@ const Whiteboard = ({ id }) => {
   const currentStroke = useRef(null)
   const imageCache = useRef(new Map());
 
+  const drawFunctionsRef = useRef({
+    drawLine: () => { },
+    drawRectangle: () => { },
+    drawCircle: () => { },
+    drawTriangle: () => { },
+  });
+  const canvasFn = useRef({
+    clearCanvasFn: () => { },
+    saveAsImageFn: () => Promise.resolve(),
+    loadImageFn: () => Promise.resolve({}),
+    deleteFn: () => Promise.resolve(),
+  });
+
   if (!socketUrl) return <div>Socket URL is not configured.</div>;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadServices = async () => {
+      try {
+        const [drawService, canvasService, whiteboardService] = await Promise.all([
+          import('@/services/drawService'),
+          import('@/services/canvasService'),
+          import('@/services/whiteboardService'),
+        ]);
+
+        if (!isMounted) return;
+
+        drawFunctionsRef.current = {
+          drawLine: drawService.drawLine,
+          drawRectangle: drawService.drawRectangle,
+          drawCircle: drawService.drawCircle,
+          drawTriangle: drawService.drawTriangle,
+        };
+
+        canvasFn.current = {
+          clearCanvasFn: canvasService.clearCanvas,
+          saveAsImageFn: whiteboardService.saveWhiteboardAsImage,
+          loadImageFn: whiteboardService.loadWhiteboardImageById,
+          deleteFn: whiteboardService.deleteWhiteboard,
+        };
+      } catch (error) {
+        console.error('Failed to load whiteboard services:', error);
+        alert('Failed to load drawing tools. Please refresh the page or try again later.');
+      }
+    };
+
+    loadServices();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const drawShape = useCallback((ctx, shape, preview = false) => {
     if (!shape) return;
@@ -41,16 +93,16 @@ const Whiteboard = ({ id }) => {
 
     switch (shape.tool) {
       case 'line':
-        drawLine(ctx, shape);
+        drawFunctionsRef.current.drawLine(ctx, shape);
         break;
       case 'rectangle':
-        drawRectangle(ctx, shape);
+        drawFunctionsRef.current.drawRectangle(ctx, shape);
         break;
       case 'circle':
-        drawCircle(ctx, shape);
+        drawFunctionsRef.current.drawCircle(ctx, shape);
         break;
       case 'triangle':
-        drawTriangle(ctx, shape);
+        drawFunctionsRef.current.drawTriangle(ctx, shape);
         break;
       case 'pen':
       case 'eraser':
@@ -85,7 +137,7 @@ const Whiteboard = ({ id }) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    clearCanvas(canvasRef);
+    canvasFn.current.clearCanvasFn(canvasRef);
 
     // Separate image shapes and other shapes
     const imageShapes = drawnShapesRef.current.filter(shape => shape && shape.tool === 'image');
@@ -168,6 +220,8 @@ const Whiteboard = ({ id }) => {
     [isDrawing, tool, color, fillMode, startPosition, redrawAllShapes]
   );
 
+
+
   useEffect(() => {
     if (!socketRef.current || !whiteboardId) return;
 
@@ -184,7 +238,7 @@ const Whiteboard = ({ id }) => {
       drawnShapesRef.current = shapes;
       setDrawnShapes(shapes);
       redrawAllShapes();
-      drawShape(shapes);
+      // shapes.forEach(shape => drawShape(context, shape));
     };
 
     const handleDraw = (shape) => {
@@ -208,7 +262,7 @@ const Whiteboard = ({ id }) => {
     };
 
     const handleClear = () => {
-      clearCanvas(canvasRef);
+      canvasFn.current.clearCanvasFn(canvasRef);
       drawnShapesRef.current = [];
       setDrawnShapes([]);
     };
@@ -324,7 +378,7 @@ const Whiteboard = ({ id }) => {
   const handleClear = () => {
     const confirmClear = window.confirm("Are you sure you want to clear the board? This will clear the board for everyone!");
     if (confirmClear) {
-      clearCanvas(canvasRef)
+      canvasFn.current.clearCanvasFn(canvasRef)
       setDrawnShapes([]);
       drawnShapesRef.current = [];
       socketRef.current.emit('clear', whiteboardId);
@@ -335,7 +389,7 @@ const Whiteboard = ({ id }) => {
 
   const handleSaveAsImage = async () => {
     try {
-      await saveWhiteboardAsImage(canvasRef.current, whiteboardId, user.uid)
+      await canvasFn.current.saveAsImageFn(canvasRef.current, whiteboardId, user.uid)
     } catch (error) {
       console.error('Error saving whiteboard image:', error);
     }
@@ -343,7 +397,7 @@ const Whiteboard = ({ id }) => {
 
   const handleLoad = async (whiteboardId) => {
     try {
-      const data = await loadWhiteboardImageById(whiteboardId);
+      const data = await canvasFn.current.loadImageFn(whiteboardId);
 
       if (data.content) {
         const imageShape = {
@@ -375,7 +429,7 @@ const Whiteboard = ({ id }) => {
   const handleDeleteWhiteboard = async (whiteboardId) => {
     if (confirm('Are you sure you want to delete this whiteboard?')) {
       try {
-        await deleteWhiteboard(whiteboardId, user.uid);
+        await canvasFn.current.deleteFn(whiteboardId, user.uid);
         router.push(`/`);
       } catch (error) {
         console.error('Error deleting whiteboard:', error);
