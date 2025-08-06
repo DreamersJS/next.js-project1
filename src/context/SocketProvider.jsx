@@ -1,3 +1,4 @@
+'use client' 
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
@@ -36,6 +37,5 @@ export const SocketProvider = ({ children }) => {
 };
 
 export const useSocketConnection = () => {
-
     return useContext(SocketContext);
 };
