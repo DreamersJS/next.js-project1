@@ -178,3 +178,4 @@ When to Use What
 
     Use jest.spyOn when you want to observe or mock specific Firebase function calls without mocking the whole module.
 
+bought testing course

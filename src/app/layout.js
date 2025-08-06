@@ -1,83 +1,48 @@
-"use client";
 import "@/app/globals.css";
-import Head from 'next/head';
-import dynamic from "next/dynamic";
-import { RecoilRoot } from "recoil";
-import { useRouter } from 'next/navigation';
-import { useRecoilValue } from 'recoil';
-import { userState } from "@/recoil/atoms/userAtom";
-const UserAvatar = dynamic(() => import('@/components/UserAvatar'), { ssr: false });
-const Logout = dynamic(() => import('@/components/Logout'), { ssr: false });
-const SocketProvider = dynamic(() =>
-  import('@/context/SocketProvider').then(mod => mod.SocketProvider),
-  { ssr: false }
-);
-import { useParams } from 'next/navigation';
-import { useCallback } from "react";
+import ClientProviders from "@/components/ClientProviders";
 
-function LayoutContent({ children }) {
-  const router = useRouter();
-  const user = useRecoilValue(userState);
-  const { id: whiteboardId } = useParams();
-
-  const navigateTo = useCallback((path) => {
-    router.push(`/${path}`);
-  }, [router]);
-
-  return (
-    <>
-      {!whiteboardId &&
-        <header className="bg-blue-700 text-white py-2 px-4 flex justify-between items-center shadow-md">
-          <button onClick={() => navigateTo('')} aria-label="Go to home page">
-            My Whiteboard App
-          </button>
-          {user?.uid && <UserAvatar />}
-          {user?.uid && <Logout />}
-        </header>
+export const metadata = {
+  title: "Collaborative Whiteboard Application - Real-time Drawing & Collaboration",
+  description: "Experience seamless real-time collaboration with our Collaborative Whiteboard Application.",
+  keywords: ["Collaborative Whiteboard", "Real-time Drawing", "Next.js", "Socket.IO"],
+  authors: [{ name: "Zvezda Neycheva" }],
+  viewport: "width=device-width, initial-scale=1",
+  themeColor: "#ffffff",
+  robots: "index, follow",
+  openGraph: {
+    title: "Collaborative Whiteboard Application - Real-time Drawing & Collaboration",
+    description: "Collaborate in real-time with our online whiteboard app.",
+    url: "https://yourappdomain.com",
+    siteName: "Whiteboard Project",
+    images: [
+      {
+        url: "/Screenshot.png",
+        width: 1200,
+        height: 630,
+        alt: "Whiteboard Screenshot",
       }
-      <main className="flex-grow container mx-auto p-1">
-        {children}
-      </main>
-      {/* <footer className="bg-gray-800 text-white text-center py-2">
-        © 2024 Whiteboard Inc.
-      </footer> */}
-    </>
-  );
-}
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Collaborative Whiteboard Application - Real-time Drawing",
+    description: "Real-time whiteboard with Next.js and Socket.IO",
+    images: ["/Screenshot.png"],
+  },
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="h-full">
-      <Head>
-        <title>Collaborative Whiteboard Application - Real-time Drawing & Collaboration</title>
-        <meta name="description" content="Experience seamless real-time collaboration with our Collaborative Whiteboard Application. Built using Next.js and Socket.IO, it allows users to draw and interact live on a shared whiteboard." />
-        <meta property="og:title" content="Collaborative Whiteboard Application - Real-time Drawing & Collaboration" />
-        <meta property="og:description" content="Collaborate in real-time with our online whiteboard app. Powered by Next.js and Socket.IO, this app offers a seamless drawing experience with real-time updates and user authentication." />
-        <meta property="og:url" content="https://yourappdomain.com" />
-        <meta property="og:site_name" content="Whiteboard Project" />
-        <meta property="og:image" content="https://via.placeholder.com/1200x630" />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Collaborative Whiteboard Application - Real-time Drawing & Collaboration" />
-        <meta name="twitter:description" content="Collaborate in real-time on a shared virtual whiteboard. Built with Next.js and Socket.IO, offering live updates and secure user authentication." />
-        <meta name="twitter:image" content="https://via.placeholder.com/1200x630" />
-        <meta name="keywords" content="Collaborative Whiteboard, Real-time Drawing, Next.js, Socket.IO, Online Whiteboard App, User Authentication" />
-        <meta name="author" content="Zvezda Neycheva" />
-        <meta name="robots" content="index, follow" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#ffffff" />
-        <link rel="preconnect" href="https://via.placeholder.com" crossOrigin="anonymous" />
-      </Head>
       <body className="bg-gray-100 min-h-screen flex flex-col">
         <noscript>
           <style>{`body { display: block; }`}</style>
           JavaScript is required to run this application.
         </noscript>
-
-        <RecoilRoot>
-          <SocketProvider>
-            <LayoutContent>{children}</LayoutContent>
-          </SocketProvider>
-        </RecoilRoot>
+        <ClientProviders>
+          {children}
+        </ClientProviders>
       </body>
     </html>
   );
