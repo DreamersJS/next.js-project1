@@ -5,10 +5,10 @@ import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 import { useSocketConnection } from '@/context/SocketProvider';
-import throttle from 'lodash.throttle';
 import { useResizeCanvas } from '@/hooks/useResizeCanvas';
 import { useRedrawAllShapes } from '@/hooks/useRedrawAllShapes';
 import { drawShape } from '@/services/drawService';
+import { useDrawingEvents } from '@/hooks/useDrawingEvents';
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
@@ -18,15 +18,11 @@ const Whiteboard = ({ id }) => {
   const user = useRecoilValue(userState);
 
   const [tool, setTool] = useState('pen');
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
-  const [currentPosition, setCurrentPosition] = useState({ x: 0, y: 0 });
   const [drawnShapes, setDrawnShapes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
   const socketRef = useSocketConnection();
-  const currentStroke = useRef(null)
   const imageCache = useRef(new Map());
 
   const drawFunctionsRef = useRef({
@@ -81,44 +77,22 @@ const Whiteboard = ({ id }) => {
     return () => {
       isMounted = false;
     };
-  }, []); 
+  }, []);
 
   const redrawAllShapes = useRedrawAllShapes(canvasRef, drawnShapesRef, imageCache);
   const throttledResizeCanvas = useResizeCanvas(canvasRef, redrawAllShapes);
-
-  const handleMouseMove = useCallback(
-    throttle((e) => {
-      if (!isDrawing) return;
-
-      const canvas = canvasRef.current;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      setCurrentPosition({ x, y });
-
-      if (tool === 'pen' || tool === 'eraser') {
-        currentStroke.current.points.push({ x, y });
-
-        const ctx = canvas.getContext('2d');
-        drawShape(ctx, currentStroke.current); // draw the line segment live
-      } else {
-        const shapeData = {
-          tool,
-          color,
-          fill: fillMode,
-          startX: startPosition.x,
-          startY: startPosition.y,
-          endX: x,
-          endY: y,
-        };
-        redrawAllShapes();
-        const ctx = canvas.getContext('2d');
-        drawShape(ctx, shapeData, true);
-      }
-    }, 50), // throttle delay in ms, adjust as needed
-    [isDrawing, tool, color, fillMode, startPosition, redrawAllShapes]
-  );
+  const stableDrawShape = useCallback(drawShape, []);
+  const { handleMouseDown, handleMouseMove, handleMouseUp } = useDrawingEvents({
+    canvasRef,
+    tool,
+    color,
+    fillMode,
+    socketRef,
+    whiteboardId,
+    redrawAllShapes,
+    drawnShapesRef,
+    drawShape: stableDrawShape,
+  });
 
   useEffect(() => {
     if (!socketRef.current || !whiteboardId) return;
@@ -184,7 +158,6 @@ const Whiteboard = ({ id }) => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
 
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', `Interactive whiteboard session ID: ${whiteboardId}`);
@@ -193,55 +166,6 @@ const Whiteboard = ({ id }) => {
       console.error("Socket is not defined.");
       return;
     }
-
-    const handleMouseDown = (e) => {
-      if (e.button !== 0) return; // Only left-click
-
-      const canvas = canvasRef.current;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      setStartPosition({ x, y });
-      setCurrentPosition({ x, y });
-      setIsDrawing(true);
-
-      if (tool === 'pen' || tool === 'eraser') {
-        currentStroke.current = {
-          tool,
-          color,
-          points: [{ x, y }]
-        };
-      }
-    };
-
-    const handleMouseUp = () => {
-      if (!isDrawing) return;
-      setIsDrawing(false);
-
-      const ctx = canvasRef.current.getContext('2d');
-
-      if (tool === 'pen' || tool === 'eraser') {
-        if (currentStroke.current) {
-          drawShape(ctx, currentStroke.current);
-          socketRef.current.emit('draw', { whiteboardId, shape: currentStroke.current });
-          drawnShapesRef.current.push(currentStroke.current);
-          setDrawnShapes([...drawnShapesRef.current]);
-        }
-        currentStroke.current = null;
-      } else {
-        const shapeData = {
-          tool, color, fill: fillMode,
-          startX: startPosition.x, startY: startPosition.y,
-          endX: currentPosition.x, endY: currentPosition.y,
-        };
-
-        drawShape(ctx, shapeData);
-        socketRef.current.emit('draw', { whiteboardId, shape: shapeData });
-        drawnShapesRef.current.push(shapeData);
-        setDrawnShapes([...drawnShapesRef.current]);
-      }
-    };
 
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
@@ -259,12 +183,12 @@ const Whiteboard = ({ id }) => {
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
-      handleMouseMove.cancel(); // Cancel any pending throttled calls
-      throttledResizeCanvas.cancel();
+      if (handleMouseMove.cancel) handleMouseMove.cancel();
+      if (throttledResizeCanvas.cancel) throttledResizeCanvas.cancel();
       canvas.removeEventListener('mouseup', handleMouseUp);
       resizeObserver.disconnect();
     };
-  }, [tool, isDrawing, startPosition, currentPosition, color, fillMode, socketRef, handleMouseMove]);
+  }, [handleMouseDown, handleMouseMove, handleMouseUp, throttledResizeCanvas, whiteboardId, socketRef]);
 
   const handleToolChange = (newTool) => setTool(newTool);
   const handleColorChange = (newColor) => setColor(newColor);

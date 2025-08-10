@@ -98,7 +98,7 @@ export default function WhiteboardList() {
                 href={`/whiteboard/[id]`}
                 as={`/whiteboard/${whiteboard.id}`}
                 passHref
-                className="text-blue-500 hover:underline flex-grow"
+                className="text-blue-600 hover:underline flex-grow"
                 aria-label={`Go to whiteboard ${whiteboard.id}`}
               >
                 Whiteboard ID: {whiteboard.id}
