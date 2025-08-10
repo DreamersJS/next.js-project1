@@ -4,12 +4,11 @@ import { useRouter } from 'next/navigation';
 import DrawingTools from './DrawingTools';
 import { useRecoilValue } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
-// import { deleteWhiteboard, loadWhiteboardImageById, saveWhiteboardAsImage } from "@/services/whiteboardService";
-// import { drawLine, drawRectangle, drawCircle, drawTriangle } from "@/services/drawService";
-// import { clearCanvas } from "@/services/canvasService";
 import { useSocketConnection } from '@/context/SocketProvider';
 import throttle from 'lodash.throttle';
 import { useResizeCanvas } from '@/hooks/useResizeCanvas';
+import { useRedrawAllShapes } from '@/hooks/useRedrawAllShapes';
+import { drawShape } from '@/services/drawService';
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
@@ -18,7 +17,6 @@ const Whiteboard = ({ id }) => {
   const router = useRouter();
   const user = useRecoilValue(userState);
 
-  // State variables
   const [tool, setTool] = useState('pen');
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
@@ -83,95 +81,9 @@ const Whiteboard = ({ id }) => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, []); 
 
-  const drawShape = useCallback((ctx, shape, preview = false) => {
-    if (!shape) return;
-    ctx.beginPath();
-    ctx.strokeStyle = shape.tool === 'eraser' ? '#FFFFFF' : shape.color;
-    ctx.fillStyle = shape.color;
-    ctx.lineWidth = shape.tool === 'eraser' ? 10 : 2;
-
-    switch (shape.tool) {
-      case 'line':
-        drawFunctionsRef.current.drawLine(ctx, shape);
-        break;
-      case 'rectangle':
-        drawFunctionsRef.current.drawRectangle(ctx, shape);
-        break;
-      case 'circle':
-        drawFunctionsRef.current.drawCircle(ctx, shape);
-        break;
-      case 'triangle':
-        drawFunctionsRef.current.drawTriangle(ctx, shape);
-        break;
-      case 'pen':
-      case 'eraser':
-        ctx.beginPath();
-        ctx.strokeStyle = shape.tool === 'eraser' ? '#FFFFFF' : shape.color;
-        ctx.lineWidth = shape.tool === 'eraser' ? 10 : 2;
-
-        const points = shape.points;
-        if (points.length > 1) {
-          ctx.moveTo(points[0].x, points[0].y);
-          for (let i = 1; i < points.length; i++) {
-            ctx.lineTo(points[i].x, points[i].y);
-          }
-          ctx.stroke();
-        }
-        break;
-      case 'image':
-        const img = new Image();
-        img.onload = () => {
-          ctx.drawImage(img, shape.startX, shape.startY, shape.width, shape.height);
-        };
-        img.src = shape.src;
-        break;
-      default:
-        break;
-    }
-
-    if (!preview) ctx.closePath();
-  }, []);
-
-  const redrawAllShapes = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    canvasFn.current.clearCanvasFn(canvasRef);
-
-    // Separate image shapes and other shapes
-    const imageShapes = drawnShapesRef.current.filter(shape => shape && shape.tool === 'image');
-    const otherShapes = drawnShapesRef.current.filter(shape => shape && shape.tool !== 'image');
-
-    // Helper to load image and return Promise with loaded img element
-    const loadImage = (src) => {
-      if (imageCache.current.has(src)) {
-        return Promise.resolve(imageCache.current.get(src));
-      }
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-          imageCache.current.set(src, img);
-          resolve(img);
-        };
-        img.src = src;
-      });
-    };
-
-    // Load all images first
-    Promise.all(imageShapes.map(shape => loadImage(shape.src))).then(images => {
-      // Draw all images
-      images.forEach((img, i) => {
-        const shape = imageShapes[i];
-        ctx.drawImage(img, shape.startX, shape.startY, shape.width, shape.height);
-      });
-
-      // Draw all other shapes on top
-      otherShapes.forEach(shape => drawShape(ctx, shape));
-    });
-  }, [drawShape]);
-
+  const redrawAllShapes = useRedrawAllShapes(canvasRef, drawnShapesRef, imageCache);
   const throttledResizeCanvas = useResizeCanvas(canvasRef, redrawAllShapes);
 
   const handleMouseMove = useCallback(
