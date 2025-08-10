@@ -1,10 +1,7 @@
-// app/page.js
 'use client';
-
 import { useState, Suspense, lazy, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createNewWhiteboard } from '../services/whiteboardService';
-import { useRecoilValue, useRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
 import Cookies from "js-cookie";
 
@@ -16,6 +13,7 @@ export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useRecoilState(userState);
   const [loading, setLoading] = useState(true);
+  const [showList, setShowList] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -34,6 +32,13 @@ export default function HomePage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (user?.role === 'registered') {
+      // Delay a bit to avoid blocking LCP
+      setTimeout(() => setShowList(true), 1000);
+    }
+  }, [user]);
+
   const navigateToLogin = useCallback(() => {
     router.push('/login');
   }, [router]);
@@ -45,20 +50,12 @@ export default function HomePage() {
     }
   }, [loading, user, navigateToLogin]);
 
-  useEffect(() => {
-    if (user?.role === 'registered') {
-      // Preload component in background
-      requestIdleCallback(() => {
-        import('@/components/WhiteboardList');
-      });
-    }
-  }, [user]);
-
   const handleCreateNewBoard = async () => {
     try {
       if (!user?.uid) {
         return;
       }
+      const { createNewWhiteboard } = await import('../services/whiteboardService');
       const data = await createNewWhiteboard(user.uid);
       setNewBoardId(data.id);
 
@@ -146,9 +143,11 @@ export default function HomePage() {
       {/* Show Recent Whiteboards only for Registered Users */}
       {user?.role === 'registered' && (
         <div className="mt-8" aria-label="Recent whiteboards section">
-          <Suspense fallback={<p className="mt-8" aria-live="polite">Loading recent whiteboards...</p>}>
-            <WhiteboardList />
-          </Suspense>
+          {showList && (
+            <Suspense fallback={<p className="mt-8" aria-live="polite">Loading recent whiteboards...</p>}>
+              <WhiteboardList />
+            </Suspense>
+          )}
         </div>
       )}
     </div>

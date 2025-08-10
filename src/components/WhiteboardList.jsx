@@ -1,10 +1,8 @@
 'use client';
-
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { userState } from '@/recoil/atoms/userAtom';
-import { deleteWhiteboard, getUserWhiteboards, loadWhiteboardById } from '@/services/whiteboardService';
 
 export default function WhiteboardList() {
   const user = useRecoilValue(userState);
@@ -22,6 +20,7 @@ export default function WhiteboardList() {
 
   const loadUserWhiteboards = async (userId) => {
     setLoading(true);
+    const { getUserWhiteboards, loadWhiteboardById } = await import('@/services/whiteboardService');
     try {
       const whiteboardIds = await getUserWhiteboards(userId);
       const whiteboardData = await Promise.all(
@@ -64,7 +63,7 @@ export default function WhiteboardList() {
     event.stopPropagation();
     const confirmDelete = confirm('Are you sure you want to delete this whiteboard?');
     if (!confirmDelete) return;
-
+    const { deleteWhiteboard } = await import('@/services/whiteboardService');
     // Optimistically remove the whiteboard from the UI
     setWhiteboards((prevWhiteboards) =>
       prevWhiteboards.filter((whiteboard) => whiteboard && whiteboard.id !== whiteboardId) // Ensure whiteboard is not null
@@ -121,7 +120,7 @@ export default function WhiteboardList() {
           onClick={handlePrevPage}
           disabled={currentPage === 1}
         >
-          Previous
+          Prev
         </button>
         <span className="px-4 py-2 mr-2">Page {currentPage} of {totalPages}</span>
         <button

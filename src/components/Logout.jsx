@@ -1,8 +1,7 @@
 "use client";
 import React from 'react';
-import { logoutUser } from '@/services/auth'; // Ensure this is working correctly
 import { useRouter } from 'next/navigation';
-import { useRecoilState, useResetRecoilState } from 'recoil';
+import { useResetRecoilState } from 'recoil';
 import { userState } from "@/recoil/atoms/userAtom";
 
 const Logout = React.memo(() => {
@@ -10,6 +9,7 @@ const Logout = React.memo(() => {
     const resetUser = useResetRecoilState(userState);
 
     const handleLogout = async () => {
+        const {logoutUser}= await import('@/services/auth');
         try {
             await logoutUser();  
             resetUser();  // Resets userState to its default value

@@ -33,10 +33,19 @@ const Whiteboard = ({ id }) => {
   });
   const canvasFn = useRef({
     clearCanvasFn: () => { },
-    saveAsImageFn: () => Promise.resolve(),
-    loadImageFn: () => Promise.resolve({}),
-    deleteFn: () => Promise.resolve(),
+    // saveAsImageFn: () => Promise.resolve(),
+    // loadImageFn: () => Promise.resolve({}),
+    // deleteFn: () => Promise.resolve(),
   });
+
+  let whiteboardServiceModule;
+
+  const getWhiteboardService = async () => {
+    if (!whiteboardServiceModule) {
+      whiteboardServiceModule = await import('@/services/whiteboardService');
+    }
+    return whiteboardServiceModule;
+  };
 
   if (!socketUrl) return <div>Socket URL is not configured.</div>;
 
@@ -62,9 +71,9 @@ const Whiteboard = ({ id }) => {
 
         canvasFn.current = {
           clearCanvasFn: canvasService.clearCanvas,
-          saveAsImageFn: whiteboardService.saveWhiteboardAsImage,
-          loadImageFn: whiteboardService.loadWhiteboardImageById,
-          deleteFn: whiteboardService.deleteWhiteboard,
+          // saveAsImageFn: whiteboardService.saveWhiteboardAsImage,
+          // loadImageFn: whiteboardService.loadWhiteboardImageById,
+          // deleteFn: whiteboardService.deleteWhiteboard,
         };
       } catch (error) {
         console.error('Failed to load whiteboard services:', error);
@@ -211,7 +220,9 @@ const Whiteboard = ({ id }) => {
 
   const handleSaveAsImage = async () => {
     try {
-      await canvasFn.current.saveAsImageFn(canvasRef.current, whiteboardId, user.uid)
+      const { saveWhiteboardAsImage } = await getWhiteboardService();
+      await saveWhiteboardAsImage(canvasRef.current, whiteboardId, user.uid);
+      // await canvasFn.current.saveAsImageFn(canvasRef.current, whiteboardId, user.uid)
     } catch (error) {
       console.error('Error saving whiteboard image:', error);
     }
@@ -219,7 +230,9 @@ const Whiteboard = ({ id }) => {
 
   const handleLoad = async (whiteboardId) => {
     try {
-      const data = await canvasFn.current.loadImageFn(whiteboardId);
+      const { loadWhiteboardImageById } = await getWhiteboardService();
+      const data = await loadWhiteboardImageById(whiteboardId);
+      // const data = await canvasFn.current.loadImageFn(whiteboardId);
 
       if (data.content) {
         const imageShape = {
@@ -251,7 +264,9 @@ const Whiteboard = ({ id }) => {
   const handleDeleteWhiteboard = async (whiteboardId) => {
     if (confirm('Are you sure you want to delete this whiteboard?')) {
       try {
-        await canvasFn.current.deleteFn(whiteboardId, user.uid);
+        // const { deleteWhiteboard } = await import('@/services/whiteboardService');
+        const { deleteWhiteboard } = await getWhiteboardService();
+        await deleteWhiteboard(whiteboardId, user.uid);
         router.push(`/`);
       } catch (error) {
         console.error('Error deleting whiteboard:', error);
