@@ -1,10 +1,8 @@
 'use client';
-
 import { useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { useRecoilValue } from 'recoil';
-import { userState } from '@/recoil/atoms/userAtom';
+import { useUser } from '@/hooks/useUser';
 
 // Dynamically import the Canvas to prevent issues with SSR (since window isn't available during server-side rendering)
 const Whiteboard = dynamic(() => import('@/components/Whiteboard'), { ssr: false });
@@ -12,7 +10,7 @@ const Whiteboard = dynamic(() => import('@/components/Whiteboard'), { ssr: false
 const WhiteboardPage = ({ params }) => {
   const { id } = params;
   const router = useRouter();
-  const user = useRecoilValue(userState);
+  const { user } = useUser();
 
   const navigateTo = useCallback((path) => {
     router.push(`/${path}`);

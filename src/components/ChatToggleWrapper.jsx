@@ -1,10 +1,13 @@
 'use client';
 
-import Chat from "@/components/Chat";
+// import Chat from "@/components/Chat";
 import { ChatBubbleBottomCenterTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect, useRef } from "react";
 import { useSocketConnection } from "@/context/SocketProvider";
 import { useParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+const Chat = dynamic(() => import('@/components/Chat'), { ssr: false });
 
 export default function ChatToggleWrapper() {
   const [isChatOpen, setIsChatOpen] = useState(false);

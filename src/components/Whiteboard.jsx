@@ -1,21 +1,20 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import DrawingTools from './DrawingTools';
-import { useRecoilValue } from "recoil";
-import { userState } from "@/recoil/atoms/userAtom";
+import DrawingTools from './DrawingTools'; 
 import { useSocketConnection } from '@/context/SocketProvider';
 import { useResizeCanvas } from '@/hooks/useResizeCanvas';
 import { useRedrawAllShapes } from '@/hooks/useRedrawAllShapes';
 import { drawShape } from '@/services/drawService';
 import { useDrawingEvents } from '@/hooks/useDrawingEvents';
+import { useUser } from '@/hooks/useUser';
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
   const canvasRef = useRef(null);
   const drawnShapesRef = useRef([]);
   const router = useRouter();
-  const user = useRecoilValue(userState);
+  const { user } = useUser();
 
   const [tool, setTool] = useState('pen');
   const [drawnShapes, setDrawnShapes] = useState([]);
@@ -33,9 +32,6 @@ const Whiteboard = ({ id }) => {
   });
   const canvasFn = useRef({
     clearCanvasFn: () => { },
-    // saveAsImageFn: () => Promise.resolve(),
-    // loadImageFn: () => Promise.resolve({}),
-    // deleteFn: () => Promise.resolve(),
   });
 
   let whiteboardServiceModule;
@@ -71,9 +67,6 @@ const Whiteboard = ({ id }) => {
 
         canvasFn.current = {
           clearCanvasFn: canvasService.clearCanvas,
-          // saveAsImageFn: whiteboardService.saveWhiteboardAsImage,
-          // loadImageFn: whiteboardService.loadWhiteboardImageById,
-          // deleteFn: whiteboardService.deleteWhiteboard,
         };
       } catch (error) {
         console.error('Failed to load whiteboard services:', error);

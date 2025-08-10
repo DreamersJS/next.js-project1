@@ -1,9 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { loginUser, loginAsGuest, getUserByUid, saveUserToCookie } from "@/services/auth";
-import { useSetRecoilState } from "recoil";
-import { userState } from "@/recoil/atoms/userAtom";
+import { useUser } from '@/hooks/useUser';
 
 const LoginPage = () => {
   const router = useRouter();
@@ -13,7 +11,8 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const setUser = useSetRecoilState(userState);
+  // const setUser = useSetRecoilState(userState);
+  const { setUser } = useUser();
 
   const handleLogin = async (e) => {
     e.preventDefault();

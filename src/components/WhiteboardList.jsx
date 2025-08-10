@@ -1,12 +1,10 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { userState } from '@/recoil/atoms/userAtom';
+import { useUser } from '@/hooks/useUser';
 
 export default function WhiteboardList() {
-  const user = useRecoilValue(userState);
-  const setUser = useSetRecoilState(userState);
+  const { user, setUser } = useUser();
   const [whiteboards, setWhiteboards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);

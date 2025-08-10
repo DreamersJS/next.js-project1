@@ -1,13 +1,11 @@
-// components/UserAvatar.jsx
 "use client";
 import React from 'react';
-import { useRecoilValue } from "recoil";
-import { userState } from "@/recoil/atoms/userAtom";
 import Image from 'next/image';
+import { useUser } from '@/hooks/useUser';
 
 const UserAvatar = React.memo(() => {
 
-  const user = useRecoilValue(userState);
+  const { user } = useUser();
 
   if (!user || !user.uid) {
     return null;

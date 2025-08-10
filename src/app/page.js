@@ -1,9 +1,7 @@
 'use client';
 import { useState, Suspense, lazy, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useRecoilState } from 'recoil';
-import { userState } from "@/recoil/atoms/userAtom";
-import Cookies from "js-cookie";
+import { useUser } from '@/hooks/useUser';
 
 const WhiteboardList = lazy(() => import('@/components/WhiteboardList'));
 
@@ -11,26 +9,8 @@ export default function HomePage() {
   const [newBoardId, setNewBoardId] = useState('');
   const [oldBoardId, setOldBoardId] = useState('');
   const router = useRouter();
-  const [user, setUser] = useRecoilState(userState);
-  const [loading, setLoading] = useState(true);
+  const { user, setUser, loading } = useUser();
   const [showList, setShowList] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.requestIdleCallback(() => {
-        const savedUserState = Cookies.get('userState');
-        if (savedUserState && !user?.uid) {
-          try {
-            const parsedUser = JSON.parse(savedUserState);
-            setUser(parsedUser);
-          } catch (error) {
-            console.error('Error rehydrating user data:', error);
-          }
-        }
-        setLoading(false);
-      });
-    }
-  }, []);
 
   useEffect(() => {
     if (user?.role === 'registered') {
@@ -46,7 +26,6 @@ export default function HomePage() {
   useEffect(() => {
     if (!loading && !user?.uid) {
       navigateToLogin()
-      // router.push('/login');
     }
   }, [loading, user, navigateToLogin]);
 
@@ -63,7 +42,6 @@ export default function HomePage() {
         ...prevUser,
         listOfWhiteboardIds: [...(prevUser.listOfWhiteboardIds || []), data.id],
       }));
-      // router.push(`/whiteboard/${data.id}`);
       navigateToBoard(data.id);
     } catch (error) {
       console.error('Error creating whiteboard:', error);
@@ -76,7 +54,6 @@ export default function HomePage() {
 
   const handleJoinBoard = () => {
     if (oldBoardId) {
-      // router.push(`/whiteboard/${oldBoardId}`);
       navigateToBoard(oldBoardId);
     }
   };
