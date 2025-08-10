@@ -9,6 +9,7 @@ import { userState } from "@/recoil/atoms/userAtom";
 // import { clearCanvas } from "@/services/canvasService";
 import { useSocketConnection } from '@/context/SocketProvider';
 import throttle from 'lodash.throttle';
+import { useResizeCanvas } from '@/hooks/useResizeCanvas';
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
@@ -158,7 +159,6 @@ const Whiteboard = ({ id }) => {
       });
     };
 
-
     // Load all images first
     Promise.all(imageShapes.map(shape => loadImage(shape.src))).then(images => {
       // Draw all images
@@ -172,19 +172,7 @@ const Whiteboard = ({ id }) => {
     });
   }, [drawShape]);
 
-  const resizeCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !canvas.parentElement) return;
-
-    const { width, height } = canvas.parentElement.getBoundingClientRect();
-    if (canvas.width !== width || canvas.height !== height) {
-      canvas.width = width;
-      canvas.height = height;
-      redrawAllShapes();
-    }
-  }, [redrawAllShapes]);
-
-  const throttledResizeCanvas = useCallback(throttle(resizeCanvas, 200), [resizeCanvas]);
+  const throttledResizeCanvas = useResizeCanvas(canvasRef, redrawAllShapes);
 
   const handleMouseMove = useCallback(
     throttle((e) => {
@@ -219,8 +207,6 @@ const Whiteboard = ({ id }) => {
     }, 50), // throttle delay in ms, adjust as needed
     [isDrawing, tool, color, fillMode, startPosition, redrawAllShapes]
   );
-
-
 
   useEffect(() => {
     if (!socketRef.current || !whiteboardId) return;
@@ -317,7 +303,6 @@ const Whiteboard = ({ id }) => {
       }
     };
 
-
     const handleMouseUp = () => {
       if (!isDrawing) return;
       setIsDrawing(false);
@@ -349,11 +334,11 @@ const Whiteboard = ({ id }) => {
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
-    throttledResizeCanvas(canvasRef);
+    throttledResizeCanvas();
 
     // Observe the parent container for any size changes
     const resizeObserver = new ResizeObserver(() => {
-      throttledResizeCanvas(canvasRef);
+      throttledResizeCanvas();
     });
     if (canvas && canvas.parentElement) {
       resizeObserver.observe(canvas.parentElement);
@@ -363,6 +348,7 @@ const Whiteboard = ({ id }) => {
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
       handleMouseMove.cancel(); // Cancel any pending throttled calls
+      throttledResizeCanvas.cancel();
       canvas.removeEventListener('mouseup', handleMouseUp);
       resizeObserver.disconnect();
     };
