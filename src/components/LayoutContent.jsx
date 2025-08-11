@@ -3,14 +3,13 @@ import "@/app/globals.css";
 import { useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useParams } from 'next/navigation';
-import { useRecoilValue } from 'recoil';
-import { userState } from "@/recoil/atoms/userAtom";
+import { useUser } from '@/hooks/useUser';
 const UserAvatar = dynamic(() => import('@/components/UserAvatar'), { ssr: false });
 const Logout = dynamic(() => import('@/components/Logout'), { ssr: false });
 
 function LayoutContent({ children }) {
   const router = useRouter();
-  const user = useRecoilValue(userState);
+  const { user} = useUser();
   const { id: whiteboardId } = useParams();
 
   const navigateTo = useCallback((path) => {

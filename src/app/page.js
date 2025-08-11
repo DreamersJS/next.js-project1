@@ -1,12 +1,7 @@
-// app/page.js
 'use client';
-
 import { useState, Suspense, lazy, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createNewWhiteboard } from '../services/whiteboardService';
-import { useRecoilValue, useRecoilState } from 'recoil';
-import { userState } from "@/recoil/atoms/userAtom";
-import Cookies from "js-cookie";
+import { useUser } from '@/hooks/useUser';
 
 const WhiteboardList = lazy(() => import('@/components/WhiteboardList'));
 
@@ -14,25 +9,15 @@ export default function HomePage() {
   const [newBoardId, setNewBoardId] = useState('');
   const [oldBoardId, setOldBoardId] = useState('');
   const router = useRouter();
-  const [user, setUser] = useRecoilState(userState);
-  const [loading, setLoading] = useState(true);
+  const { user, setUser, loading } = useUser();
+  const [showList, setShowList] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.requestIdleCallback(() => {
-        const savedUserState = Cookies.get('userState');
-        if (savedUserState && !user?.uid) {
-          try {
-            const parsedUser = JSON.parse(savedUserState);
-            setUser(parsedUser);
-          } catch (error) {
-            console.error('Error rehydrating user data:', error);
-          }
-        }
-        setLoading(false);
-      });
+    if (user?.role === 'registered') {
+      // Delay a bit to avoid blocking LCP
+      setTimeout(() => setShowList(true), 1000);
     }
-  }, []);
+  }, [user]);
 
   const navigateToLogin = useCallback(() => {
     router.push('/login');
@@ -41,24 +26,15 @@ export default function HomePage() {
   useEffect(() => {
     if (!loading && !user?.uid) {
       navigateToLogin()
-      // router.push('/login');
     }
   }, [loading, user, navigateToLogin]);
-
-  useEffect(() => {
-    if (user?.role === 'registered') {
-      // Preload component in background
-      requestIdleCallback(() => {
-        import('@/components/WhiteboardList');
-      });
-    }
-  }, [user]);
 
   const handleCreateNewBoard = async () => {
     try {
       if (!user?.uid) {
         return;
       }
+      const { createNewWhiteboard } = await import('../services/whiteboardService');
       const data = await createNewWhiteboard(user.uid);
       setNewBoardId(data.id);
 
@@ -66,7 +42,6 @@ export default function HomePage() {
         ...prevUser,
         listOfWhiteboardIds: [...(prevUser.listOfWhiteboardIds || []), data.id],
       }));
-      // router.push(`/whiteboard/${data.id}`);
       navigateToBoard(data.id);
     } catch (error) {
       console.error('Error creating whiteboard:', error);
@@ -79,7 +54,6 @@ export default function HomePage() {
 
   const handleJoinBoard = () => {
     if (oldBoardId) {
-      // router.push(`/whiteboard/${oldBoardId}`);
       navigateToBoard(oldBoardId);
     }
   };
@@ -99,7 +73,7 @@ export default function HomePage() {
         <button
           aria-label="Create a new whiteboard session"
           onClick={handleCreateNewBoard}
-          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-700 transition"
+          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-700 transition"
           disabled={!user?.uid}
         >
           Create a New Whiteboard
@@ -110,7 +84,7 @@ export default function HomePage() {
           <div className="mt-4" aria-live="polite" aria-atomic="true">
             <button
               onClick={() => navigateToBoard(newBoardId)}
-              className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-blue-500 underline"
+              className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 text-blue-600 underline"
               aria-label={`Go to your new whiteboard session with ID ${newBoardId}`}
             >
               Go to your new whiteboard session: {newBoardId}
@@ -136,7 +110,7 @@ export default function HomePage() {
         <button
           onClick={handleJoinBoard}
           disabled={!oldBoardId}
-          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-700 transition"
+          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-700 transition"
           aria-label="Join the whiteboard session"
         >
           Join Whiteboard
@@ -146,9 +120,11 @@ export default function HomePage() {
       {/* Show Recent Whiteboards only for Registered Users */}
       {user?.role === 'registered' && (
         <div className="mt-8" aria-label="Recent whiteboards section">
-          <Suspense fallback={<p className="mt-8" aria-live="polite">Loading recent whiteboards...</p>}>
-            <WhiteboardList />
-          </Suspense>
+          {showList && (
+            <Suspense fallback={<p className="mt-8" aria-live="polite">Loading recent whiteboards...</p>}>
+              <WhiteboardList />
+            </Suspense>
+          )}
         </div>
       )}
     </div>

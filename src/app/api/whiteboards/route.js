@@ -1,15 +1,27 @@
-import { database } from '@/services/firebase';
 import { ref, get } from 'firebase/database';
 import { NextResponse } from 'next/server';
+import { initFirebase } from '@/services/firebase';
+
+let database;
+
+async function getFirebaseServices() {
+  if (!database) {
+    const services = await initFirebase();
+    database = services.database;
+  }
+  return { database };
+}
 
 /**
  * const response = await fetch(`/api/whiteboards?userId=${user.uid}`, {
-        method: 'GET',
-  });
-      if (response.ok) {
-        const data = await response.json();
- * @param {*} request  This is the incoming HTTP request object. It contains details about the request, such as headers, query parameters, and the request body (if applicable). In this context, we specifically use it to access the query parameters (userId).
- * @returns returns an array of whiteboard objects containing the id, content, and photo 
+ *   method: 'GET',
+ * });
+ * if (response.ok) {
+ *   const data = await response.json();
+ * }
+ * 
+ * @param {*} request - HTTP request object with query params
+ * @returns array of whiteboards belonging to user
  */
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -20,14 +32,16 @@ export async function GET(request) {
   }
 
   try {
+    const { database } = await getFirebaseServices();
+
     // Reference to the user's whiteboards
     const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
     const snapshot = await get(userWhiteboardsRef);
-    
+
     const whiteboardIds = snapshot.val() || {};
     const whiteboards = [];
 
-    // Iterate through whiteboard IDs to fetch each whiteboard's data
+    // Fetch each whiteboard data by id
     for (const whiteboardId in whiteboardIds) {
       const whiteboardRef = ref(database, `whiteboards/${whiteboardId}`);
       const whiteboardSnapshot = await get(whiteboardRef);

@@ -1,13 +1,16 @@
 import "@/app/globals.css";
 import ClientProviders from "@/components/ClientProviders";
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export const metadata = {
   title: "Collaborative Whiteboard Application - Real-time Drawing & Collaboration",
   description: "Experience seamless real-time collaboration with our Collaborative Whiteboard Application.",
   keywords: ["Collaborative Whiteboard", "Real-time Drawing", "Next.js", "Socket.IO"],
   authors: [{ name: "Zvezda Neycheva" }],
-  viewport: "width=device-width, initial-scale=1",
-  themeColor: "#ffffff",
   robots: "index, follow",
   openGraph: {
     title: "Collaborative Whiteboard Application - Real-time Drawing & Collaboration",
@@ -31,6 +34,8 @@ export const metadata = {
     images: ["/Screenshot.png"],
   },
 };
+
+export const themeColor = '#ffffff';
 
 export default function RootLayout({ children }) {
   return (

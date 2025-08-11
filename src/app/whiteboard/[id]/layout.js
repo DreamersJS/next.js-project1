@@ -1,6 +1,7 @@
 'use client';
-import ChatToggleWrapper from "@/components/ChatToggleWrapper";
 import { AuthProvider } from "@/context/AuthProvider";
+import dynamic from 'next/dynamic';
+const ChatToggleWrapper = dynamic(() => import('@/components/ChatToggleWrapper'), { ssr: false });
 
 export default function WhiteboardLayout({ children }) {
 

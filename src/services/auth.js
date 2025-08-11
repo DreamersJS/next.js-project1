@@ -1,18 +1,26 @@
-import { auth, database } from './firebase';
+import { initFirebase } from '@/services/firebase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInAnonymously,
   signOut,
   updateProfile,
-  setPersistence,
-  browserLocalPersistence,
-  onAuthStateChanged
 } from 'firebase/auth';
 import { ref, set, get } from "firebase/database";
 import Cookies from 'js-cookie';
 
-export const createUserProfile = (
+let database, auth;
+
+async function getFirebaseServices() {
+  if (!database || !auth) {
+    const services = await initFirebase();
+    database = services.database;
+    auth = services.auth;
+  }
+  return { database, auth };
+}
+
+export const createUserProfile = async (
   uid,
   username,
   email,
@@ -20,6 +28,7 @@ export const createUserProfile = (
   role = "user",
   listOfWhiteboardIds,
 ) => {
+  const { database } = await getFirebaseServices();
   return set(ref(database, `users/${uid}`), {
     uid,
     username,
@@ -38,6 +47,7 @@ export const createUserProfile = (
  */
 export const registerUser = async (email, password) => {
   try {
+    const { auth } = await getFirebaseServices();
     return createUserWithEmailAndPassword(auth, email, password);
   } catch (error) {
     console.error('Error registering user:', error);
@@ -54,6 +64,7 @@ export const registerUser = async (email, password) => {
  */
 export const loginUser = async (email, password) => {
   try {
+    const { auth } = await getFirebaseServices();
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -64,7 +75,7 @@ export const loginUser = async (email, password) => {
       sameSite: 'Lax',   // Ensure it’s sent with requests
       secure: process.env.NODE_ENV === 'production', // Only set 'secure' in production
     });
- 
+
     return user;
   } catch (error) {
     console.error('Error logging in user:', error);
@@ -78,6 +89,7 @@ export const loginUser = async (email, password) => {
  */
 export const loginAsGuest = async () => {
   try {
+    const { auth } = await getFirebaseServices();
     const userCredential = await signInAnonymously(auth);
 
     // Set up guest user profile
@@ -116,6 +128,7 @@ export const loginAsGuest = async () => {
 // Logout the current user
 export const logoutUser = async () => {
   try {
+    const { auth } = await getFirebaseServices();
     await signOut(auth);
     Cookies.remove('auth'); // Remove the auth cookie
     Cookies.remove('userState'); // Remove the userState cookie as well
@@ -131,6 +144,7 @@ export const logoutUser = async () => {
  */
 export const getUserByUid = async (uid) => {
   try {
+    const { database } = await getFirebaseServices();
     const userRef = ref(database, `users/${uid}`);
     const snapshot = await get(userRef);
 
@@ -155,4 +169,3 @@ export const saveUserToCookie = (user) => {
     secure: process.env.NODE_ENV === 'production',
   });
 };
-

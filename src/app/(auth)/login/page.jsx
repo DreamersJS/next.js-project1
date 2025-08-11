@@ -1,7 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { loginUser, loginAsGuest, getUserByUid, saveUserToCookie } from "@/services/auth";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/recoil/atoms/userAtom";
 
@@ -13,9 +12,10 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
   const setUser = useSetRecoilState(userState);
 
-  const handleLogin = async (e) => {
+  const handleLogin = useCallback(async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
@@ -38,12 +38,12 @@ const LoginPage = () => {
         role: userData.role || "registered",
       };
       setUser(userObject);
-      
+
       // Save user state in a cookie
       saveUserToCookie(userObject);
 
       // Redirect to the original path if available or to the home page
-      if (redirectPath) {
+      if (redirectPath && redirectPath !== router.asPath) {
         router.push(redirectPath);
       } else {
         router.push("/");
@@ -53,9 +53,10 @@ const LoginPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [email, password, redirectPath, router, setUser]);
 
-  const handleGuestLogin = async () => {
+  const handleGuestLogin = useCallback(async () => {
+    setIsGuestLoading(true);
     try {
       const { loginAsGuest } = await import('@/services/auth');
       const user = await loginAsGuest();
@@ -68,15 +69,17 @@ const LoginPage = () => {
         role: user.role || "guest",
       });
 
-      if (redirectPath) {
+      if (redirectPath && redirectPath !== router.asPath) {
         router.push(redirectPath);
       } else {
         router.push("/");
       }
     } catch (error) {
       setError(error?.message || "An unexpected error occurred. Please try again.");
+    } finally {
+      setIsGuestLoading(false);
     }
-  };
+  }, [redirectPath, router, setUser]);
 
   return (
     <div className="flex flex-col items-center">
@@ -84,6 +87,7 @@ const LoginPage = () => {
         <input
           type="email"
           placeholder="Email"
+          name="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
@@ -92,21 +96,22 @@ const LoginPage = () => {
         <input
           type="password"
           placeholder="Password"
+          name="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
           className="border p-2"
         />
         <button type="submit" className="bg-blue-700 text-white p-2 m-2" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Login'} {/* Disable and show loading text */}
+          {isLoading ? 'Logging in...' : 'Login'}
         </button>
       </form>
-      <br />or<br />
-      <button onClick={handleGuestLogin} className="bg-green-700 text-white p-2 mt-4" disabled={isLoading}>
-        {isLoading ? 'Loading...' : 'Login as Guest'}
+      <div className="my-4 text-center">or</div>
+      <button onClick={handleGuestLogin} className="bg-green-700 text-white p-2 mt-4" disabled={isGuestLoading}>
+        {isGuestLoading ? 'Loading...' : 'Login as Guest'}
       </button>
       {error && <p className="text-red-500 mt-2">{error}</p>}
-      <br />or<br />
+      <div className="my-4 text-center">or</div>
       <button onClick={() => router.push("/register")} className="text-black-500 underline">
         Register
       </button>

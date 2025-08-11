@@ -1,14 +1,10 @@
 'use client';
-
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { userState } from '@/recoil/atoms/userAtom';
-import { deleteWhiteboard, getUserWhiteboards, loadWhiteboardById } from '@/services/whiteboardService';
+import { useUser } from '@/hooks/useUser';
 
 export default function WhiteboardList() {
-  const user = useRecoilValue(userState);
-  const setUser = useSetRecoilState(userState);
+  const { user, setUser } = useUser();
   const [whiteboards, setWhiteboards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,6 +18,7 @@ export default function WhiteboardList() {
 
   const loadUserWhiteboards = async (userId) => {
     setLoading(true);
+    const { getUserWhiteboards, loadWhiteboardById } = await import('@/services/whiteboardService');
     try {
       const whiteboardIds = await getUserWhiteboards(userId);
       const whiteboardData = await Promise.all(
@@ -64,7 +61,7 @@ export default function WhiteboardList() {
     event.stopPropagation();
     const confirmDelete = confirm('Are you sure you want to delete this whiteboard?');
     if (!confirmDelete) return;
-
+    const { deleteWhiteboard } = await import('@/services/whiteboardService');
     // Optimistically remove the whiteboard from the UI
     setWhiteboards((prevWhiteboards) =>
       prevWhiteboards.filter((whiteboard) => whiteboard && whiteboard.id !== whiteboardId) // Ensure whiteboard is not null
@@ -98,7 +95,7 @@ export default function WhiteboardList() {
                 href={`/whiteboard/[id]`}
                 as={`/whiteboard/${whiteboard.id}`}
                 passHref
-                className="text-blue-500 hover:underline flex-grow"
+                className="text-blue-600 hover:underline flex-grow"
                 aria-label={`Go to whiteboard ${whiteboard.id}`}
               >
                 Whiteboard ID: {whiteboard.id}
@@ -121,7 +118,7 @@ export default function WhiteboardList() {
           onClick={handlePrevPage}
           disabled={currentPage === 1}
         >
-          Previous
+          Prev
         </button>
         <span className="px-4 py-2 mr-2">Page {currentPage} of {totalPages}</span>
         <button

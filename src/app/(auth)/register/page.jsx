@@ -2,9 +2,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createUserProfile, loginUser, registerUser, saveUserToCookie } from "@/services/auth";
-import { useSetRecoilState } from "recoil";
-import { userState } from "@/recoil/atoms/userAtom";
+import { useUser } from '@/hooks/useUser';
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -15,7 +13,7 @@ const RegisterPage = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
-  const setUser = useSetRecoilState(userState);
+  const { setUser } = useUser();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async (e) => {
@@ -23,6 +21,7 @@ const RegisterPage = () => {
     setError("");
     setIsLoading(true);
     try {
+      const { registerUser, loginUser, createUserProfile, saveUserToCookie } = await import('@/services/auth');
       const credentials = await registerUser(email, password);
       const uid = credentials.user.uid;
       const avatarUrl = '/default.png';

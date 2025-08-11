@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect  } from 'react';
-import { useRecoilValue } from "recoil";
-import { userState } from "@/recoil/atoms/userAtom";
+import { useState, useRef, useEffect  } from 'react'; 
+import { useUser } from '@/hooks/useUser';
 import { useParams } from 'next/navigation';
 
 export default function Chat({ messages, sendMessage }) {
   const [newMessage, setNewMessage] = useState("");
-  const user = useRecoilValue(userState);
+  const { user } = useUser();
   const username = user?.username || 'Unknown';
   const { id: whiteboardId } = useParams();
   const messagesEndRef = useRef(null);
