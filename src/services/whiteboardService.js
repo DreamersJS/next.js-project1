@@ -1,5 +1,15 @@
-import { database } from '@/services/firebase';
-import { ref, push, set, get, update, remove } from 'firebase/database';
+// import { database } from '@/services/firebase';
+import { initFirebase } from './firebase';
+import { ref, push, set, get } from 'firebase/database';
+let database;
+
+async function getDatabase() {
+  if (!database) {
+    const services = await initFirebase();
+    database = services.database;
+  }
+  return database;
+}
 
 /**
  * Creates a new blank whiteboard in the Firebase database.
@@ -7,6 +17,7 @@ import { ref, push, set, get, update, remove } from 'firebase/database';
  */
 export const createNewWhiteboard = async (userId) => {
   try {
+    const database = await getDatabase();
     const newWhiteboardRef = push(ref(database, 'whiteboards'));
     const newWhiteboardId = newWhiteboardRef.key;
 
@@ -64,21 +75,21 @@ export const loadWhiteboardById = async (whiteboardId) => {
  * @param {string} userId - The ID of the current user.
  */
 export const deleteWhiteboard = async (whiteboardId, userId) => {
-    try {
+  try {
 
-      const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${userId}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        console.log('Deleted whiteboard:', whiteboardId);
-      } else {
-        console.error('Error deleting whiteboard:', response.statusText);
-      }
-
-    } catch (error) {
-      console.error('Error deleting whiteboard:', error);
+    const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${userId}`, {
+      method: 'DELETE',
+    });
+    if (response.ok) {
+      console.log('Deleted whiteboard:', whiteboardId);
+    } else {
+      console.error('Error deleting whiteboard:', response.statusText);
     }
-  
+
+  } catch (error) {
+    console.error('Error deleting whiteboard:', error);
+  }
+
 };
 
 /**
@@ -88,6 +99,7 @@ export const deleteWhiteboard = async (whiteboardId, userId) => {
  */
 export const getUserWhiteboards = async (userId) => {
   try {
+    const database = await getDatabase();
     const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
 
     // Fetch user's whiteboards (as key-value pairs)

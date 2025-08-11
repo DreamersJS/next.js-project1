@@ -1,12 +1,22 @@
-// src/app/api/whiteboards/[id]/route.js
-import { database } from '@/services/firebase';
+import { initFirebase } from '@/services/firebase';
 import { ref, remove, set, get, update } from 'firebase/database';
 
-// load board by id
+let database;
+
+async function getFirebaseServices() {
+    if (!database) {
+        const services = await initFirebase();
+        database = services.database;
+    }
+    return { database };
+}
+
+// Load board by id
 export async function GET(req, { params }) {
     const { id } = params;
 
     try {
+        const { database } = await getFirebaseServices();
         const whiteboardRef = ref(database, `whiteboards/${id}`);
         const snapshot = await get(whiteboardRef);
 
@@ -21,10 +31,8 @@ export async function GET(req, { params }) {
     }
 }
 
-// delete board by id
+// Delete board by id
 export async function DELETE(req, { params }) {
-
-    // Extract userId from the query parameters in the URL
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId');
     const { id } = params;
@@ -34,23 +42,25 @@ export async function DELETE(req, { params }) {
     }
 
     try {
-        // 1. Delete the whiteboard from /whiteboards
+        const { database } = await getFirebaseServices();
+
+        // 1. Delete the whiteboard
         const whiteboardRef = ref(database, `whiteboards/${id}`);
         await remove(whiteboardRef);
 
-        // 2. Load the user's list of whiteboards (entire list)
+        // 2. Load user's whiteboard list
         const userWhiteboardsRef = ref(database, `users/${userId}/listOfWhiteboardIds`);
         const snapshotBefore = await get(userWhiteboardsRef);
         const userWhiteboards = snapshotBefore.val() || {};
 
-        // 3. Delete the specific whiteboard ID from the user's list if it exists
+        // 3. Remove whiteboard id
         if (userWhiteboards[id]) {
             delete userWhiteboards[id];
         } else {
             console.log(`Whiteboard ID ${id} not found in user's list.`);
         }
 
-        // 4. Update the user's list of whiteboards in the database
+        // 4. Update user's whiteboard list
         await set(userWhiteboardsRef, userWhiteboards);
 
         return new Response(JSON.stringify({ success: true }), { status: 200 });
@@ -60,29 +70,25 @@ export async function DELETE(req, { params }) {
     }
 }
 
-/**
- * Save update board by id
- * @param {*} req { id, content, photo }
- * @param {*} param1 { userId }
- * @returns new Response
- */
+// Save update board by id
 export async function PUT(req, { params }) {
-    const { id } = params; 
-    const { content } = await req.json(); 
+    const { id } = params;
+    const { content } = await req.json();
 
     if (!id || !content) {
         return new Response(JSON.stringify({ success: false, error: 'Invalid input' }), { status: 400 });
     }
 
     try {
+        const { database } = await getFirebaseServices();
         const whiteboardRef = ref(database, `whiteboards/${id}`);
-        
-        // Check if the whiteboard exists
+
+        // Check if whiteboard exists
         const snapshot = await get(whiteboardRef);
-        const whiteboardVal = snapshot.val() || {};
+        const whiteboardVal = snapshot.val();
 
         if (whiteboardVal) {
-            // Update the content field without affecting other fields
+            // Update only content field
             await update(whiteboardRef, { content });
 
             return new Response(JSON.stringify({ success: true, message: 'Whiteboard updated successfully.' }), { status: 200 });
@@ -94,4 +100,3 @@ export async function PUT(req, { params }) {
         return new Response(JSON.stringify({ success: false, error: 'Failed to update whiteboard.' }), { status: 500 });
     }
 }
-

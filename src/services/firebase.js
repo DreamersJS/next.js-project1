@@ -1,19 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getDatabase } from 'firebase/database';
-import { getAuth } from 'firebase/auth';
-
 import dotenv from 'dotenv';
-dotenv.config(); 
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD4WKVJHyacrwtjJ8YtJzE1Z14ozGlnq84",
-  authDomain: "whiteboard-4bb76.firebaseapp.com",
-  projectId: "whiteboard-4bb76",
-  storageBucket: "whiteboard-4bb76.appspot.com",
-  messagingSenderId: "360749039257",
-  appId: "1:360749039257:web:8ba47acd3df8d1d9cd8208",
-  databaseURL:"https://whiteboard-4bb76-default-rtdb.europe-west1.firebasedatabase.app/"
-};
+dotenv.config();
 
 // const firebaseConfig = {
 //   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -26,19 +12,26 @@ const firebaseConfig = {
 // };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-const auth = getAuth(app);
-// This is confirmed to be a known issue introduced in Firebase SDK v10.13.x (especially firebase/auth) due to internal changes to emulator detection.
-// Safe guard to prevent emulator initialization
-try {
-  if (auth && typeof auth._canInitEmulator === 'function') {
-    // Do nothing, all good
-  } else {
-    auth._canInitEmulator = () => false; // Prevent emulator call
-  }
-} catch (err) {
-  console.warn('Safe guard for emulator failed:', err);
-}
+let app, database, auth;
 
-export { database, auth };
+export async function initFirebase() {
+  if (!app) {
+    const { initializeApp } = await import('firebase/app');
+    const { getDatabase } = await import('firebase/database');
+    const { getAuth } = await import('firebase/auth');
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4WKVJHyacrwtjJ8YtJzE1Z14ozGlnq84",
+      authDomain: "whiteboard-4bb76.firebaseapp.com",
+      projectId: "whiteboard-4bb76",
+      storageBucket: "whiteboard-4bb76.appspot.com",
+      messagingSenderId: "360749039257",
+      appId: "1:360749039257:web:8ba47acd3df8d1d9cd8208",
+      databaseURL: "https://whiteboard-4bb76-default-rtdb.europe-west1.firebasedatabase.app/"
+    };
+    app = initializeApp(firebaseConfig);
+    database = getDatabase(app);
+    auth = getAuth(app);
+  }
+  return { app, database, auth };
+}
