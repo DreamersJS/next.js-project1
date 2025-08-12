@@ -120,11 +120,9 @@ export default function HomePage() {
       {/* Show Recent Whiteboards only for Registered Users */}
       {user?.role === 'registered' && (
         <div className="mt-8" aria-label="Recent whiteboards section">
-          {showList && (
-            <Suspense fallback={<p className="mt-8" aria-live="polite">Loading recent whiteboards...</p>}>
-              <WhiteboardList />
-            </Suspense>
-          )}
+          <Suspense fallback={<p className="mt-8" aria-live="polite">Loading recent whiteboards...</p>}>
+            {showList ? <WhiteboardList /> : null}
+          </Suspense>
         </div>
       )}
     </div>
