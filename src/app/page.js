@@ -15,7 +15,8 @@ export default function HomePage() {
   useEffect(() => {
     if (user?.role === 'registered') {
       // Delay a bit to avoid blocking LCP
-      setTimeout(() => setShowList(true), 1000);
+      const timer = setTimeout(() => setShowList(true), 1000);
+      return () => clearTimeout(timer);
     }
   }, [user]);
 
@@ -119,7 +120,11 @@ export default function HomePage() {
 
       {/* Show Recent Whiteboards only for Registered Users */}
       {user?.role === 'registered' && (
-        <div className="mt-8" aria-label="Recent whiteboards section">
+        <div className={`mt-8 transition-opacity duration-300`}
+          style={{
+            opacity: showList ? 1 : 0,
+            pointerEvents: showList ? 'auto' : 'none',
+          }} aria-label="Recent whiteboards section">
           <Suspense fallback={<p className="mt-8" aria-live="polite">Loading recent whiteboards...</p>}>
             {showList ? <WhiteboardList /> : null}
           </Suspense>

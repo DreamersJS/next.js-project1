@@ -4,10 +4,11 @@
  * which can lead to increased bundle size and potential performance issues.
  * And bad Lighthouse score
  * To avoid this, we can import them in a single file and export them from there.
+ * and return memoized values to avoid unnecessary re-renders.
  */
 
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRecoilState } from 'recoil';
 import Cookies from 'js-cookie';
 import { userState } from '@/recoil/atoms/userAtom';
@@ -33,5 +34,6 @@ export function useUser() {
     }
   }, []);
 
-  return { user, setUser, loading };
+  return useMemo(() => ({ user, setUser, loading }), [user, setUser, loading]);
+  // return { user, setUser, loading };
 }
