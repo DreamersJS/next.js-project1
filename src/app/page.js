@@ -15,7 +15,8 @@ export default function HomePage() {
   useEffect(() => {
     if (user?.role === 'registered') {
       // Delay a bit to avoid blocking LCP
-      setTimeout(() => setShowList(true), 1000);
+      const timer = setTimeout(() => setShowList(true), 2000);
+      return () => clearTimeout(timer);
     }
   }, [user]);
 
@@ -79,18 +80,6 @@ export default function HomePage() {
           Create a New Whiteboard
         </button>
 
-        {/* Display the link to the new whiteboard once created */}
-        {newBoardId && (
-          <div className="mt-4" aria-live="polite" aria-atomic="true">
-            <button
-              onClick={() => navigateToBoard(newBoardId)}
-              className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 text-blue-600 underline"
-              aria-label={`Go to your new whiteboard session with ID ${newBoardId}`}
-            >
-              Go to your new whiteboard session: {newBoardId}
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Join an Existing Whiteboard */}
@@ -119,12 +108,14 @@ export default function HomePage() {
 
       {/* Show Recent Whiteboards only for Registered Users */}
       {user?.role === 'registered' && (
-        <div className="mt-8" aria-label="Recent whiteboards section">
-          {showList && (
-            <Suspense fallback={<p className="mt-8" aria-live="polite">Loading recent whiteboards...</p>}>
-              <WhiteboardList />
-            </Suspense>
-          )}
+        <div className={`mt-8 transition-opacity duration-300`}
+          style={{
+            opacity: showList ? 1 : 0,
+            pointerEvents: showList ? 'auto' : 'none',
+          }} aria-label="Recent whiteboards section">
+          <Suspense fallback={<p className="mt-8" aria-live="polite">Loading recent whiteboards...</p>}>
+            {showList ? <WhiteboardList /> : null}
+          </Suspense>
         </div>
       )}
     </div>

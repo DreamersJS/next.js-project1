@@ -24,7 +24,7 @@ const RegisterPage = () => {
       const { registerUser, loginUser, createUserProfile, saveUserToCookie } = await import('@/services/auth');
       const credentials = await registerUser(email, password);
       const uid = credentials.user.uid;
-      const avatarUrl = '/default.png';
+      const avatarUrl = '/default.webp';
       const userObject = {
         uid: credentials.user.uid,
         email: credentials.user.email,
