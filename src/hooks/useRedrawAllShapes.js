@@ -25,6 +25,10 @@ export const useRedrawAllShapes = (canvasRef, drawnShapesRef, imageCacheRef) => 
           imageCacheRef.current.set(src, img);
           resolve(img);
         };
+        img.onerror = () => {
+          console.error(`Failed to load image: ${src}`);
+          resolve(null);
+        };
         img.src = src;
       });
     };
