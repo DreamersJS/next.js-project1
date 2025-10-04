@@ -59,7 +59,7 @@ test('calls getDatabase', () => {
  ## Important Notes
 
 
-- Do not use jest.mock and jest.spyOn on the same module simultaneously, as they can conflict.
+- **Do not use jest.mock and jest.spyOn on the same module simultaneously, as they can conflict.**
 - jest.spyOn cannot mock functions that are non-configurable or read-only exports.
 - Prefer jest.mock for full control and to avoid issues with module internals.
 - Use jest.spyOn if you only need to monitor or mock a few functions from a real module.
@@ -177,5 +177,3 @@ When to Use What
     Use inline jest.mock for quick, test-specific mocks or when mocking small parts.
 
     Use jest.spyOn when you want to observe or mock specific Firebase function calls without mocking the whole module.
-
-bought testing course
