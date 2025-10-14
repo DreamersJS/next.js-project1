@@ -1,4 +1,4 @@
-'use client' 
+'use client'
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
@@ -10,7 +10,10 @@ export const SocketProvider = ({ children }) => {
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
 
     useEffect(() => {
-        socketRef.current = io(socketUrl, { reconnection: true });
+        socketRef.current = io(socketUrl, {
+            transports: ["websocket"], // avoid long-polling fallback
+            reconnection: true
+        });
 
         socketRef.current.on('connect', () => {
             console.log(`Socket connected with ID: ${socketRef.current.id}`);

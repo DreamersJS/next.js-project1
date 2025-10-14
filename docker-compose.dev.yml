@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - .:/app            # Live reload
+      - /app/node_modules  # keep installed node_modules
+    command: npm run dev
+    restart: unless-stopped

@@ -38,7 +38,15 @@ app.prepare().then(() => {
     handle(req, res, parsedUrl);
   });
 
-  const io = new socketIo(server);
+  const CORS_OPTIONS = {
+    cors: {
+      origin: process.env.CLIENT_ORIGIN,
+      methods: ["GET", "POST"],
+      credentials: true
+    }
+  };
+
+  const io = new socketIo(server, CORS_OPTIONS);
 
   const whiteboardData = new Map();
 
@@ -185,3 +193,10 @@ app.prepare().then(() => {
     console.log(`Ready on http://localhost:${port}`);
   });
 });
+
+// Use linux htop
+
+// Or inspect Node memory programmatically
+setInterval(() => {
+  console.log(process.memoryUsage());
+}, 50000);
