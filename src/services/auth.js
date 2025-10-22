@@ -94,7 +94,7 @@ export const loginAsGuest = async () => {
 
     // Set up guest user profile
     const username = `guest${Math.floor(Math.random() * 10000)}`;
-    const avatarUrl = '/default.png';
+    const avatarUrl = '/default.webp';
 
     await updateProfile(userCredential.user, { displayName: username });
 

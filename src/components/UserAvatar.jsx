@@ -14,7 +14,7 @@ const UserAvatar = React.memo(() => {
   return (
     <div className="flex items-center space-x-2">
       <Image
-        src={user?.avatar || '/default.png'}
+        src={user?.avatar || '/default.webp'}
         alt={`${user?.username || 'User'}'s avatar`}
         width={30}
         height={30}

@@ -16,7 +16,6 @@ export const SocketProvider = ({ children }) => {
         });
 
         socketRef.current.on('connect', () => {
-            console.log({socketUrl});
             console.log(`Socket connected with ID: ${socketRef.current.id}`);
             setIsReady(true); // trigger re-render only after connection
         });
@@ -25,6 +24,7 @@ export const SocketProvider = ({ children }) => {
             console.error('Socket.IO connection error:', err);
         });
 
+        console.log({socketUrl});
         return () => {
             socketRef.current.disconnect();
             console.log('Socket disconnected');

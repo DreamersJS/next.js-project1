@@ -17,6 +17,7 @@ services:
         CLIENT_ORIGIN: ${CLIENT_ORIGIN}
     env_file:
       - .env
+      - .env.prod
     environment:
       NODE_ENV: production
     ports:

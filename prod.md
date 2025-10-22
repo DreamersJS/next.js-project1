@@ -134,8 +134,5 @@ NODE_ENV affects whether Next.js runs in dev or production mode, which changes h
 no next.js env ReferenceError err:
 https://chatgpt.com/c/68f9077a-16fc-832f-8534-0fdaa1de576e
 
-now firebase err:
-[2025-10-22T17:51:53.339Z]  @firebase/database: FIREBASE WARNING: Database lives in a different region. Please change your database URL to https://whiteboard-4bb76-default-rtdb.europe-west1.firebasedatabase.app (https://whiteboard-4bb76-default-rtdb.firebaseio.com/) <anonymous code>:1:145535
-
 Object { socketUrl: undefined }
 ​
