@@ -20,7 +20,7 @@ const Whiteboard = ({ id }) => {
   const [drawnShapes, setDrawnShapes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
-  const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+  const socketUrl = process.env.SOCKET_URL;
   const socketRef = useSocketConnection();
   const imageCache = useRef(new Map());
 

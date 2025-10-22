@@ -112,3 +112,30 @@ The problem is:
 👉 Those ENV values exist only in the builder stage unless you repeat them in the runner stage:
 https://chatgpt.com/c/68ee9676-3b98-832b-b83f-a413e50cc5b3
 and in compose.yml
+The Key Insight
+
+Just because printenv shows your variables in the Docker build doesn’t mean Next.js actually sees them during the build.
+
+That’s because of Next.js’ build-time environment behavior:
+
+Next.js reads environment variables only once — at the start of the next build process.
+
+These must be available to Node.js in the same shell where npm run build executes.
+
+If your Dockerfile sets them correctly but the shell doesn’t expand them (due to how Docker layers ENV and ARG), they may look defined in printenv but still be undefined in the Node process that compiles your code.
+
+
+Next.js 14 expects all NEXT_PUBLIC_* variables to exist at build-time for them to be inlined into the frontend bundle. Runtime changes (like process.env assignments in your custom server) do not affect the already-built frontend.
+
+Your .env file is ignored in Docker, and manually setting process.env.NEXT_PUBLIC_* at runtime in server.mjs won’t make them available to client-side code.
+
+NODE_ENV affects whether Next.js runs in dev or production mode, which changes how environment variables are processed.
+
+no next.js env ReferenceError err:
+https://chatgpt.com/c/68f9077a-16fc-832f-8534-0fdaa1de576e
+
+now firebase err:
+[2025-10-22T17:51:53.339Z]  @firebase/database: FIREBASE WARNING: Database lives in a different region. Please change your database URL to https://whiteboard-4bb76-default-rtdb.europe-west1.firebasedatabase.app (https://whiteboard-4bb76-default-rtdb.firebaseio.com/) <anonymous code>:1:145535
+
+Object { socketUrl: undefined }
+​

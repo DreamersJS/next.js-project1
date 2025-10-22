@@ -19,9 +19,11 @@ export async function initFirebase() {
       appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
       databaseURL: NEXT_PUBLIC_FIREBASE_DATABASE_URL,
     };
+
     app = initializeApp(firebaseConfig);
     database = getDatabase(app);
     auth = getAuth(app);
   }
+
   return { app, database, auth };
 }

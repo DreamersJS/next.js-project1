@@ -7,7 +7,7 @@ const SocketContext = createContext(null);
 export const SocketProvider = ({ children }) => {
     const socketRef = useRef(null);
     const [isReady, setIsReady] = useState(false);
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    const socketUrl = process.env.SOCKET_URL;
 
     useEffect(() => {
         socketRef.current = io(socketUrl, {
@@ -16,6 +16,7 @@ export const SocketProvider = ({ children }) => {
         });
 
         socketRef.current.on('connect', () => {
+            console.log({socketUrl});
             console.log(`Socket connected with ID: ${socketRef.current.id}`);
             setIsReady(true); // trigger re-render only after connection
         });

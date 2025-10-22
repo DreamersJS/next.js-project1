@@ -35,6 +35,18 @@ app.prepare().then(() => {
       res.setHeader(key, value);
     }
 
+    process.env.SOCKET_URL = process.env.SOCKET_URL ?? '';
+    process.env.CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? '';
+
+    // Optional: make NEXT_PUBLIC_* vars available to server code
+    process.env.NEXT_PUBLIC_FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_APP_ID = process.env.NEXT_PUBLIC_FIREBASE_APP_ID ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ?? '';
+
     handle(req, res, parsedUrl);
   });
 
@@ -190,13 +202,12 @@ app.prepare().then(() => {
 
   server.listen(port, (err) => {
     if (err) throw err;
-    console.log(`Ready on http://localhost:${port}`);
+    console.log(`Ready on http://localhost:${port} [NODE_ENV=${process.env.NODE_ENV}]`);
   });
 });
 
-// Use linux htop
 
-// Or inspect Node memory programmatically
-setInterval(() => {
-  console.log(process.memoryUsage());
-}, 50000);
+// inspect Node memory programmatically
+// setInterval(() => {
+//   console.log(process.memoryUsage());
+// }, 50000);
