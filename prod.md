@@ -161,3 +161,10 @@ make other routes dynamic as well
 All client data comes from API routes (dynamic = 'force-dynamic') → always up-to-date with runtime envs.
 Avoids using Firebase SDK directly in the browser.
 Resolves “stuck on loading” because now whiteboards will be populated correctly.
+
+I noticed load list of boards ain't working: remade services to only fetch data from api(not directly access firebase) to use the 'force-dynamic' apis
+Remade loadUserWhiteboards to fetch only ids of boards(no extra data). Keep loadWhiteboardById for lazy loading a single board:change UI & delete
+
+I broke create board: fix createNewWhiteboard: fetch(`/api/whiteboards?userId=${userId}` or api: const { userId } = await request.json();, missing import push set
+
+next: Separation of Concerns and Command–Query Separation (CQS), Command-Query Responsibility Segregation CQRS principles (commands and queries split cleanly),Domain-Driven Design

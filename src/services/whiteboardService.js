@@ -16,7 +16,7 @@ async function getDatabase() {
  */
 export const createNewWhiteboard = async (userId) => {
   try {
-    const response = await fetch(`/api/whiteboards/`, {
+    const response = await fetch(`/api/whiteboards?userId=${userId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

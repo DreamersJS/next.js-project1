@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { ref, get } from 'firebase/database';
+import { ref, get, push, set } from 'firebase/database';
 import { NextResponse } from 'next/server';
 import { initFirebase } from '@/services/firebase';
 
@@ -14,17 +14,6 @@ async function getFirebaseServices() {
   return { database };
 }
 
-/**
- * const response = await fetch(`/api/whiteboards?userId=${user.uid}`, {
- *   method: 'GET',
- * });
- * if (response.ok) {
- *   const data = await response.json();
- * }
- * 
- * @param {*} request - HTTP request object with query params
- * @returns array of whiteboards belonging to user
- */
 // get all boards for a user
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -45,20 +34,6 @@ export async function GET(request) {
     const whiteboardIds = Object.keys(whiteboardObject);
 
     return NextResponse.json(whiteboardIds);
-    // the first fetch only gets the list of whiteboard IDs
-    // option 2 is to fetch all whiteboards data in one go(but if user has many boards & want to check only 1, this could be slow)
-    const whiteboards = [];
-
-    // Fetch each whiteboard data by id
-    for (const whiteboardId of whiteboardIds) {
-      const whiteboardRef = ref(database, `whiteboards/${whiteboardId}`);
-      const whiteboardSnapshot = await get(whiteboardRef);
-      if (whiteboardSnapshot.exists()) {
-        whiteboards.push({ id: whiteboardId, ...whiteboardSnapshot.val() });
-      }
-    }
-
-    return NextResponse.json(whiteboards);
   } catch (error) {
     console.error("Error fetching user's whiteboards:", error);
     return NextResponse.json({ error: 'Failed to fetch whiteboards' }, { status: 500 });
@@ -67,6 +42,7 @@ export async function GET(request) {
 
 // create a new whiteboard for a user
 export async function POST(request) {
+  // const { userId } = await request.json();
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get('userId');
   const { database } = await getFirebaseServices();
