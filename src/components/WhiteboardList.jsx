@@ -36,17 +36,10 @@ export default function WhiteboardList() {
   const pageSize = 5;
   const router = useRouter();
 
-  // Only trigger effect if IDs or uid actually change
-  // This is okay for optimization, but if user.listOfWhiteboardIds is not populated, the effect will never run.
-  const idsKey = useMemo(() => (user.listOfWhiteboardIds?.length ? user.listOfWhiteboardIds.join(',') : ''), [user.listOfWhiteboardIds]);
-
   const handleLoadSingleWhiteboard = useCallback(async (e, whiteboardId) => {
-    e.preventDefault(); // stop <Link> default navigation
-    // e.stopPropagation(); // optional: stop bubbling
+    e.preventDefault();
     const { loadWhiteboardById } = await import('@/services/whiteboardService');
     const data = await loadWhiteboardById(whiteboardId);
-    console.log('Loaded whiteboard:', data);
-    // navigate
     router.push(`/whiteboard/${whiteboardId}`);
   }, []);
 
@@ -56,7 +49,6 @@ export default function WhiteboardList() {
     try {
       const whiteboardIds = await getUserWhiteboards(userId);
       setWhiteboards(whiteboardIds || []);
-      //Keep loadWhiteboardById for lazy loading a single board.
     } catch (error) {
       console.error('Error loading user whiteboards:', error);
     } finally {
@@ -75,7 +67,7 @@ export default function WhiteboardList() {
     if (!confirm('Are you sure you want to delete this whiteboard?')) return;
     const { deleteWhiteboard } = await import('@/services/whiteboardService');
 
-    
+
     try {
       await deleteWhiteboard(whiteboardId, user.uid);
       setWhiteboards((prev) => prev.filter((id) => id !== whiteboardId));

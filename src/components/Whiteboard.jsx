@@ -57,15 +57,6 @@ const Whiteboard = ({ id }) => {
   }, []);
 
   useEffect(() => {
-    if (!socketUrl) {
-      console.warn('Whiteboard: No socketUrl yet');
-      return;
-    }
-  
-  }, [socketUrl]);
-
-  
-  useEffect(() => {
     let isMounted = true;
 
     const loadServices = async () => {

@@ -79,7 +79,6 @@ app.prepare().then(() => {
 
       if (!socket.rooms.has(whiteboardId)) {
         socket.join(whiteboardId);
-        console.log(`${socket.id} joined room ${whiteboardId}`);
       }
 
       // Initialize board if not exist
@@ -99,7 +98,6 @@ app.prepare().then(() => {
 
     socket.on('leave', (whiteboardId) => {
       socket.leave(whiteboardId);
-      console.log(`${socket.id} manually left room ${whiteboardId}`);
     });
 
     socket.on('draw', ({ whiteboardId, shape }) => {
@@ -183,7 +181,6 @@ app.prepare().then(() => {
     // for chat only
     socket.on('joinRoom', (roomId) => {
       socket.join(roomId);
-      console.log(`${socket.id} joined room ${roomId}`);
     });
 
     socket.on('message', (data) => {
