@@ -150,3 +150,14 @@ sent to the browser.
 
 *By default, Next.js may statically optimize API routes if it thinks their output doesn’t depend on runtime data.
 Adding export const dynamic = 'force-dynamic' disables that optimization and forces Next.js to evaluate it fresh on every request — so it picks up your runtime process.env values from Docker.*
+
+Update your SocketProvider to cache config:
+- Fetch the config once per session (store in sessionStorage)
+- Reuse it across navigations (faster, fewer network calls)
+- Handle fallback gracefully if the API fails
+
+
+make other routes dynamic as well
+All client data comes from API routes (dynamic = 'force-dynamic') → always up-to-date with runtime envs.
+Avoids using Firebase SDK directly in the browser.
+Resolves “stuck on loading” because now whiteboards will be populated correctly.

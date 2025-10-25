@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
@@ -9,23 +9,34 @@ export const SocketProvider = ({ children }) => {
     const [isReady, setIsReady] = useState(false);
     const [socketUrl, setSocketUrl] = useState(null);
 
-    // 1. Fetch the config from your API
+    // Fetch and cache socket URL
     useEffect(() => {
-        const fetchConfig = async () => {
+        const getSocketUrl = async () => {
+            // Check if cached in sessionStorage
+            const cached = sessionStorage.getItem('socketUrl');
+            if (cached) {
+                setSocketUrl(cached);
+                return;
+            }
+
             try {
-                console.log('Fetching socket config...');
                 const res = await fetch('/api/config');
                 const data = await res.json();
-                console.log('Fetched config:', data);
-                setSocketUrl(data.socketUrl);
+                if (data?.socketUrl) {
+                    setSocketUrl(data.socketUrl);
+                    sessionStorage.setItem('socketUrl', data.socketUrl); // cache it
+                } else {
+                    console.error('Socket URL not found in API response.');
+                }
             } catch (err) {
                 console.error('Failed to fetch socket URL:', err);
             }
         };
-        fetchConfig();
+
+        getSocketUrl();
     }, []);
 
-    // 2️. Initialize socket once socketUrl is available
+    // Initialize socket once socketUrl is available
     useEffect(() => {
         if (!socketUrl) {
             console.warn('No socketUrl yet');
@@ -38,23 +49,21 @@ export const SocketProvider = ({ children }) => {
         });
 
         socketRef.current.on('connect', () => {
-            console.log(`Socket connected with ID: ${socketRef.current.id}`);
-            setIsReady(true); // trigger re-render only after connection
+            setIsReady(true);
         });
 
         socketRef.current.on('connect_error', (err) => {
             console.error('Socket.IO connection error:', err);
         });
 
-        console.log({ socketUrl });
         return () => {
-            socketRef.current.disconnect();
+            socketRef.current?.disconnect();
             console.log('Socket disconnected');
         };
     }, [socketUrl]);
 
     if (!isReady) {
-        return <div style={{ textAlign: 'center', marginTop: '2rem' }}>Connecting to whiteboard...</div>;
+        return <div>Connecting to server...</div>;
     }
 
     return (

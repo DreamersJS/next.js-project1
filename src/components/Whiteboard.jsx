@@ -46,10 +46,8 @@ const Whiteboard = ({ id }) => {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        console.log('Whiteboard: Fetching socket config...');
         const res = await fetch('/api/config');
         const data = await res.json();
-        console.log('Whiteboard: Fetched config:', data);
         setSocketUrl(data.socketUrl);
       } catch (err) {
         console.error('Failed to fetch socket URL:', err);
@@ -64,7 +62,6 @@ const Whiteboard = ({ id }) => {
       return;
     }
   
-    console.log('Whiteboard: Initializing socket with URL:', socketUrl);
   }, [socketUrl]);
 
   

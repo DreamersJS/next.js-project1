@@ -22,7 +22,7 @@ docker-compose down --volumes --remove-orphans
 
 docker system prune -af
 docker system prune -af --volumes
-docker system prune -af --volumes
+docker builder prune -af
 docker image prune -af
 docker volume prune -f
 docker network prune -f
@@ -38,5 +38,3 @@ temp docker:
 docker run --rm -it -v $(pwd):/app -w /app node:20 npm install
 docker run --rm -it -v "$PWD":/app -w /app node:18 bash -c "npm install"
 docker run --rm -it -v "$PWD":/app -w /app node:18 bash
-
-docker-compose up -d

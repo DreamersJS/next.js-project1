@@ -2,14 +2,16 @@
 import Link from 'next/link';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useUser } from '@/hooks/useUser';
+import { useRouter } from 'next/navigation';
 
-const WhiteboardItem = React.memo(function WhiteboardItem({ id, onDelete }) {
+const WhiteboardItem = React.memo(function WhiteboardItem({ id, onDelete, onLoad }) {
   return (
     <li
       className="bg-white p-4 rounded shadow-md hover:bg-gray-100 transition-colors flex justify-between items-center"
     >
       <Link
         href={`/whiteboard/${id}`}
+        onClick={(e) => onLoad(e, id)}
         className="text-blue-600 hover:underline flex-grow"
         aria-label={`Go to whiteboard ${id}`}
       >
@@ -32,25 +34,29 @@ export default function WhiteboardList() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
+  const router = useRouter();
 
   // Only trigger effect if IDs or uid actually change
-  const idsKey = useMemo(
-    () => (user.listOfWhiteboardIds || []).join(','),
-    [user.listOfWhiteboardIds]
-  );
+  // This is okay for optimization, but if user.listOfWhiteboardIds is not populated, the effect will never run.
+  const idsKey = useMemo(() => (user.listOfWhiteboardIds?.length ? user.listOfWhiteboardIds.join(',') : ''), [user.listOfWhiteboardIds]);
+
+  const handleLoadSingleWhiteboard = useCallback(async (e, whiteboardId) => {
+    e.preventDefault(); // stop <Link> default navigation
+    // e.stopPropagation(); // optional: stop bubbling
+    const { loadWhiteboardById } = await import('@/services/whiteboardService');
+    const data = await loadWhiteboardById(whiteboardId);
+    console.log('Loaded whiteboard:', data);
+    // navigate
+    router.push(`/whiteboard/${whiteboardId}`);
+  }, []);
 
   const loadUserWhiteboards = useCallback(async (userId) => {
     setLoading(true);
-    const { getUserWhiteboards, loadWhiteboardById } = await import('@/services/whiteboardService');
+    const { getUserWhiteboards } = await import('@/services/whiteboardService');
     try {
       const whiteboardIds = await getUserWhiteboards(userId);
-      const whiteboardData = await Promise.all(
-        whiteboardIds.map(async (whiteboardId) => {
-          const data = await loadWhiteboardById(whiteboardId);
-          return data || null;
-        })
-      );
-      setWhiteboards(whiteboardData.filter(Boolean));
+      setWhiteboards(whiteboardIds || []);
+      //Keep loadWhiteboardById for lazy loading a single board.
     } catch (error) {
       console.error('Error loading user whiteboards:', error);
     } finally {
@@ -59,22 +65,20 @@ export default function WhiteboardList() {
   }, []);
 
   useEffect(() => {
-    if (user?.uid && idsKey) {
+    if (user?.uid) {
       loadUserWhiteboards(user.uid);
     }
-  }, [user?.uid, idsKey, loadUserWhiteboards]);
+  }, [user?.uid, loadUserWhiteboards]);
 
   const handleDeleteWhiteboard = useCallback(async (event, whiteboardId) => {
     event.stopPropagation();
     if (!confirm('Are you sure you want to delete this whiteboard?')) return;
     const { deleteWhiteboard } = await import('@/services/whiteboardService');
 
-    setWhiteboards((prev) =>
-      prev.filter((whiteboard) => whiteboard?.id !== whiteboardId)
-    );
-
+    
     try {
       await deleteWhiteboard(whiteboardId, user.uid);
+      setWhiteboards((prev) => prev.filter((id) => id !== whiteboardId));
       setUser((prevUser) => ({
         ...prevUser,
         listOfWhiteboardIds: (prevUser.listOfWhiteboardIds || []).filter(
@@ -88,6 +92,9 @@ export default function WhiteboardList() {
 
   // Pagination
   const totalPages = Math.ceil(whiteboards.length / pageSize);
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages || 1);
+  }, [whiteboards.length, currentPage, totalPages]);
   const paginatedWhiteboards = useMemo(
     () => whiteboards.slice((currentPage - 1) * pageSize, currentPage * pageSize),
     [whiteboards, currentPage, pageSize]
@@ -100,11 +107,15 @@ export default function WhiteboardList() {
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Your Whiteboards</h2>
       <ul>
-        {paginatedWhiteboards.map((board) =>
-          board ? (
-            <WhiteboardItem key={board.id} id={board.id} onDelete={handleDeleteWhiteboard} />
-          ) : null
-        )}
+        {paginatedWhiteboards.map((id) => (
+          <WhiteboardItem
+            key={id}
+            id={id}
+            onDelete={handleDeleteWhiteboard}
+            onLoad={handleLoadSingleWhiteboard}
+          />
+        ))}
+
       </ul>
 
       {/* Pagination Controls */}
