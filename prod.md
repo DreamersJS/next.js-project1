@@ -134,5 +134,19 @@ NODE_ENV affects whether Next.js runs in dev or production mode, which changes h
 no next.js env ReferenceError err:
 https://chatgpt.com/c/68f9077a-16fc-832f-8534-0fdaa1de576e
 
-Object { socketUrl: undefined }
-​
+Object { socketUrl: undefined }:
+Why your frontend can’t see SOCKET_URL:
+1.
+In Server environment
+In Docker container (server side), SOCKET_URL exists.
+Node sees it, backend logs confirm it.
+In Client environment ('use client' React components)
+process.env.SOCKET_URL is replaced at build time by Next.js.
+Since it doesn’t start with NEXT_PUBLIC_, it becomes undefined in the final JS bundle
+sent to the browser.
+
+*I added route.js to fetch the env but got blanc screen no logs:*
+2.Next.js’ static optimization of API routes — it cached or prerendered /api/config during build and didn’t reevaluate it at runtime.
+
+*By default, Next.js may statically optimize API routes if it thinks their output doesn’t depend on runtime data.
+Adding export const dynamic = 'force-dynamic' disables that optimization and forces Next.js to evaluate it fresh on every request — so it picks up your runtime process.env values from Docker.*

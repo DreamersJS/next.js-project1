@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   nextjs:
     build:
@@ -13,13 +11,14 @@ services:
         NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
         NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
         NEXT_PUBLIC_FIREBASE_DATABASE_URL: ${NEXT_PUBLIC_FIREBASE_DATABASE_URL}
-        SOCKET_URL: ${SOCKET_URL}
-        CLIENT_ORIGIN: ${CLIENT_ORIGIN}
     env_file:
       - .env
       - .env.prod
     environment:
       NODE_ENV: production
+      SOCKET_URL: ${SOCKET_URL}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN}
     ports:
       - "3000:3000"
     restart: unless-stopped
+# That way, SOCKET_URL and CLIENT_ORIGIN can change without a rebuild — only a docker-compose up -d restart.

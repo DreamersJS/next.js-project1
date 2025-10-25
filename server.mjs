@@ -202,7 +202,7 @@ app.prepare().then(() => {
 
   server.listen(port, (err) => {
     if (err) throw err;
-    console.log(`Ready on http://localhost:${port} [NODE_ENV=${process.env.NODE_ENV}]`);
+    console.log(`Ready on http://localhost:${port} [NODE_ENV=${process.env.NODE_ENV}] ${process.env.CLIENT_ORIGIN}${process.env.SOCKET_URL}`);
   });
 });
 

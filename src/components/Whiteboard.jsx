@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import DrawingTools from './DrawingTools'; 
+import DrawingTools from './DrawingTools';
 import { useSocketConnection } from '@/context/SocketProvider';
 import { useResizeCanvas } from '@/hooks/useResizeCanvas';
 import { useRedrawAllShapes } from '@/hooks/useRedrawAllShapes';
@@ -20,7 +20,7 @@ const Whiteboard = ({ id }) => {
   const [drawnShapes, setDrawnShapes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
-  const socketUrl = process.env.SOCKET_URL;
+  const [socketUrl, setSocketUrl] = useState(null);
   const socketRef = useSocketConnection();
   const imageCache = useRef(new Map());
 
@@ -43,8 +43,31 @@ const Whiteboard = ({ id }) => {
     return whiteboardServiceModule;
   };
 
-  if (!socketUrl) return <div>Socket URL is not configured.</div>;
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        console.log('Whiteboard: Fetching socket config...');
+        const res = await fetch('/api/config');
+        const data = await res.json();
+        console.log('Whiteboard: Fetched config:', data);
+        setSocketUrl(data.socketUrl);
+      } catch (err) {
+        console.error('Failed to fetch socket URL:', err);
+      }
+    };
+    fetchConfig();
+  }, []);
 
+  useEffect(() => {
+    if (!socketUrl) {
+      console.warn('Whiteboard: No socketUrl yet');
+      return;
+    }
+  
+    console.log('Whiteboard: Initializing socket with URL:', socketUrl);
+  }, [socketUrl]);
+
+  
   useEffect(() => {
     let isMounted = true;
 
