@@ -77,7 +77,15 @@ To get started with this project, follow the steps below:
     Create a .env file in the root directory and add any necessary environment variables: <br/>
     PORT<br/>
     NODE_ENV<br/>
-    NEXT_PUBLIC_SOCKET_URL
+    NEXT_PUBLIC_SOCKET_URL<br/>
+    CLIENT_ORIGIN<br/>
+    NEXT_PUBLIC_FIREBASE_API_KEY<br/>
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN<br/>
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID<br/>
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET<br/>
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID<br/>
+    NEXT_PUBLIC_FIREBASE_APP_ID<br/>
+    NEXT_PUBLIC_FIREBASE_DATABASE_URL<br/>
 
 2. **Run the application**:<br/>
 ```bash

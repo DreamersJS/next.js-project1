@@ -1,0 +1,21 @@
+FROM node:18-bullseye-slim
+
+# Working directory
+WORKDIR /app
+
+# Install dev dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Environment
+ENV NODE_ENV=development
+ENV CHOKIDAR_USEPOLLING=true
+
+# Expose port
+EXPOSE 3000
+
+# Run server with hot reload
+CMD ["npm", "run", "dev"]

@@ -35,10 +35,30 @@ app.prepare().then(() => {
       res.setHeader(key, value);
     }
 
+    process.env.SOCKET_URL = process.env.SOCKET_URL ?? '';
+    process.env.CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? '';
+
+    // Optional: make NEXT_PUBLIC_* vars available to server code
+    process.env.NEXT_PUBLIC_FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_APP_ID = process.env.NEXT_PUBLIC_FIREBASE_APP_ID ?? '';
+    process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ?? '';
+
     handle(req, res, parsedUrl);
   });
 
-  const io = new socketIo(server);
+  const CORS_OPTIONS = {
+    cors: {
+      origin: process.env.CLIENT_ORIGIN,
+      methods: ["GET", "POST"],
+      credentials: true
+    }
+  };
+
+  const io = new socketIo(server, CORS_OPTIONS);
 
   const whiteboardData = new Map();
 
@@ -59,7 +79,6 @@ app.prepare().then(() => {
 
       if (!socket.rooms.has(whiteboardId)) {
         socket.join(whiteboardId);
-        console.log(`${socket.id} joined room ${whiteboardId}`);
       }
 
       // Initialize board if not exist
@@ -79,7 +98,6 @@ app.prepare().then(() => {
 
     socket.on('leave', (whiteboardId) => {
       socket.leave(whiteboardId);
-      console.log(`${socket.id} manually left room ${whiteboardId}`);
     });
 
     socket.on('draw', ({ whiteboardId, shape }) => {
@@ -163,7 +181,6 @@ app.prepare().then(() => {
     // for chat only
     socket.on('joinRoom', (roomId) => {
       socket.join(roomId);
-      console.log(`${socket.id} joined room ${roomId}`);
     });
 
     socket.on('message', (data) => {
@@ -182,6 +199,12 @@ app.prepare().then(() => {
 
   server.listen(port, (err) => {
     if (err) throw err;
-    console.log(`Ready on http://localhost:${port}`);
+    console.log(`Ready on http://localhost:${port} [NODE_ENV=${process.env.NODE_ENV}] ${process.env.CLIENT_ORIGIN}${process.env.SOCKET_URL}`);
   });
 });
+
+
+// inspect Node memory programmatically
+// setInterval(() => {
+//   console.log(process.memoryUsage());
+// }, 50000);

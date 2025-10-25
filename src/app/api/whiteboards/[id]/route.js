@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { initFirebase } from '@/services/firebase';
 import { ref, remove, set, get, update } from 'firebase/database';
 

@@ -1,0 +1,24 @@
+services:
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY}
+        NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
+        NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}
+        NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
+        NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
+        NEXT_PUBLIC_FIREBASE_DATABASE_URL: ${NEXT_PUBLIC_FIREBASE_DATABASE_URL}
+    env_file:
+      - .env
+      - .env.prod
+    environment:
+      NODE_ENV: production
+      SOCKET_URL: ${SOCKET_URL}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+# That way, SOCKET_URL and CLIENT_ORIGIN can change without a rebuild — only a docker-compose up -d restart.
