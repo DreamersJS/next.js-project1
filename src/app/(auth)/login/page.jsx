@@ -15,6 +15,14 @@ const LoginPage = () => {
   const [isGuestLoading, setIsGuestLoading] = useState(false);
   const setUser = useSetRecoilState(userState);
 
+  const handleRedirect = useCallback(() => {
+    if (redirectPath && redirectPath !== router.asPath) {
+      router.push(redirectPath);
+    } else {
+      router.push("/");
+    }
+  }, [redirectPath, router]);
+
   const handleLogin = useCallback(async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -42,13 +50,9 @@ const LoginPage = () => {
       // Save user state in a cookie
       saveUserToCookie(userObject);
 
-      // Redirect to the original path if available or to the home page
-      if (redirectPath && redirectPath !== router.asPath) {
-        router.push(redirectPath);
-      } else {
-        router.push("/");
-      }
+      handleRedirect();
     } catch (error) {
+      console.error(error);
       setError(error?.message || "An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -69,12 +73,9 @@ const LoginPage = () => {
         role: user.role || "guest",
       });
 
-      if (redirectPath && redirectPath !== router.asPath) {
-        router.push(redirectPath);
-      } else {
-        router.push("/");
-      }
+      handleRedirect();
     } catch (error) {
+      console.error(error);
       setError(error?.message || "An unexpected error occurred. Please try again.");
     } finally {
       setIsGuestLoading(false);
@@ -82,39 +83,84 @@ const LoginPage = () => {
   }, [redirectPath, router, setUser]);
 
   return (
-    <div className="flex flex-col items-center">
-      <form onSubmit={handleLogin} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          name="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          className="border p-2"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          name="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          className="border p-2"
-        />
-        <button type="submit" className="bg-blue-700 text-white p-2 m-2" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Login'}
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
+        <h1 className="text-2xl font-bold text-center text-gray-900 mb-6">
+          Welcome Back
+        </h1>
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              placeholder="********"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        <div className="my-4 text-center text-gray-500">or</div>
+
+        <button
+          onClick={handleGuestLogin}
+          disabled={isGuestLoading}
+          className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isGuestLoading ? "Loading..." : "Login as Guest"}
         </button>
-      </form>
-      <div className="my-4 text-center">or</div>
-      <button onClick={handleGuestLogin} className="bg-green-700 text-white p-2 mt-4" disabled={isGuestLoading}>
-        {isGuestLoading ? 'Loading...' : 'Login as Guest'}
-      </button>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
-      <div className="my-4 text-center">or</div>
-      <button onClick={() => router.push("/register")} className="text-black-500 underline">
-        Register
-      </button>
+
+        {error && (
+          <p className="text-red-500 text-center mt-4 text-sm">{error}</p>
+        )}
+
+        <div className="mt-6 text-center text-gray-700">
+          Don't have an account?{" "}
+          <button
+            onClick={() => router.push("/register")}
+            className="text-blue-600 hover:underline"
+          >
+            Register
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

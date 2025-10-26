@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth';
 import { ref, set, get } from "firebase/database";
 import Cookies from 'js-cookie';
+import { deleteUser, deleteWhiteboard, getUserWhiteboards } from './whiteboardService';
 
 let database, auth;
 
@@ -121,6 +122,7 @@ export const loginAsGuest = async () => {
       username: username,
       avatar: avatarUrl,
       role: 'guest',
+      createdAt: Date.now(),
     };
 
     const userRef = ref(database, `users/${userCredential.user.uid}`);
@@ -142,16 +144,46 @@ export const loginAsGuest = async () => {
 };
 
 
-
 // Logout the current user
 export const logoutUser = async () => {
   try {
     const { auth } = await getFirebaseServices();
+
+    // check if it's a guest
+    if (auth.currentUser?.isAnonymous) {
+      await logoutGuest(auth);
+    }
+
+    // Sign out current user
     await signOut(auth);
     Cookies.remove('auth'); // Remove the auth cookie
     Cookies.remove('userState'); // Remove the userState cookie as well
   } catch (error) {
     console.error('Error logging out:', error);
+  }
+};
+
+const logoutGuest = async (auth) => {
+  try {
+    const uid = auth.currentUser.uid;
+
+    // Get user's whiteboards
+    const whiteboardIds = await getUserWhiteboards(uid);
+    if (whiteboardIds?.length) {
+      for (const id of whiteboardIds) {
+        await deleteWhiteboard(id, uid);
+      }
+    }
+
+    // Delete user profile in DB
+    await deleteUser(uid);
+
+    // Delete the anonymous user from Firebase Auth
+    await auth.currentUser.delete();
+
+    console.log(`Guest ${uid} deleted successfully.`);
+  } catch (error) {
+    console.error('Error logging out guest:', error);
   }
 };
 

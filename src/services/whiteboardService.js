@@ -112,7 +112,7 @@ export const saveWhiteboardAsImage = async (canvas, whiteboardId, userId) => {
 
     if (response.ok) {
       alert('Whiteboard image saved successfully!');
-      return{message: 'Whiteboard image saved successfully!'};
+      return { message: 'Whiteboard image saved successfully!' };
     } else {
       alert('Failed to save the whiteboard image.');
       throw new Error(`Error saving whiteboard image: ${response.statusText}`);
@@ -141,5 +141,20 @@ export const loadWhiteboardImageById = async (whiteboardId) => {
     return data;
   } catch (error) {
     console.error('Error loading whiteboard:', error);
+  }
+};
+
+export const deleteUser = async (userId) => {
+  try {
+    const response = await fetch(`/api/user?userId=${userId}`, {
+      method: 'DELETE',
+    });
+    if (response.ok) {
+      console.log('Deleted user:', userId);
+    } else {
+      console.error('Error deleting user:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error deleting user:', error);
   }
 };
