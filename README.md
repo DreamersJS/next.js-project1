@@ -48,6 +48,7 @@ This project is a **Collaborative Whiteboard Application** built using **Next.js
   - **React**
   - **Socket.IO** 
   - **Recoil**
+  - **HTML Canvas**
 
 - **Backend**: 
   - **Firebase** 
@@ -101,3 +102,4 @@ The application will start on http://localhost:3000 or on whichever PORT you are
 
 - Users can draw on the board, and all actions will be synced in real time with other connected users in the board.
 - The application require authentication. Ensure to log in to access all features. A registered user has more features than a guest.
+- Guests are deleted on logout
