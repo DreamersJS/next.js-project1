@@ -53,6 +53,7 @@ This project is a **Collaborative Whiteboard Application** built using **Next.js
 - **Backend**: 
   - **Firebase** 
   - **Next.js API Routes**: Provides serverless API endpoints, adhering to REST principles
+  - **Socket.IO** 
 
 - **Containerization**: 
   - **Docker**
