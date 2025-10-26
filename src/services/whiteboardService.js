@@ -1,15 +1,3 @@
-// import { database } from '@/services/firebase';
-import { initFirebase } from './firebase';
-let database;
-
-async function getDatabase() {
-  if (!database) {
-    const services = await initFirebase();
-    database = services.database;
-  }
-  return database;
-}
-
 /**
  * Creates a new blank whiteboard in the Firebase database.
  * @returns {Promise<{ id: string, content: string }>} - An object containing the ID, content: photo url of the newly created whiteboard.
@@ -124,7 +112,7 @@ export const saveWhiteboardAsImage = async (canvas, whiteboardId, userId) => {
 
     if (response.ok) {
       alert('Whiteboard image saved successfully!');
-      return{message: 'Whiteboard image saved successfully!'};
+      return { message: 'Whiteboard image saved successfully!' };
     } else {
       alert('Failed to save the whiteboard image.');
       throw new Error(`Error saving whiteboard image: ${response.statusText}`);
@@ -133,6 +121,7 @@ export const saveWhiteboardAsImage = async (canvas, whiteboardId, userId) => {
     console.error('Error saving whiteboard image:', error);
   }
 };
+
 /**
  * Load a whiteboard image by its ID.
  * @param {string} whiteboardId - The ID of the whiteboard to load.
@@ -152,5 +141,20 @@ export const loadWhiteboardImageById = async (whiteboardId) => {
     return data;
   } catch (error) {
     console.error('Error loading whiteboard:', error);
+  }
+};
+
+export const deleteUser = async (userId) => {
+  try {
+    const response = await fetch(`/api/user?userId=${userId}`, {
+      method: 'DELETE',
+    });
+    if (response.ok) {
+      console.log('Deleted user:', userId);
+    } else {
+      console.error('Error deleting user:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error deleting user:', error);
   }
 };

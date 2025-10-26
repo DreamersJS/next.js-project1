@@ -1,8 +1,7 @@
-// app/(auth)/register/page.jsx
 "use client";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useUser } from '@/hooks/useUser';
+import { useUser } from "@/hooks/useUser";
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -13,34 +12,25 @@ const RegisterPage = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
-  const { setUser } = useUser();
   const [isLoading, setIsLoading] = useState(false);
+  const { setUser } = useUser();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
+
     try {
-      const { registerUser, loginUser, createUserProfile, saveUserToCookie } = await import('@/services/auth');
+      const { registerUser, loginUser, createUserProfile, saveUserToCookie } = await import(
+        "@/services/auth"
+      );
+
       const credentials = await registerUser(email, password);
       const uid = credentials.user.uid;
-      const avatarUrl = '/default.webp';
-      const userObject = {
-        uid: credentials.user.uid,
-        email: credentials.user.email,
-        username,
-        avatar: avatarUrl,
-        listOfWhiteboardIds: [],
-        role: 'registered',
-      };
-      await createUserProfile(
-        credentials.user.uid,
-        username,
-        credentials.user.email,
-        avatarUrl,
-        'registered',
-        {}, // key-value pairs (id:true)
-      );
+      const avatarUrl = "/default.webp";
+
+      // Create user profile
+      await createUserProfile(uid, username, email, avatarUrl, "registered", {}); // key-value pairs (id:true)
 
       // Auto-login the user
       const loggedInUser = await loginUser(email, password);
@@ -50,61 +40,100 @@ const RegisterPage = () => {
         username,
         avatar: avatarUrl,
         listOfWhiteboardIds: [],
-        role: 'registered',
+        role: "registered",
       };
 
-      // Set user in global state and cookie
+      // Set user in global state & cookie
       setUser(userData);
-      saveUserToCookie(userObject);
-      if (credentials) {
-        if (redirectPath) {
-          router.push(redirectPath);
-        } else {
-          router.push("/");
-        }
-      }
-    } catch (error) {
-      setError(error.message);
+      saveUserToCookie(userData);
+
+      // Redirect
+      router.push(redirectPath || "/");
+    } catch (err) {
+      console.error(err);
+      setError(err?.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <form onSubmit={handleRegister} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          autoComplete="username"
-          className="border p-2"
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          className="border p-2"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete="new-password"
-          className="border p-2"
-        />
-        <button type="submit" className="bg-blue-700 text-white p-2" disabled={isLoading}>
-          {isLoading ? 'Registering...' : 'Register'}
-        </button>
-      </form>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
+        <h1 className="text-2xl font-bold text-center text-gray-900 mb-6">
+          Create an Account
+        </h1>
+
+        <form onSubmit={handleRegister} className="space-y-4">
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              placeholder="Your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoComplete="username"
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              placeholder="********"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Registering..." : "Register"}
+          </button>
+        </form>
+
+        {error && <p className="text-red-500 text-center mt-4 text-sm">{error}</p>}
+
+        <div className="mt-6 text-center text-gray-700">
+          Already have an account?{" "}
+          <button
+            onClick={() => router.push("/login")}
+            className="text-blue-600 hover:underline"
+          >
+            Login
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

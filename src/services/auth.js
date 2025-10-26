@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth';
 import { ref, set, get } from "firebase/database";
 import Cookies from 'js-cookie';
+import { deleteUser, deleteWhiteboard, getUserWhiteboards } from './whiteboardService';
 
 let database, auth;
 
@@ -40,10 +41,15 @@ export const createUserProfile = async (
 };
 
 /**
- * Register a new user
+ * @see https://firebase.google.com/docs/reference/js/auth.md#auth_package
+ * @see https://firebase.google.com/docs/reference/js/auth.md#createuserwithemailandpassword_21ad33b
+ * @async
+ * @function registerUser
+ * Creates a new user account associated with the specified email address and password.
+ * @param {import('firebase/auth').Auth} auth - The Firebase Auth instance.
  * @param {string} email 
  * @param {string} password 
- * @returns createUserWithEmailAndPassword(auth, email, password);
+ * @returns {Promise<import('firebase/auth').UserCredential>}
  */
 export const registerUser = async (email, password) => {
   try {
@@ -57,11 +63,24 @@ export const registerUser = async (email, password) => {
 
 
 /**
- * Login an existing user
- * @param {string} email 
- * @param {string} password 
- * @returns userCredential.user
+ * Logs in an existing user using Firebase Authentication.
+ *
+ * @async
+ * @function loginUser
+ * @param {import('firebase/auth').Auth} auth - The Firebase Auth instance.
+ * @param {string} email - The user's email address.
+ * @param {string} password - The user's password.
+ * @returns {Promise<import('firebase/auth').UserCredential>} 
+ * A Promise that resolves with a Firebase UserCredential object if the sign-in is successful,
+ * or rejects with a FirebaseError if authentication fails.
+ * 
+ * @throws {import('firebase/app').FirebaseError} Throws a FirebaseError if authentication fails.
+ * @error auth/invalid-email - The email address is badly formatted.
+ * @error auth/user-disabled - The user account has been disabled by an administrator.
+ * @error auth/user-not-found - There is no user corresponding to the given email.
+ * @error auth/wrong-password - The password is invalid for the given email.
  */
+
 export const loginUser = async (email, password) => {
   try {
     const { auth } = await getFirebaseServices();
@@ -78,7 +97,7 @@ export const loginUser = async (email, password) => {
 
     return user;
   } catch (error) {
-    console.error('Error logging in user:', error);
+    console.error("Login failed:", error.code, error.message);
     throw error;
   }
 };
@@ -103,6 +122,7 @@ export const loginAsGuest = async () => {
       username: username,
       avatar: avatarUrl,
       role: 'guest',
+      createdAt: Date.now(),
     };
 
     const userRef = ref(database, `users/${userCredential.user.uid}`);
@@ -124,16 +144,46 @@ export const loginAsGuest = async () => {
 };
 
 
-
 // Logout the current user
 export const logoutUser = async () => {
   try {
     const { auth } = await getFirebaseServices();
+
+    // check if it's a guest
+    if (auth.currentUser?.isAnonymous) {
+      await logoutGuest(auth);
+    }
+
+    // Sign out current user
     await signOut(auth);
     Cookies.remove('auth'); // Remove the auth cookie
     Cookies.remove('userState'); // Remove the userState cookie as well
   } catch (error) {
     console.error('Error logging out:', error);
+  }
+};
+
+const logoutGuest = async (auth) => {
+  try {
+    const uid = auth.currentUser.uid;
+
+    // Get user's whiteboards
+    const whiteboardIds = await getUserWhiteboards(uid);
+    if (whiteboardIds?.length) {
+      for (const id of whiteboardIds) {
+        await deleteWhiteboard(id, uid);
+      }
+    }
+
+    // Delete user profile in DB
+    await deleteUser(uid);
+
+    // Delete the anonymous user from Firebase Auth
+    await auth.currentUser.delete();
+
+    console.log(`Guest ${uid} deleted successfully.`);
+  } catch (error) {
+    console.error('Error logging out guest:', error);
   }
 };
 

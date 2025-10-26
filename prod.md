@@ -168,3 +168,21 @@ Remade loadUserWhiteboards to fetch only ids of boards(no extra data). Keep load
 I broke create board: fix createNewWhiteboard: fetch(`/api/whiteboards?userId=${userId}` or api: const { userId } = await request.json();, missing import push set
 
 next: Separation of Concerns and Command–Query Separation (CQS), Command-Query Responsibility Segregation CQRS principles (commands and queries split cleanly),Domain-Driven Design
+
+
+
+| Next.js (App Router)|| Express|
+|------------|------|----------|
+| NextResponse | Web Fetch API | Node.js HTTP|
+| Next.js 13+ (App Router) runs on the Web Fetch API. NextResponse is Next.js’s subclass of Response, with extra features for Next’s middleware and routing layers.  | new Response() & Response.json() is part of the Web Response (from Fetch API) — it’s standard in browsers, service workers, and runtimes like Cloudflare Workers, Deno, or Next.js (App Router).| Express uses Node’s http.ServerResponse object. Express already provides its own response helpers — they’re simpler and faster for server code.|
+| NextResponse.json() | new Response(JSON.stringify(...)) & Response.json() | res.json(), res.send(), res.status() |
+
+
+so Fetch API was intended for Frontend app to access some web APIs and grew to server-side
+
+Axios doesn’t care how your backend builds a response — it only reads the final HTTP result.
+Doesn’t matter if it came from:
+- res.json() in Express,
+- NextResponse.json() in Next.js,
+- or new Response(JSON.stringify(...))
+
