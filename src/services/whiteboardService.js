@@ -1,15 +1,3 @@
-// import { database } from '@/services/firebase';
-import { initFirebase } from './firebase';
-let database;
-
-async function getDatabase() {
-  if (!database) {
-    const services = await initFirebase();
-    database = services.database;
-  }
-  return database;
-}
-
 /**
  * Creates a new blank whiteboard in the Firebase database.
  * @returns {Promise<{ id: string, content: string }>} - An object containing the ID, content: photo url of the newly created whiteboard.
@@ -133,6 +121,7 @@ export const saveWhiteboardAsImage = async (canvas, whiteboardId, userId) => {
     console.error('Error saving whiteboard image:', error);
   }
 };
+
 /**
  * Load a whiteboard image by its ID.
  * @param {string} whiteboardId - The ID of the whiteboard to load.

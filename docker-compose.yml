@@ -4,33 +4,24 @@ services:
   nextjs:
     build:
       context: .
-      dockerfile: ${DOCKERFILE:-Dockerfile.dev}
-      # args:
-      #   NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY}
-      #   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
-      #   NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
-      #   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}
-      #   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
-      #   NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
-      #   NEXT_PUBLIC_FIREBASE_DATABASE_URL: ${NEXT_PUBLIC_FIREBASE_DATABASE_URL}
     ports:
       - "3000:3000"
     env_file:
       - .env
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
       - CHOKIDAR_USEPOLLING=true  # ensures Next.js detects file changes
-
+      NODE_ENV: development
+      SOCKET_URL: ${SOCKET_URL}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN}
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
+      NEXT_PUBLIC_FIREBASE_DATABASE_URL: ${NEXT_PUBLIC_FIREBASE_DATABASE_URL}
     volumes:
-      - .:/app
+      - .:/app # live code update
       - /app/node_modules
       - /app/.next
-    user: node
     command: npm run dev
-    restart: unless-stopped
-
-# Run dev mode:
-# docker compose up --build
-
-# Run production mode:
-# DOCKERFILE=Dockerfile.prod NODE_ENV=production docker compose up --build
