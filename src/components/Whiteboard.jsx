@@ -8,6 +8,7 @@ import { useRedrawAllShapes } from '@/hooks/useRedrawAllShapes';
 import { drawShape } from '@/services/drawService';
 import { useDrawingEvents } from '@/hooks/useDrawingEvents';
 import { useUser } from '@/hooks/useUser';
+import UserToolbar from './UserToolbar';
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
@@ -291,19 +292,13 @@ const Whiteboard = ({ id }) => {
             onUndo={handleUndo}
             onRedo={handleRedo}
           />
-          {user?.role === 'registered' && (<div className='flex flex-row'>
-            <button onClick={handleSaveAsImage} className="px-4 py-2 mt-2 border rounded bg-blue-700 text-white">
-              Save
-            </button>
-            <button onClick={() => handleLoad(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-blue-700 text-white">
-              Load
-            </button>
-          </div>)}
-          <div className='flex flex-col'>
-            <button onClick={() => handleDeleteWhiteboard(whiteboardId)} className="px-4 py-2 mt-2 border rounded bg-red-600 text-white">
-              Delete
-            </button>
-          </div>
+          <UserToolbar
+            user={user}
+            whiteboardId={whiteboardId}
+            onSave={handleSaveAsImage}
+            onLoad={handleLoad}
+            onDelete={handleDeleteWhiteboard}
+          />
         </div>
         {/* Canvas */}
         <div className="flex grow w-full h-full overflow-hidden p-0 items-center justify-center">
