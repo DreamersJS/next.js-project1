@@ -27,9 +27,6 @@ const Whiteboard = ({ id }) => {
     drawCircle: () => { },
     drawTriangle: () => { },
   });
-  const canvasFn = useRef({
-    clearCanvasFn: () => { },
-  });
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -63,9 +60,6 @@ const Whiteboard = ({ id }) => {
           drawTriangle: drawService.drawTriangle,
         };
 
-        canvasFn.current = {
-          clearCanvasFn: canvasService.clearCanvas,
-        };
       } catch (error) {
         console.error('Failed to load whiteboard services:', error);
         alert('Failed to load drawing tools. Please refresh the page or try again later.');
@@ -130,15 +124,9 @@ const Whiteboard = ({ id }) => {
       drawShape(context, shape, true);
     };
 
-    const handleClear = () => {
-      canvasFn.current.clearCanvasFn(canvasRef);
-      drawnShapesRef.current = [];
-    };
-
     socketRef.current.on('initDrawings', handleInit);
     socketRef.current.on('draw', handleDraw);
     socketRef.current.on('previewDraw', handlePreviewDraw);
-    socketRef.current.on('clear', handleClear);
 
     return () => {
       if (whiteboardId) {
@@ -148,7 +136,6 @@ const Whiteboard = ({ id }) => {
       socketRef.current.off('initDrawings', handleInit);
       socketRef.current.off('draw', handleDraw);
       socketRef.current.off('previewDraw', handlePreviewDraw);
-      socketRef.current.off('clear', handleClear);
     };
   }, [socketRef, whiteboardId, redrawAllShapes]);
 
