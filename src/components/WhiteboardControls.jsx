@@ -5,7 +5,7 @@ import DrawingTools from './DrawingTools';
 import UserToolbar from './UserToolbar';
 import { useRouter } from 'next/navigation';
 
-const WhiteboardControls = ({ setTool, setColor, setFillMode, whiteboardId, user, socketRef, canvasRef, drawnShapesRef, redrawAllShapes }) => {
+const WhiteboardControls = ({ onClear, setTool, setColor, setFillMode, whiteboardId, user, socketRef, canvasRef, drawnShapesRef, redrawAllShapes }) => {
     const router = useRouter();
 
     const handleToolChange = (newTool) => setTool(newTool);
@@ -16,12 +16,10 @@ const WhiteboardControls = ({ setTool, setColor, setFillMode, whiteboardId, user
     const handleRedo = () => { socketRef.current.emit('redo', whiteboardId) };
 
     const handleClear = () => {
-        const confirmClear = window.confirm("Are you sure you want to clear the board? This will clear the board for everyone!");
-        if (confirmClear) {
-            clearCanvas(canvasRef)
-            drawnShapesRef.current = [];
-            socketRef.current.emit('clear', whiteboardId);
-        }
+        if (!confirm('Are you sure you want to clear the board?')) return;
+        // ask parent to clear local canvas
+        onClear();
+        socketRef.current.emit('clear', whiteboardId);
     };
 
     const handleSaveAsImage = async () => {

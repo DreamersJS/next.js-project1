@@ -7,6 +7,7 @@ import { drawShape } from '@/services/drawService';
 import { useDrawingEvents } from '@/hooks/useDrawingEvents';
 import { useUser } from '@/hooks/useUser';
 import WhiteboardControls from './WhiteboardControls';
+import { clearCanvas } from '@/services/canvasService';
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
@@ -21,13 +22,6 @@ const Whiteboard = ({ id }) => {
   const socketRef = useSocketConnection();
   const imageCache = useRef(new Map());
 
-  const drawFunctionsRef = useRef({
-    drawLine: () => { },
-    drawRectangle: () => { },
-    drawCircle: () => { },
-    drawTriangle: () => { },
-  });
-
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -39,38 +33,6 @@ const Whiteboard = ({ id }) => {
       }
     };
     fetchConfig();
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadServices = async () => {
-      try {
-        const [drawService, canvasService] = await Promise.all([
-          import('@/services/drawService'),
-          import('@/services/canvasService'),
-        ]);
-
-        if (!isMounted) return;
-
-        drawFunctionsRef.current = {
-          drawLine: drawService.drawLine,
-          drawRectangle: drawService.drawRectangle,
-          drawCircle: drawService.drawCircle,
-          drawTriangle: drawService.drawTriangle,
-        };
-
-      } catch (error) {
-        console.error('Failed to load whiteboard services:', error);
-        alert('Failed to load drawing tools. Please refresh the page or try again later.');
-      }
-    };
-
-    loadServices();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
   const redrawAllShapes = useRedrawAllShapes(canvasRef, drawnShapesRef, imageCache);
@@ -127,7 +89,7 @@ const Whiteboard = ({ id }) => {
     socketRef.current.on('initDrawings', handleInit);
     socketRef.current.on('draw', handleDraw);
     socketRef.current.on('previewDraw', handlePreviewDraw);
-
+    socketRef.current.on("clear", handleClear);
     return () => {
       if (whiteboardId) {
         socketRef.current.emit('leave', whiteboardId);
@@ -136,6 +98,7 @@ const Whiteboard = ({ id }) => {
       socketRef.current.off('initDrawings', handleInit);
       socketRef.current.off('draw', handleDraw);
       socketRef.current.off('previewDraw', handlePreviewDraw);
+      socketRef.current.off("clear", handleClear);
     };
   }, [socketRef, whiteboardId, redrawAllShapes]);
 
@@ -173,11 +136,17 @@ const Whiteboard = ({ id }) => {
     };
   }, [handleMouseDown, handleMouseMove, handleMouseUp, throttledResizeCanvas, whiteboardId, socketRef]);
 
+  const handleClear = async () => {
+    clearCanvas(canvasRef)
+    drawnShapesRef.current = [];
+  };
+
   return (
     <>
       <div className="flex h-screen overflow-hidden">
         {/* Drawing tools and Save, Load, Delete buttons */}
         <WhiteboardControls
+          onClear={handleClear}
           setTool={setTool}
           setColor={setColor}
           setFillMode={setFillMode}
