@@ -1,24 +1,20 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import DrawingTools from './DrawingTools';
 import { useSocketConnection } from '@/context/SocketProvider';
 import { useResizeCanvas } from '@/hooks/useResizeCanvas';
 import { useRedrawAllShapes } from '@/hooks/useRedrawAllShapes';
 import { drawShape } from '@/services/drawService';
 import { useDrawingEvents } from '@/hooks/useDrawingEvents';
 import { useUser } from '@/hooks/useUser';
-import UserToolbar from './UserToolbar';
+import WhiteboardControls from './WhiteboardControls';
 
 const Whiteboard = ({ id }) => {
   const whiteboardId = id;
   const canvasRef = useRef(null);
   const drawnShapesRef = useRef([]);
-  const router = useRouter();
   const { user } = useUser();
 
   const [tool, setTool] = useState('pen');
-  const [drawnShapes, setDrawnShapes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [fillMode, setFillMode] = useState(false);
   const [socketUrl, setSocketUrl] = useState(null);
@@ -34,15 +30,6 @@ const Whiteboard = ({ id }) => {
   const canvasFn = useRef({
     clearCanvasFn: () => { },
   });
-
-  let whiteboardServiceModule;
-
-  const getWhiteboardService = async () => {
-    if (!whiteboardServiceModule) {
-      whiteboardServiceModule = await import('@/services/whiteboardService');
-    }
-    return whiteboardServiceModule;
-  };
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -62,10 +49,9 @@ const Whiteboard = ({ id }) => {
 
     const loadServices = async () => {
       try {
-        const [drawService, canvasService, whiteboardService] = await Promise.all([
+        const [drawService, canvasService] = await Promise.all([
           import('@/services/drawService'),
           import('@/services/canvasService'),
-          import('@/services/whiteboardService'),
         ]);
 
         if (!isMounted) return;
@@ -122,14 +108,11 @@ const Whiteboard = ({ id }) => {
         return;
       }
       drawnShapesRef.current = shapes;
-      setDrawnShapes(shapes);
       redrawAllShapes();
-      // shapes.forEach(shape => drawShape(context, shape));
     };
 
     const handleDraw = (shape) => {
       drawnShapesRef.current.push(shape);
-      setDrawnShapes([...drawnShapesRef.current]);
 
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
@@ -150,7 +133,6 @@ const Whiteboard = ({ id }) => {
     const handleClear = () => {
       canvasFn.current.clearCanvasFn(canvasRef);
       drawnShapesRef.current = [];
-      setDrawnShapes([]);
     };
 
     socketRef.current.on('initDrawings', handleInit);
@@ -204,102 +186,21 @@ const Whiteboard = ({ id }) => {
     };
   }, [handleMouseDown, handleMouseMove, handleMouseUp, throttledResizeCanvas, whiteboardId, socketRef]);
 
-  const handleToolChange = (newTool) => setTool(newTool);
-  const handleColorChange = (newColor) => setColor(newColor);
-  const handleFillToggle = (fillStatus) => setFillMode(fillStatus);
-
-  const handleUndo = () => { socketRef.current.emit('undo', whiteboardId) };
-  const handleRedo = () => { socketRef.current.emit('redo', whiteboardId) };
-
-  const handleClear = () => {
-    const confirmClear = window.confirm("Are you sure you want to clear the board? This will clear the board for everyone!");
-    if (confirmClear) {
-      canvasFn.current.clearCanvasFn(canvasRef)
-      setDrawnShapes([]);
-      drawnShapesRef.current = [];
-      socketRef.current.emit('clear', whiteboardId);
-    } else {
-      console.error("Error clearing the board.");
-    }
-  };
-
-  const handleSaveAsImage = async () => {
-    try {
-      const { saveWhiteboardAsImage } = await getWhiteboardService();
-      await saveWhiteboardAsImage(canvasRef.current, whiteboardId, user.uid);
-      // await canvasFn.current.saveAsImageFn(canvasRef.current, whiteboardId, user.uid)
-    } catch (error) {
-      console.error('Error saving whiteboard image:', error);
-    }
-  };
-
-  const handleLoad = async (whiteboardId) => {
-    try {
-      const { loadWhiteboardImageById } = await getWhiteboardService();
-      const data = await loadWhiteboardImageById(whiteboardId);
-      // const data = await canvasFn.current.loadImageFn(whiteboardId);
-
-      if (data.content) {
-        const imageShape = {
-          tool: 'image',
-          src: data.content,
-          startX: 0,
-          startY: 0,
-          width: canvasRef.current.width,
-          height: canvasRef.current.height,
-        };
-
-        drawnShapesRef.current = [...(drawnShapesRef.current || []), imageShape];
-        setDrawnShapes([...drawnShapesRef.current]);
-
-        // Notify others
-        socketRef.current.emit('loadImage', whiteboardId, imageShape);
-
-        // Redraw all shapes including image properly
-        redrawAllShapes();
-        alert('Whiteboard loaded successfully!');
-      } else {
-        alert('Failed to load the whiteboard.');
-      }
-    } catch (error) {
-      console.error('Error loading whiteboard:', error);
-    }
-  };
-
-  const handleDeleteWhiteboard = async (whiteboardId) => {
-    if (confirm('Are you sure you want to delete this whiteboard?')) {
-      try {
-        // const { deleteWhiteboard } = await import('@/services/whiteboardService');
-        const { deleteWhiteboard } = await getWhiteboardService();
-        await deleteWhiteboard(whiteboardId, user.uid);
-        router.push(`/`);
-      } catch (error) {
-        console.error('Error deleting whiteboard:', error);
-      }
-    }
-  };
-
   return (
     <>
       <div className="flex h-screen overflow-hidden">
         {/* Drawing tools and Save, Load, Delete buttons */}
-        <div className="w-44 bg-gray-200 p-2 border-r border-gray-300">
-          <DrawingTools
-            onToolChange={handleToolChange}
-            onClear={handleClear}
-            onColorChange={handleColorChange}
-            onFillToggle={handleFillToggle}
-            onUndo={handleUndo}
-            onRedo={handleRedo}
-          />
-          <UserToolbar
-            user={user}
-            whiteboardId={whiteboardId}
-            onSave={handleSaveAsImage}
-            onLoad={handleLoad}
-            onDelete={handleDeleteWhiteboard}
-          />
-        </div>
+        <WhiteboardControls
+          setTool={setTool}
+          setColor={setColor}
+          setFillMode={setFillMode}
+          whiteboardId={whiteboardId}
+          user={user}
+          socketRef={socketRef}
+          canvasRef={canvasRef}
+          drawnShapesRef={drawnShapesRef}
+          redrawAllShapes={redrawAllShapes}
+        />
         {/* Canvas */}
         <div className="flex grow w-full h-full overflow-hidden p-0 items-center justify-center">
           <canvas ref={canvasRef} className="border bg-white w-full h-full"></canvas>
