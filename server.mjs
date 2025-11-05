@@ -16,7 +16,7 @@ app.prepare().then(() => {
         default-src 'self';
         script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasedatabase.app https://apis.google.com;
         style-src 'self' 'unsafe-inline';
-        img-src 'self' data: https://*.googleusercontent.com https://*.firebaseapp.com https://avatars.dicebear.com https://images.pexels.com;
+        img-src 'self' data: https://*.googleusercontent.com https://*.firebaseapp.com https://api.dicebear.com https://images.pexels.com;
         connect-src 'self' https://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss:;
         font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;
         frame-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app https://*.firebaseapp.com https://www.gstatic.com;
@@ -24,8 +24,7 @@ app.prepare().then(() => {
     'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
     'Cross-Origin-Opener-Policy': 'same-origin',
     'X-Frame-Options': 'DENY',
-  };
-
+  };  
 
   const server = createServer((req, res) => {
     const parsedUrl = parse(req.url, true);
@@ -34,19 +33,6 @@ app.prepare().then(() => {
     for (const [key, value] of Object.entries(securityHeaders)) {
       res.setHeader(key, value);
     }
-
-    process.env.SOCKET_URL = process.env.SOCKET_URL ?? '';
-    process.env.CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? '';
-
-    // Optional: make NEXT_PUBLIC_* vars available to server code
-    process.env.NEXT_PUBLIC_FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? '';
-    process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? '';
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? '';
-    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ?? '';
-    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ?? '';
-    process.env.NEXT_PUBLIC_FIREBASE_APP_ID = process.env.NEXT_PUBLIC_FIREBASE_APP_ID ?? '';
-    process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ?? '';
-
     handle(req, res, parsedUrl);
   });
 
@@ -63,7 +49,6 @@ app.prepare().then(() => {
   const whiteboardData = new Map();
 
   io.on('connection', (socket) => {
-    console.log('New client connected');
 
     socket.on('previewDraw', (whiteboardId, data) => {
       // Broadcast the preview to other clients but do not store it
@@ -81,7 +66,6 @@ app.prepare().then(() => {
         socket.join(whiteboardId);
       }
 
-      // Initialize board if not exist
       if (!whiteboardData.has(whiteboardId)) {
         whiteboardData.set(whiteboardId, {
           drawnShapes: [],
@@ -106,7 +90,7 @@ app.prepare().then(() => {
           drawnShapes: [],
           undoStack: [],
           redoStack: [],
-          content: "",     // Optional: for base64 image
+          content: "",
         });
       }
       const board = whiteboardData.get(whiteboardId);
@@ -137,10 +121,9 @@ app.prepare().then(() => {
       if (board.undoStack.length > 0) {
         const shape = board.undoStack.pop();
         board.redoStack.push(shape);
-        board.drawnShapes = board.undoStack.slice(); // Reflect the change in drawnShapes
+        board.drawnShapes = board.undoStack.slice();
 
-        // Broadcast the updated state to all clients
-        io.to(whiteboardId).emit('initDrawings', board.drawnShapes.filter(Boolean)); // This ensures all clients get the same, updated state
+        io.to(whiteboardId).emit('initDrawings', board.drawnShapes.filter(Boolean));
       }
     });
 
@@ -153,12 +136,11 @@ app.prepare().then(() => {
         board.undoStack.push(shape);
         board.drawnShapes.push(shape);
 
-        io.to(whiteboardId).emit('draw', shape); // Send the redone shape to all clients
+        io.to(whiteboardId).emit('draw', shape);
       }
     });
 
     socket.on('loadImage', (whiteboardId, imageData) => {
-      // Load the image data (in base64 or URL format) as a drawable shape
       const imageShape = {
         tool: 'image',
         src: imageData.src,
@@ -185,12 +167,11 @@ app.prepare().then(() => {
 
     socket.on('message', (data) => {
       const { roomId, username, text } = data;
-      if (!roomId) return;  // Safety check
+      if (!roomId) return;
       io.to(roomId).emit('message', { username, text });
     });
 
     socket.on('disconnect', () => {
-      console.log('Client disconnected');
       return () => {
         socket.off('disconnect');
       };
@@ -199,12 +180,6 @@ app.prepare().then(() => {
 
   server.listen(port, (err) => {
     if (err) throw err;
-    console.log(`Ready on http://localhost:${port} [NODE_ENV=${process.env.NODE_ENV}] ${process.env.CLIENT_ORIGIN}${process.env.SOCKET_URL}`);
+    console.log(`Ready on http://localhost:${port} [NODE_ENV=${process.env.NODE_ENV}]`);
   });
 });
-
-
-// inspect Node memory programmatically
-// setInterval(() => {
-//   console.log(process.memoryUsage());
-// }, 50000);

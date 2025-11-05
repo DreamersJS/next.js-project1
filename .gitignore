@@ -3,7 +3,7 @@
 
 # Docker files
 Dockerfile
-.dockerignore
+# .dockerignore
 
 # dependencies
 /node_modules
@@ -31,7 +31,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
+.env*
 .env
 
 # vercel

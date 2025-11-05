@@ -1,0 +1,41 @@
+# Node dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Build artifacts
+#.next
+#.swc
+out
+coverage
+dist
+
+# Testing
+__tests__/
+__mocks__/
+jest.config.js
+jest.setup.js
+*.spec.js
+*.test.js
+
+# Local environment files
+.env
+
+# IDE / Git / CI
+.vscode
+.git
+.github
+.gitignore
+.DS_Store
+
+# Docs / Misc
+helpers.md
+README.md
+*.md
+
+# Docker
+Dockerfile*
+docker-compose.yml
+docker-compose*

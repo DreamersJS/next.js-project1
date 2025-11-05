@@ -1,5 +1,5 @@
 docker-compose start
-
+docker compose up --build --force-recreate
 ++++++++++++++++++++++
 docker-compose up --build
 docker ps

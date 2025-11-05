@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { useSocketConnection } from '@/context/SocketProvider';
 import { useResizeCanvas } from '@/hooks/useResizeCanvas';
 import { useRedrawAllShapes } from '@/hooks/useRedrawAllShapes';

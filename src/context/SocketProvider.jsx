@@ -58,7 +58,6 @@ export const SocketProvider = ({ children }) => {
 
         return () => {
             socketRef.current?.disconnect();
-            console.log('Socket disconnected');
         };
     }, [socketUrl]);
 
