@@ -13,10 +13,10 @@ export const createNewWhiteboard = async (userId) => {
     });
 
     if (response.ok) {
-      return await response.json(); // Return parsed data directly
+      return await response.json();
     } else {
       console.error('Failed to load whiteboard:', response.statusText);
-      return null; // Return null for error handling
+      return null; 
     }
   } catch (error) {
     console.error('Error in createNewWhiteboard:', error);
@@ -36,14 +36,14 @@ export const loadWhiteboardById = async (whiteboardId) => {
     });
 
     if (response.ok) {
-      return await response.json(); // Return parsed data directly
+      return await response.json(); 
     } else {
       console.error('Failed to load whiteboard:', response.statusText);
-      return null; // Return null for error handling
+      return null; 
     }
   } catch (error) {
     console.error('Error loading whiteboard:', error);
-    return null; // Return null for error handling
+    return null; 
   }
 };
 
@@ -100,7 +100,6 @@ export const saveWhiteboardAsImage = async (canvas, whiteboardId, userId) => {
     return;
   }
   const dataURL = canvas.toDataURL('image/png');
-  // Save the image URL to your database
   try {
     const response = await fetch(`/api/whiteboards/${whiteboardId}?userId=${userId}`, {
       method: 'PUT',
@@ -119,42 +118,5 @@ export const saveWhiteboardAsImage = async (canvas, whiteboardId, userId) => {
     }
   } catch (error) {
     console.error('Error saving whiteboard image:', error);
-  }
-};
-
-/**
- * Load a whiteboard image by its ID.
- * @param {string} whiteboardId - The ID of the whiteboard to load.
- * @returns {Promise<{ id: string, content: string, photo: string }>} - An object containing the whiteboard ID and content: data:image/png;base64,(image URL) and , photo: "".
- */
-export const loadWhiteboardImageById = async (whiteboardId) => {
-  try {
-    const response = await fetch(`/api/whiteboards/${whiteboardId}`, {
-      method: 'GET',
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      alert('No whiteboard data found.');
-      throw new Error(`Error loading whiteboard: ${data.message}`);
-    }
-    return data;
-  } catch (error) {
-    console.error('Error loading whiteboard:', error);
-  }
-};
-
-export const deleteUser = async (userId) => {
-  try {
-    const response = await fetch(`/api/user?userId=${userId}`, {
-      method: 'DELETE',
-    });
-    if (response.ok) {
-      console.log('Deleted user:', userId);
-    } else {
-      console.error('Error deleting user:', response.statusText);
-    }
-  } catch (error) {
-    console.error('Error deleting user:', error);
   }
 };

@@ -8,7 +8,8 @@ import {
 } from 'firebase/auth';
 import { ref, set, get } from "firebase/database";
 import Cookies from 'js-cookie';
-import { deleteUser, deleteWhiteboard, getUserWhiteboards } from './whiteboardService';
+import { deleteWhiteboard, getUserWhiteboards } from './whiteboardService';
+import { deleteUser} from './userService';
 
 let database, auth;
 

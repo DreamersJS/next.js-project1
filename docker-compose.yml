@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     environment:
-      - CHOKIDAR_USEPOLLING=true  # ensures Next.js detects file changes
+      CHOKIDAR_USEPOLLING: true  # ensures Next.js detects file changes
       NODE_ENV: development
       SOCKET_URL: ${SOCKET_URL}
       CLIENT_ORIGIN: ${CLIENT_ORIGIN}
@@ -25,3 +25,4 @@ services:
       - /app/node_modules
       - /app/.next
     command: npm run dev
+    restart: unless-stopped 
