@@ -5,7 +5,7 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 
-RUN rm -f .env.prod .env
+RUN rm -f .env
 
 # Pass build-time vars (used by Next.js)
 ARG NEXT_PUBLIC_FIREBASE_API_KEY
@@ -34,7 +34,10 @@ WORKDIR /app
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/server.mjs ./server.mjs
+# COPY --from=builder /app/server ./server
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
+
+COPY server ./server
 
 RUN npm ci --omit=dev && npm cache clean --force
 
