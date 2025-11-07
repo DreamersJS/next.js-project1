@@ -20,13 +20,17 @@ export default function ChatToggleWrapper() {
   // Join room once
   useEffect(() => {
     if (socketRef?.current && whiteboardId) {
-      socketRef.current.emit('joinRoom', whiteboardId);
+      const socket = socketRef.current;
+      socket.emit('joinRoom', whiteboardId);
     }
   }, [socketRef, whiteboardId]);
 
   // Listen for messages always
   useEffect(() => {
     if (!socketRef?.current) return;
+
+    // capture once in var to avoid eslint issues
+    const socket = socketRef.current;
 
     const handleMessage = (data) => {
       setMessages(prev => [...prev, data]);
@@ -35,10 +39,10 @@ export default function ChatToggleWrapper() {
       }
     };
 
-    socketRef.current.on('message', handleMessage);
+    socket.on('message', handleMessage);
 
     return () => {
-      socketRef.current.off('message', handleMessage);
+      socket.off('message', handleMessage);
     };
   }, [socketRef, isChatOpen]);
 

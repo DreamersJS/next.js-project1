@@ -62,7 +62,7 @@ export const SocketProvider = ({ children }) => {
     }, [socketUrl]);
 
     if (!isReady) {
-        return <div>Connecting to server...</div>;
+        return <LoadingUI/>;
     }
 
     return (
@@ -75,3 +75,7 @@ export const SocketProvider = ({ children }) => {
 export const useSocketConnection = () => {
     return useContext(SocketContext);
 };
+
+const LoadingUI = () => (
+    <div>Connecting to server...</div>
+);

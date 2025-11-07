@@ -24,5 +24,5 @@ const UserAvatar = React.memo(() => {
     </div>
   );
 });
-
+UserAvatar.displayName = "UserAvatar";
 export default UserAvatar;

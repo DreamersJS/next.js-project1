@@ -80,7 +80,7 @@ const LoginPage = () => {
     } finally {
       setIsGuestLoading(false);
     }
-  }, [redirectPath, router, setUser]);
+  }, [redirectPath, router, setUser, handleRedirect]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -152,7 +152,7 @@ const LoginPage = () => {
         )}
 
         <div className="mt-6 text-center text-gray-700">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <button
             onClick={() => router.push("/register")}
             className="text-blue-600 hover:underline"

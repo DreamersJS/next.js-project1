@@ -24,7 +24,7 @@ export default function WhiteboardList() {
     const { loadWhiteboardById } = await import('@/services/whiteboardService');
     const data = await loadWhiteboardById(whiteboardId);
     router.push(`/whiteboard/${whiteboardId}`);
-  }, []);
+  }, [router]);
 
   const loadUserWhiteboards = useCallback(async (userId) => {
     setLoading(true);
