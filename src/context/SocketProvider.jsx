@@ -9,25 +9,11 @@ export const SocketProvider = ({ children }) => {
     const [isReady, setIsReady] = useState(false);
     const [socketUrl, setSocketUrl] = useState(null);
 
-    // Fetch and cache socket URL
     useEffect(() => {
         const getSocketUrl = async () => {
-            // Check if cached in sessionStorage
-            const cached = sessionStorage.getItem('socketUrl');
-            if (cached) {
-                setSocketUrl(cached);
-                return;
-            }
-
             try {
-                const res = await fetch('/api/config');
-                const data = await res.json();
-                if (data?.socketUrl) {
-                    setSocketUrl(data.socketUrl);
-                    sessionStorage.setItem('socketUrl', data.socketUrl); // cache it
-                } else {
-                    console.error('Socket URL not found in API response.');
-                }
+                const res = process.env.NEXT_PUBLIC_SOCKET_URL
+                setSocketUrl(res);
             } catch (err) {
                 console.error('Failed to fetch socket URL:', err);
             }
@@ -62,7 +48,7 @@ export const SocketProvider = ({ children }) => {
     }, [socketUrl]);
 
     if (!isReady) {
-        return <LoadingUI/>;
+        return <LoadingUI />;
     }
 
     return (

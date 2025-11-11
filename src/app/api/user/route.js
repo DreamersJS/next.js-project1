@@ -1,8 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { NextResponse } from 'next/server';
 import { initFirebase } from '@/services/firebase';
-import { ref, remove, set, get, update } from 'firebase/database';
+import { ref, remove} from 'firebase/database';
 
 let database;
 
