@@ -21,7 +21,7 @@ const WhiteboardPage = ({ params }) => {
     if (!user) {
       navigateTo(`login?redirect=/whiteboard/${id}`);
     }
-  }, [user, id, router]);
+  }, [user, id, navigateTo]);
 
   if (!user) {
     return <p>Redirecting to login...</p>;

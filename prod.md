@@ -186,3 +186,191 @@ Doesn’t matter if it came from:
 - NextResponse.json() in Next.js,
 - or new Response(JSON.stringify(...))
 
+
+COPY --from=builder /app/server ./server
+moved server.mjs from root to server folder- tha is for the container to copy the server folder to well server folder in workdir app & keep the same structure
+
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
+Next.js needs that at runtime to 
+correctly resolve image domains, experimental flags, and middleware
+(if F-end & B-end are both deployed only to Render) 
+and local test
+
+```bash
+FROM node:18-bullseye-slim AS builder
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+COPY . .
+
+RUN rm -f .env.prod .env
+
+# Pass build-time vars (used by Next.js)
+ARG NEXT_PUBLIC_FIREBASE_API_KEY
+ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+ARG NEXT_PUBLIC_FIREBASE_PROJECT_ID
+ARG NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+ARG NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+ARG NEXT_PUBLIC_FIREBASE_APP_ID
+ARG NEXT_PUBLIC_FIREBASE_DATABASE_URL
+
+# Expose them to Next.js build
+ENV NEXT_PUBLIC_FIREBASE_API_KEY=$NEXT_PUBLIC_FIREBASE_API_KEY
+ENV NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+ENV NEXT_PUBLIC_FIREBASE_PROJECT_ID=$NEXT_PUBLIC_FIREBASE_PROJECT_ID
+ENV NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=$NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+ENV NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=$NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+ENV NEXT_PUBLIC_FIREBASE_APP_ID=$NEXT_PUBLIC_FIREBASE_APP_ID
+ENV NEXT_PUBLIC_FIREBASE_DATABASE_URL=$NEXT_PUBLIC_FIREBASE_DATABASE_URL
+
+RUN npm run build
+
+# ---- Runner ----
+FROM node:18-bullseye-slim
+WORKDIR /app
+
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/server ./server
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
+
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Copy env vars again for runtime
+
+ARG SOCKET_URL
+ARG CLIENT_ORIGIN
+
+ENV NODE_ENV=production
+
+ENV SOCKET_URL=$SOCKET_URL
+ENV CLIENT_ORIGIN=$CLIENT_ORIGIN
+
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+separate server folder
+Frontend (Vercel)
+Deploy your Next.js frontend directly to Vercel.
+Vercel automatically builds Next.js — you don’t need Docker there.
+You’ll want to:
+Delete or ignore /server during FE deployment (since Vercel doesn’t run custom servers).
+Use NEXT_PUBLIC_SOCKET_URL to point the frontend to your Render backend WebSocket URL.
+Backend (Render)
+Only deploy /server folder to Render using Docker.
+Keep your current Dockerfile.prod, but you can simplify it because the backend doesn’t
+need Next.js build artifacts.
+That way:
+Vercel handles FE rendering, image optimization, etc.
+Render runs your real-time socket backend.
+Both can be redeployed independently.
+
+the whole repo goes to render it reads dockerfile and uses only server 
+
+Do you need a vercel.json?
+➡️ No, you don’t need one for a standard Next.js App Router project.
+Vercel already knows how to handle Next’s routes, static files, and server functions.
+
+you’re talking about the first page load on Vercel, before your backend (on Render) URL is known, so the frontend can’t even call /api/config yet, right?
+let’s unpack what happens and what your real options are.
+what export const dynamic = 'force-dynamic' does
+
+that flag just tells next’s server component (app/api/config/route.js) that this route should run on every request — not be statically pre-rendered.
+so your code:
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  const socketUrl = process.env.SOCKET_URL;
+  return Response.json({ socketUrl });
+}
+works great if the variable SOCKET_URL exists in the environment where the route runs.
+on Vercel, that means *you need to define SOCKET_URL in your Vercel environment settings.* now process.env.SOCKET_URL exists at runtime, so /api/config will return it.
+no NEXT_PUBLIC_ needed.
+
+that way, both stay private and independent — perfect separation.
+you can redeploy frontend or backend independently with zero coupling.
+
+
+Hell- server isn't copied in run-time stage in docker
+```bash
+FROM node:18-bullseye-slim AS builder
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+COPY . .
+
+RUN rm -f .env
+
+RUN ls -R /app/server
+
+# Pass build-time vars (used by Next.js)
+ARG NEXT_PUBLIC_FIREBASE_API_KEY
+ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+ARG NEXT_PUBLIC_FIREBASE_PROJECT_ID
+ARG NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+ARG NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+ARG NEXT_PUBLIC_FIREBASE_APP_ID
+ARG NEXT_PUBLIC_FIREBASE_DATABASE_URL
+
+# Expose them to Next.js build
+ENV NEXT_PUBLIC_FIREBASE_API_KEY=$NEXT_PUBLIC_FIREBASE_API_KEY
+ENV NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+ENV NEXT_PUBLIC_FIREBASE_PROJECT_ID=$NEXT_PUBLIC_FIREBASE_PROJECT_ID
+ENV NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=$NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+ENV NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=$NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+ENV NEXT_PUBLIC_FIREBASE_APP_ID=$NEXT_PUBLIC_FIREBASE_APP_ID
+ENV NEXT_PUBLIC_FIREBASE_DATABASE_URL=$NEXT_PUBLIC_FIREBASE_DATABASE_URL
+
+RUN npm run build
+
+# ---- Runner ----
+FROM node:18-bullseye-slim
+WORKDIR /app
+
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package*.json ./
+# COPY --from=builder /app/server ./server
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
+
+COPY server ./server
+
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Copy env vars again for runtime
+
+ARG SOCKET_URL
+ARG CLIENT_ORIGIN
+
+ENV NODE_ENV=production
+
+ENV SOCKET_URL=$SOCKET_URL
+ENV CLIENT_ORIGIN=$CLIENT_ORIGIN
+
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+## file extension .mjs for the socket server and also the imports in node must have .mjs .js
+can't believe that was the problem & fix
+Either all .js (with "type": "module") or all .mjs, not a mix.
+
+
+now to use new Dockerfile for Render:
+```bash
+FROM node:18-bullseye-slim
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+COPY server ./server
+
+ENV NODE_ENV=production
+EXPOSE 3000
+CMD ["node", "server/server.mjs"]
+```

@@ -37,7 +37,7 @@ export const useDrawingEvents = ({
                 points: [{ x, y }],
             };
         }
-    }, [tool, color]);
+    }, [tool, color, canvasRef]);
 
     const handleMouseMove = useCallback(
         throttle((e) => {
@@ -70,7 +70,7 @@ export const useDrawingEvents = ({
                 drawShape(ctx, shapeData, true);
             }
         }, 50), // throttle delay in ms, adjust as needed
-        [isDrawing, tool, color, fillMode, startPosition, redrawAllShapes]
+        [isDrawing, tool, color, fillMode, startPosition, redrawAllShapes, canvasRef]
     );
 
     const handleMouseUp = useCallback(() => {
@@ -104,7 +104,7 @@ export const useDrawingEvents = ({
             socketRef.current.emit('draw', { whiteboardId, shape: shapeData });
             drawnShapesRef.current.push(shapeData);
         }
-    }, [isDrawing, tool, color, fillMode, startPosition, currentPosition, whiteboardId]);
+    }, [isDrawing, tool, color, fillMode, startPosition, currentPosition, whiteboardId, canvasRef]);
 
     return {
         handleMouseDown,

@@ -40,5 +40,5 @@ export const useRedrawAllShapes = (canvasRef, drawnShapesRef, imageCacheRef) => 
       });
       otherShapes.forEach(shape => drawShape(ctx, shape));
     });
-  }, []);
+  }, [canvasRef, drawnShapesRef, imageCacheRef]);
 };

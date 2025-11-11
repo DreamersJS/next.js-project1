@@ -13,7 +13,6 @@ services:
         NEXT_PUBLIC_FIREBASE_DATABASE_URL: ${NEXT_PUBLIC_FIREBASE_DATABASE_URL}
     env_file:
       - .env
-      - .env.prod
     environment:
       NODE_ENV: production
       SOCKET_URL: ${SOCKET_URL}
@@ -21,4 +20,5 @@ services:
     ports:
       - "3000:3000"
     restart: unless-stopped
+    # command: node server/server.mjs
 # That way, SOCKET_URL and CLIENT_ORIGIN can change without a rebuild — only a docker-compose up -d restart.

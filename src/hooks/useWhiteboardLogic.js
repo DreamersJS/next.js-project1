@@ -36,7 +36,6 @@ export const useWhiteboardLogic = ({ socketRef, handleMouseDown, handleMouseMove
                 // For images, just call redrawAllShapes to ensure loading order & redraw consistency
                 redrawAllShapes();
             } else {
-                // For normal shapes, just draw immediately (optional optimization) 
                 drawShape(context, shape);
             }
         };
@@ -92,6 +91,6 @@ export const useWhiteboardLogic = ({ socketRef, handleMouseDown, handleMouseMove
             resizeObserver.disconnect();
         };
     }, [handleMouseDown, handleMouseMove, handleMouseUp, throttledResizeCanvas, whiteboardId, socketRef]);
-    
+
     return { handleClear };
 }

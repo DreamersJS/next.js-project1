@@ -8,7 +8,20 @@ export default {
     return config;
   },
   images: {
-    domains: ['via.placeholder.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        port: '',
+        pathname: '/**',
+      },
+    ]
   },
   optimizeFonts: true, // Ensure font and CSS optimization is ON
   compress: true, // Gzip and Brotli compression

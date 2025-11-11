@@ -93,3 +93,47 @@ Realtime drawing challenges for learning / teaching purposes.
 Integrate with Google Drive / OneDrive for saving boards externally.
 
 AI-assisted drawing tools (like auto-shape or coloring suggestions).
+
+
+Is it worth moving tool/color/fillMode into a global store (like Zustand or Recoil), given my whiteboard only has a few shapes?
+If you plan to scale (e.g. multiple users, multiple toolbars, mobile sidebar, or collaborative cursors), it becomes a huge win.
+When it is worth it
+If you ever want:
+
+- A floating toolbar or keyboard shortcuts that change the tool globally.
+- A mini color picker in another panel that instantly updates the canvas.
+- Multi-user awareness (show each user’s active tool, color, cursor).
+- Multiple canvases that share the same brush settings.
+- Cleaner unit testing (mock global store instead of props).
+
+Then move to a global store.
+That’s exactly what Excalidraw and Figma do — their “active tool” lives in a central state, so any part of the UI can update it.
+
+No prop drilling 
+No dependency mess 
+Still reactive
+
+Planning future growth (multi-toolbars, collab, settings panel, mobile UI)Building a large design platform (like Figma/Excalidraw) - Use Zustand or Recoil + *derived selectors* for global UI state. board + user IDs in state also.
+
+Any part of your app (chat, toolbar, socket events, board list) can read/write them.
+Easy to send correct metadata in socket messages like socket.emit("draw", { boardId, userId, shape }).
+Easy to track which user is on which board when you scale to multi-user presence.
+good for undo for per user(no undo other user's draw)
+MSW
+socket.io-mock
+Playwright Cypress
+Playwright and Cypress both can be resource-heavy because they launch real browsers. You can skip E2E locally — just run them in CI/CD (GitHub Actions or Vercel CI).
+
+What are sticky sessions?
+Socket.io keeps a persistent connection per user.
+If your app runs multiple backend containers (for scaling), users must always reconnect to the same container for their socket to work.
+
+Docker & Deployment — should you split FE and BE?
+Single container
+Simple, works fine for hobby/prototype
+FE rebuild needed if BE changes, can’t scale separately
+
+Separate containers (FE + BE)
+Can scale independently, smaller images
+Slightly more setup (compose, networking)
+

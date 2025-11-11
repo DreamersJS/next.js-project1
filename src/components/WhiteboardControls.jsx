@@ -1,6 +1,5 @@
 "use client";
 import { loadWhiteboardById, deleteWhiteboard, saveWhiteboardAsImage, } from '@/services/whiteboardService';
-import { clearCanvas } from '@/services/canvasService';
 import DrawingTools from './DrawingTools';
 import UserToolbar from './UserToolbar';
 import { useRouter } from 'next/navigation';
@@ -17,7 +16,6 @@ const WhiteboardControls = ({ onClear, setTool, setColor, setFillMode, whiteboar
 
     const handleClear = () => {
         if (!confirm('Are you sure you want to clear the board?')) return;
-        // ask parent to clear local canvas
         onClear();
         socketRef.current.emit('clear', whiteboardId);
     };

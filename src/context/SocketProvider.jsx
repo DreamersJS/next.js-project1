@@ -58,12 +58,11 @@ export const SocketProvider = ({ children }) => {
 
         return () => {
             socketRef.current?.disconnect();
-            console.log('Socket disconnected');
         };
     }, [socketUrl]);
 
     if (!isReady) {
-        return <div>Connecting to server...</div>;
+        return <LoadingUI/>;
     }
 
     return (
@@ -76,3 +75,7 @@ export const SocketProvider = ({ children }) => {
 export const useSocketConnection = () => {
     return useContext(SocketContext);
 };
+
+const LoadingUI = () => (
+    <div>Connecting to server...</div>
+);
