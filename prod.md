@@ -374,3 +374,107 @@ ENV NODE_ENV=production
 EXPOSE 3000
 CMD ["node", "server/server.mjs"]
 ```
+
+how Next.js and a custom Node/Socket server interact.
+Let’s clear this up carefully — because this “app = next({ dev })” bit is the key to whether your backend is also serving your frontend or not.
+
+🧩 1️⃣ What app = next({ dev }) and app.prepare() actually do
+
+When you have this in your backend:
+```js
+import next from 'next';
+const dev = process.env.NODE_ENV !== 'production';
+const app = next({ dev });
+const handle = app.getRequestHandler();
+
+app.prepare().then(() => {
+  const server = createServer((req, res) => {
+    handle(req, res);
+  });
+  server.listen(port);
+});
+```
+
+It means:
+Your Node server is embedding a full Next.js server inside it.
+That Next.js server will:
+- Serve all your frontend pages (src/app/...)
+- Handle all your Next.js API routes (src/app/api/...)
+- Handle dynamic routing, static files, etc.
+- Work together with your socket.io setup inside the same process.
+
+So yes — even in production, app.prepare() still runs.
+It prepares Next.js to serve your frontend (not just in dev).
+
+So:
+app = next({ dev }) → Creates a Next.js instance
+app.prepare() → Boots it up
+handle(req, res) → Forwards HTTP requests to Next.js to render or serve API routes.
+
+That’s why your file works like both:
+A web server (serving the Next.js frontend)
+A backend (running your socket.io handlers)
+
+
+Docker will handle only BE(container will have only COPY server ./server package.json), SOCKET_URL to NEXT_PUBLIC_SOCKET_URL, docker-compose.prod.yml simplified
+
+
+(node 16)to run the FE I'll need another docker container + scripts for fe
+"scripts": {
+  "dev:fe": "next dev",
+  "dev:be": "node server.mjs"
+}
+"dev:fe": "next dev src",
+"build:fe": "next build src",
+"start:fe": "next start src",
+
+
+for testing CORS between FE & BE in Docker, you basically need two separate containers, one for the frontend and one for the backend. That’s because CORS only matters when two different origins interact.
+
+```yml
+version: "3.9"
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL}
+        NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY}
+        NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
+        NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}
+        NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
+        NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
+        NEXT_PUBLIC_FIREBASE_DATABASE_URL: ${NEXT_PUBLIC_FIREBASE_DATABASE_URL}
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    command: ["npx", "next", "start", "src"]
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        CLIENT_ORIGIN: ${CLIENT_ORIGIN}
+        PORT: ${PORT}
+    env_file:
+      - .env
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    command: ["npm", "start"]
+```
+
+Two Dockerfiles (or at least two build targets) because FE and BE have different dependencies:
+
+FE: next, react, react-dom, socket.io-client…
+BE: socket.io, dotenv, canvas…
+

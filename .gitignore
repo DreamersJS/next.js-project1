@@ -3,6 +3,7 @@
 
 # Docker files
 Dockerfile
+docker-compose.yml
 # .dockerignore
 
 # dependencies

@@ -137,3 +137,4 @@ Separate containers (FE + BE)
 Can scale independently, smaller images
 Slightly more setup (compose, networking)
 
+Drawing outside of canvas - issue
