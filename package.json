@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "dev": "node server.mjs",
     "start": "NODE_ENV=production node server/server.mjs",
@@ -12,6 +15,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@types/node": "^24.10.0",
     "@types/socket.io": "^3.0.2",
     "@types/socket.io-client": "^3.0.0",
     "canvas": "^2.11.2",
