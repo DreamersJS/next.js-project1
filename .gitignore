@@ -45,3 +45,6 @@ next-env.d.ts
 # Operating system files
 .DS_Store
 Thumbs.db
+
+enhancements.md
+prod.md
