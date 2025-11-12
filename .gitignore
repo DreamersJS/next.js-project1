@@ -5,6 +5,8 @@
 Dockerfile
 docker-compose.yml
 # .dockerignore
+Dockerfile.fr
+docker-compose.split.yml
 
 # dependencies
 /node_modules
