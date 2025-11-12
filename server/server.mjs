@@ -8,7 +8,7 @@ dotenv.config();
 const port = process.env.PORT || 3001;
 
 const server = createServer((req, res) => {
-    for (const [key, value] of Object.entries(securityHeaders)) {
+    for (const [key, value] of Object.entries()) {
         res.setHeader(key, value);
     }
 
