@@ -39,3 +39,16 @@ temp docker:
 docker run --rm -it -v $(pwd):/app -w /app node:20 npm install
 docker run --rm -it -v "$PWD":/app -w /app node:18 bash -c "npm install"
 docker run --rm -it -v "$PWD":/app -w /app node:18 bash
+
+
+echo YOUR_PAT | docker login ghcr.io -u zvezdaneycheva --password-stdin
+docker build -f Dockerfile.prod -t ghcr.io/zvezdaneycheva/backend-whiteboard:latest .
+docker push ghcr.io/zvezdaneycheva/backend-whiteboard:latest
+
+docker buildx create --use  # ensure buildx builder is active
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t ghcr.io/zvezdaneycheva/backend-whiteboard:latest \
+  -t ghcr.io/zvezdaneycheva/backend-whiteboard:$(git rev-parse --short HEAD) \
+  --push \
+  -f Dockerfile.prod .
