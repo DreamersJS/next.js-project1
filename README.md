@@ -5,7 +5,8 @@
 This project is a **Collaborative Whiteboard Application** built using **Next.js** and **Socket.IO** for real-time interaction. The application allows multiple users to collaborate on a virtual whiteboard in real time. It incorporates APIs for backend operations, ensuring seamless data handling and user authentication. Featuring drawing tools, image saving/loading, undo/redo and integrated chat.
 
 
-**DEMO** [Watch on YouTube](https://youtu.be/ivVlTKGkniU) <br/>
+[Live demo](https://whiteboard-app-green-psi.vercel.app/)<br/>
+[Watch on YouTube](https://youtu.be/ivVlTKGkniU) <br/>
 ![GIF](public/ezgif-2e4ba3c75ec8e4.gif)
 
 ## Features
