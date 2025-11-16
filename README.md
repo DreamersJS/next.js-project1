@@ -94,10 +94,7 @@ To get started with this project, follow the steps below:
 2. **Run the application**:<br/>
 ```bash
    npm run dev
-```
-   or
-```bash
-   docker-compose up --build
+   npm run server
 ```
 The application will start on http://localhost:3000 or on whichever PORT you are using.
 
