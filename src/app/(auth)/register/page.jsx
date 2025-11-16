@@ -27,7 +27,7 @@ const RegisterPage = () => {
 
       const credentials = await registerUser(email, password);
       const uid = credentials.user.uid;
-      const avatarUrl = `https://api.dicebear.com/9.x/initials/svg?seed=${username}` || `https://api.dicebear.com/9.x/initials/png?seed=${encodeURIComponent(username)}` || "/default.webp";
+      const avatarUrl = `https://api.dicebear.com/9.x/initials/png?seed=${encodeURIComponent(username)}` || "/default.webp";
 
       // Create user profile
       await createUserProfile(uid, username, email, avatarUrl, "registered", {}); // key-value pairs (id:true)

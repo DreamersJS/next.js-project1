@@ -19,6 +19,7 @@ const UserAvatar = React.memo(() => {
         width={30}
         height={30}
         className="rounded-full"
+        unoptimized
       />
       <span>{user?.username}</span>
     </div>
