@@ -42,6 +42,8 @@ This project is a **Collaborative Whiteboard Application** built using **Next.js
 - **Next.js App Router**:
   - Leverages Next.js App Router architecture for enhanced routing capabilities, simplifying navigation and page structure.
 
+- **Refactor**:
+  - Backend moved from next server monolith to separate standard next server and node server so i can deploy standalone back-end to GHCR
 
 ## Technologies Used
 
