@@ -6,6 +6,17 @@ This project is a **Collaborative Whiteboard Application** built using **Next.js
 
 
 [Live demo](https://whiteboard-app-green-psi.vercel.app/)<br/>
+*Live demo is FE only! You can get BE from GHCR and run it:
+```bash
+docker pull ghcr.io/zvezdaneycheva/backend-whiteboard:latest
+
+docker run -p 3000:3000 \
+    -e CLIENT_ORIGIN="*" \
+    ghcr.io/zvezdaneycheva/backend-whiteboard:latest
+
+npx cloudflared tunnel --url http://localhost:3000
+
+```
 [Watch on YouTube](https://youtu.be/ivVlTKGkniU) <br/>
 ![GIF](public/ezgif-2e4ba3c75ec8e4.gif)
 
