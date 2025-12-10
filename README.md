@@ -6,6 +6,17 @@ This project is a **Collaborative Whiteboard Application** built using **Next.js
 
 
 [Live demo](https://whiteboard-app-green-psi.vercel.app/)<br/>
+*Live demo is FE only! You can get BE from GHCR and run it:
+```bash
+docker pull ghcr.io/zvezdaneycheva/backend-whiteboard:latest
+
+docker run -p 3000:3000 \
+    -e CLIENT_ORIGIN="*" \
+    ghcr.io/zvezdaneycheva/backend-whiteboard:latest
+
+npx cloudflared tunnel --url http://localhost:3000
+
+```
 [Watch on YouTube](https://youtu.be/ivVlTKGkniU) <br/>
 ![GIF](public/ezgif-2e4ba3c75ec8e4.gif)
 
@@ -42,6 +53,8 @@ This project is a **Collaborative Whiteboard Application** built using **Next.js
 - **Next.js App Router**:
   - Leverages Next.js App Router architecture for enhanced routing capabilities, simplifying navigation and page structure.
 
+- **Refactor**:
+  - Backend moved from next server monolith to separate standard next server and node server so i can deploy standalone back-end to GHCR
 
 ## Technologies Used
 
