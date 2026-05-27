@@ -5,6 +5,9 @@
 This project is a **Collaborative Whiteboard Application** built using **Next.js** and **Socket.IO** for real-time interaction. The application allows multiple users to collaborate on a virtual whiteboard in real time. It incorporates APIs for backend operations, ensuring seamless data handling and user authentication. Featuring drawing tools, image saving/loading, undo/redo and integrated chat.
 
 
+![Forks](https://img.shields.io/github/forks/DreamersJS/next.js-project1) <br/>
+![CI](https://github.com/ZvezdaNeycheva/whiteboard-app/actions/workflows/sync.yml/badge.svg) <br/>
+
 [Live demo](https://whiteboard-app-green-psi.vercel.app/)<br/>
 *Live demo is FE only! You can get BE from GHCR and run it:
 ```bash
@@ -17,7 +20,8 @@ docker run -p 3000:3000 \
 npx cloudflared tunnel --url http://localhost:3000
 
 ```
-[Watch on YouTube](https://youtu.be/ivVlTKGkniU) <br/>
+[Watch on YouTube](https://youtu.be/ivVlTKGkniU)
+
 ![GIF](public/ezgif-2e4ba3c75ec8e4.gif)
 
 ## Features
