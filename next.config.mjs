@@ -15,12 +15,6 @@ export default {
         port: '',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'images.pexels.com',
-        port: '',
-        pathname: '/**',
-      },
     ]
   },
   optimizeFonts: true, // Ensure font and CSS optimization is ON

@@ -5,7 +5,23 @@
 This project is a **Collaborative Whiteboard Application** built using **Next.js** and **Socket.IO** for real-time interaction. The application allows multiple users to collaborate on a virtual whiteboard in real time. It incorporates APIs for backend operations, ensuring seamless data handling and user authentication. Featuring drawing tools, image saving/loading, undo/redo and integrated chat.
 
 
-**DEMO** [Watch on YouTube](https://youtu.be/ivVlTKGkniU) <br/>
+![Forks](https://img.shields.io/github/forks/DreamersJS/next.js-project1) <br/>
+![CI](https://github.com/ZvezdaNeycheva/whiteboard-app/actions/workflows/sync.yml/badge.svg) <br/>
+
+[Live demo](https://whiteboard-app-green-psi.vercel.app/)<br/>
+*Live demo is FE only! You can get BE from GHCR and run it:
+```bash
+docker pull ghcr.io/zvezdaneycheva/backend-whiteboard:latest
+
+docker run -p 3000:3000 \
+    -e CLIENT_ORIGIN="*" \
+    ghcr.io/zvezdaneycheva/backend-whiteboard:latest
+
+npx cloudflared tunnel --url http://localhost:3000
+
+```
+[Watch on YouTube](https://youtu.be/ivVlTKGkniU)
+
 ![GIF](public/ezgif-2e4ba3c75ec8e4.gif)
 
 ## Features
@@ -41,6 +57,8 @@ This project is a **Collaborative Whiteboard Application** built using **Next.js
 - **Next.js App Router**:
   - Leverages Next.js App Router architecture for enhanced routing capabilities, simplifying navigation and page structure.
 
+- **Refactor**:
+  - Backend moved from next server monolith to separate standard next server and node server so i can deploy standalone back-end to GHCR
 
 ## Technologies Used
 
@@ -93,10 +111,7 @@ To get started with this project, follow the steps below:
 2. **Run the application**:<br/>
 ```bash
    npm run dev
-```
-   or
-```bash
-   docker-compose up --build
+   npm run server
 ```
 The application will start on http://localhost:3000 or on whichever PORT you are using.
 
