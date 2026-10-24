@@ -1,25 +1,14 @@
 FROM node:20-bullseye-slim
 
-# Install canvas dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    make \
-    g++ \
-    libcairo2-dev \
-    libpango1.0-dev \
-    libjpeg-dev \
-    libgif-dev \
-    librsvg2-dev \
-    pkg-config \
-    && ln -s /usr/bin/python3 /usr/bin/python \
-    && rm -rf /var/lib/apt/lists/*
-    
 WORKDIR /app
 
-COPY package*.json ./
+COPY server/package*.json ./server/
+
+WORKDIR /app/server
 RUN npm ci --omit=dev
 
-COPY server ./server
+COPY server/ ./
+
 
 ARG CLIENT_ORIGIN
 
@@ -29,3 +18,4 @@ ENV CLIENT_ORIGIN=$CLIENT_ORIGIN
 
 EXPOSE 3000
 CMD ["npm", "run", "server"]
+# docker build -f Dockerfile.prod -t whiteboard-backend .
