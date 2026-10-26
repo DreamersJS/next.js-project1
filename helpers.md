@@ -38,7 +38,7 @@ docker compose -f docker-compose.prod.yml up -d
 temp docker:
 docker run --rm -it -v $(pwd):/app -w /app node:20 npm install
 docker run --rm -it -v "$PWD":/app -w /app node:18 bash -c "npm install"
-docker run --rm -it -v "$PWD":/app -w /app node:18 bash
+docker run --rm -it -v "$PWD":/app -w /app node:18-bullseye-slim bash
 
 
 echo YOUR_PAT | docker login ghcr.io -u zvezdaneycheva --password-stdin

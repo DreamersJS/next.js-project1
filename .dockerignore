@@ -31,11 +31,7 @@ jest.setup.js
 .DS_Store
 .next
 .vercel
-public
-src
-eslintrc.json
-postcss.config.mjs
-tailwind.config.cjs
+
 
 # Docs / Misc
 helpers.md
