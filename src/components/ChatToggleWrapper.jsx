@@ -19,10 +19,23 @@ export default function ChatToggleWrapper() {
 
   // Join room once
   useEffect(() => {
-    if (socketRef?.current && whiteboardId) {
-      const socket = socketRef.current;
+    const socket = socketRef?.current;
+  
+    // if (!socket || !whiteboardId) return;
+  
+    const joinRoom = () => {
       socket.emit('joinRoom', whiteboardId);
+    };
+  
+    if (socket.connected) {
+      joinRoom();
+    } else {
+      socket.on('connect', joinRoom);
     }
+  
+    return () => {
+      socket.off('connect', joinRoom);
+    };
   }, [socketRef, whiteboardId]);
 
   // Listen for messages always

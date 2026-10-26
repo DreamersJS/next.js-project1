@@ -9,17 +9,17 @@ export default function WhiteboardLayout({ children }) {
   return (
     <AuthProvider>
       <div className="flex flex-row h-screen overflow-hidden">
+          <SocketProvider>
         {/* Main Content - Whiteboard */}
         <main className="flex-grow h-full bg-white p-0 flex items-center justify-center overflow-hidden">
-          <SocketProvider>
             {children}
-          </SocketProvider>
         </main>
 
         {/* Right Rail - Chat */}
         <aside>
           <ChatToggleWrapper />
         </aside>
+          </SocketProvider>
       </div>
     </AuthProvider>
   );

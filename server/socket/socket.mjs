@@ -9,11 +9,13 @@ export const initSocket = (server) => {
   const whiteboardData = new Map();
 
   io.on('connection', (socket) => {
+    console.log('Socket connected:', socket.id);
+    
     whiteboardSocketHandler(io, socket, whiteboardData);
     chatSocketHandler(io, socket);
 
-    socket.on('disconnect', () => {
-      console.log(`Socket ${socket.id} disconnected`);
+    socket.on('disconnect', (reason) => {
+      console.log(`Socket ${socket.id} disconnected:`, reason);
     });
     
   });
